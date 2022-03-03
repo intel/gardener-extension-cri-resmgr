@@ -1,0 +1,7 @@
+apiVersion: v2
+name: cri-rm-extension
+description: A Helm chart to install cri-resources-manager as extension to Gardener project
+
+type: application
+version: 0.1.0
+appVersion: "1.16.0"
