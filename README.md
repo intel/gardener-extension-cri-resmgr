@@ -69,7 +69,7 @@ helm list -n garden
 
 ```
 cd ~/work/cri-resource-manager/packaging/gardener/
-./hacks/generate-controller-registation.sh
+./hacks/generate-controller-registration.sh
 ```
 
 #### 5. Deploy cri-rm-extension as Gardener extension using ControllerRegistration/ControllerDeployment
@@ -97,7 +97,7 @@ Build an image with extension and upload to local kind cluster
 ```
 make docker-images
 kind load docker-image gardener-extension-cri-rm:latest --name gardener-local
-kind load gardener-extension-cri-rm-installation:latest --name gardener-local
+kind load docker-image gardener-extension-cri-rm-installation:latest --name gardener-local
 ```
 
 
