@@ -16,6 +16,6 @@ ENTRYPOINT ["/gardener-extension-cri-rm"]
 
 ### installation
 FROM ubuntu:22.04 AS gardener-extension-cri-rm-installation
-RUN apt-get upgrade && apt-get update -y && apt-get install -y make wget git
+RUN apt update -y && apt install -y make wget
 COPY Makefile .
 RUN make install-binaries
