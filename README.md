@@ -17,9 +17,9 @@ There are two charts:
 
 - working dir for `mkdir ~/work`
 - *kubectl* 1.20+
-- *cri-resource-manager* is cloned to ~/work path (temporary ppalucki fork with "gardener" branch) like this:
+- *gardener-extension-cri-rm* is cloned to ~/work path like this:
     ```
-    git clone https://github.com/ppalucki/cri-resource-manager/ ~/work/cri-resource-manager
+    git clone https://github.com/intel-sandbox/gardener-extension-cri-rm ~/work/gardener-extension-cri-rm
     ```
 
 ## I. Getting started locally (with kind-based local gardener setup).
@@ -68,14 +68,14 @@ helm list -n garden
 #### 4. (Optional) Regenerate ctrldeploy-ctrlreg.yaml file:
 
 ```
-cd ~/work/cri-resource-manager/packaging/gardener/
+cd ~/work/gardener-extension-cri-rm
 ./hacks/generate-controller-registration.sh
 ```
 
 #### 5. Deploy cri-rm-extension as Gardener extension using ControllerRegistration/ControllerDeployment
 
 ```
-kubectl apply -f ~/work/cri-resource-manager/packaging/gardener/examples/ctrldeploy-ctrlreg.yaml
+kubectl apply -f ~/work/gardener-extension-cri-rm/examples/ctrldeploy-ctrlreg.yaml
 ```
 
 Checkout installed objects:
@@ -102,7 +102,7 @@ kind load docker-image gardener-extension-cri-rm-installation:latest --name gard
 
 
 ```
-kubectl apply -f ~/work/cri-resource-manager/packaging/gardener/examples/shoot.yaml
+kubectl apply -f ~/work/gardener-extension-cri-rm/examples/shoot.yaml
 ```
 
 Check that shoot cluster is ready:

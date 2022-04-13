@@ -18,8 +18,8 @@ spec:
       hostIPC: true
       containers:
       - name: container-runtime-cri-rm
-        # TODO: replace with gardener-extension-cri-rm-installation + support for imagevector
-        image: 100.64.176.37:5000/gardener-extension-cri-rm-installation:latest
+        # TODO: support for imagevector
+        image: v2.isvimgreg.com/gardener-extension-cri-rm-installation:latest
         command: ["/scripts/install-cri-rm.sh"]
         securityContext:
           privileged: true
@@ -28,19 +28,6 @@ spec:
           mountPath: /var/host
         - name: cri-rm-installation-script
           mountPath: /scripts
-      initContainers:
-      - name: prepare-containerd
-        image: debian
-        command: ["/bin/bash", "-c"]
-        args:
-          -
-            cp /scripts/config.toml /var/host/etc/containerd/config.toml;
-            chroot /var/host bash -c "systemctl restart containerd"
-        volumeMounts:
-        - name: host-volume
-          mountPath: /var/host
-        - name: cri-rm-init
-          mountPath: /scripts
       volumes:
       - name: host-volume
         hostPath:
@@ -48,8 +35,4 @@ spec:
       - name: cri-rm-installation-script
         configMap:
           name: cri-rm-installation-script
-          defaultMode: 0744
-      - name: cri-rm-init
-        configMap:
-          name: cri-rm-init
           defaultMode: 0744
