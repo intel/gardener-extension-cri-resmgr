@@ -7,7 +7,7 @@ metadata:
     resources.gardener.cloud/ignore: "true"
 data:
   install-cri-rm.sh: |-
-    #!/bin/sh
+    #!/bin/bash
     cp -r /cri-rm-installation/opt/ /var/host/
     cp -r /cri-rm-installation/etc/ /var/host/
     cp /var/host/etc/cri-resmgr/fallback.cfg.sample /var/host/etc/cri-resmgr/fallback.cfg
@@ -17,7 +17,15 @@ data:
     if ! grep -q container-runtime-endpoint  "/var/host/etc/systemd/system/kubelet.service"; then
       sed '/KUBELET_EXTRA_ARGS/ s!$! --container-runtime-endpoint=/var/run/cri-resmgr/cri-resmgr.sock!' -i /var/host/etc/systemd/system/kubelet.service
     fi
-    # DO NOT KILL KUBELET YET ! :)
+    # Check if cri-resource-manager, containerd and kubelet is active
+    while true; do
+        criIsActive=$(chroot /var/host bash -c "systemctl is-active cri-resource-manager")
+        containerdIsActive=$(chroot /var/host bash -c "systemctl is-active containerd")
+        kubeletIsActive=$(chroot /var/host bash -c "systemctl is-active kubelet")
+        if [ "$criIsActive" == "active" ] && [ "$containerdIsActive" == "active" ] && [ "$kubeletIsActive" == "active" ];then
+            break
+        fi
+    done
+    # Restart kubelet
     chroot /var/host bash -c "systemctl daemon-reload"
     chroot /var/host bash -c "systemctl restart kubelet"
-    sleep 7600
