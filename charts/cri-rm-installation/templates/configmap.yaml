@@ -29,3 +29,8 @@ data:
     # Restart kubelet
     chroot /var/host bash -c "systemctl daemon-reload"
     chroot /var/host bash -c "systemctl restart kubelet"
+    # Sleep after comlpeting the task
+    echo "cri-resource-manager installed. Sleeping..."
+        while true; do
+            sleep 3600;
+       done
