@@ -15,7 +15,7 @@ data:
     chroot /var/host bash -c "systemctl restart cri-resource-manager"
     sed -i  '/containerd/d' /var/host/etc/systemd/system/kubelet.service
     if ! grep -q container-runtime-endpoint  "/var/host/etc/systemd/system/kubelet.service"; then
-      sed '/KUBELET_EXTRA_ARGS/ s!$! --container-runtime-endpoint=/var/run/cri-resmgr/cri-resmgr.sock!' -i /var/host/etc/systemd/system/kubelet.service
+      sed '/KUBELET_EXTRA_ARGS/ s!$! \\\n    --container-runtime-endpoint=/var/run/cri-resmgr/cri-resmgr.sock\\!' -i /var/host/etc/systemd/system/kubelet.service
     fi
     # Check if cri-resource-manager, containerd and kubelet is active
     while true; do
@@ -31,6 +31,7 @@ data:
     chroot /var/host bash -c "systemctl restart kubelet"
     # Sleep after comlpeting the task
     echo "cri-resource-manager installed. Sleeping..."
-        while true; do
-            sleep 3600;
-       done
+    while true; do
+      sleep 3600;
+      echo "Still sleeping...";
+    done

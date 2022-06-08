@@ -48,6 +48,7 @@ const (
 	ConfigKey           = "config.yaml"
 
 	ChartPath               = "charts/cri-rm-installation/"
+	ChartPathRemoval        = "charts/cri-rm-removal"
 	InstallationImageName   = "installation_image_name" // TODO: to be replaced with proper "gardener-extension-cri-rm-" when ready
 	InstallationReleaseName = "cri-rm-installation"
 )
@@ -138,10 +139,10 @@ func main() {
 				return err
 			}
 
-			// TODO: enable healthcheck
-			// if err := RegisterHealthChecks(mgr); err != nil {
-			// 	return err
-			// }
+			// enable healthcheck
+			if err := RegisterHealthChecks(mgr); err != nil {
+				return err
+			}
 
 			// For development purposes.
 			ignoreOperationAnnotation := false
@@ -194,14 +195,51 @@ type actuator struct {
 	logger               logr.Logger
 }
 
-func (a *actuator) Reconcile(ctx context.Context, ex *extensionsv1alpha1.Extension) error {
-
+func (a *actuator) generateSecretData(ctx context.Context, ex *extensionsv1alpha1.Extension, chartPath string, namespace string) (map[string][]byte, error) {
+	emptyMap := map[string][]byte{}
 	// Find what shoot cluster we dealing with.
-	namespace := ex.GetNamespace()
 	cluster, err := controller.GetCluster(ctx, a.client, namespace)
+	if err != nil {
+		return emptyMap, err
+	}
+	// Depending on shoot, chartredner will have different capabilities based on K8s version.
+	chartRenderer, err := a.chartRendererFactory.NewChartRendererForShoot(cluster.Shoot.Spec.Kubernetes.Version)
+	if err != nil {
+		return emptyMap, err
+	}
+	chartValues := map[string]interface{}{
+		"images": map[string]string{
+			InstallationImageName: "foo", // TODO: imagevector.FindImage(InstallationImageName),
+		},
+	}
+	release, err := chartRenderer.Render(chartPath, InstallationReleaseName, metav1.NamespaceSystem, chartValues)
+	if err != nil {
+		return emptyMap, err
+	}
+	// Put chart into secret
+	secretData := map[string][]byte{ConfigKey: release.Manifest()}
+	return secretData, nil
+}
+
+func (a *actuator) deployDaemonsetToUninstallCriRm(ctx context.Context, ex *extensionsv1alpha1.Extension) error {
+	a.logger.Info("Uninstalling CRI-Resource-Manager")
+	namespace := ex.GetNamespace()
+	secretData, err := a.generateSecretData(ctx, ex, ChartPathRemoval, namespace)
 	if err != nil {
 		return err
 	}
+	// Reconcile managedresource and secret for shoot.
+	if err := managedresources.CreateForShoot(ctx, a.client, namespace, ManagedResourceName, false, secretData); err != nil {
+		return err
+	}
+	// Sleep to give daemonset a time to remove cri-rm
+	// TODO: detect if the script is finished
+	time.Sleep(120 * time.Second)
+	return nil
+}
+
+func (a *actuator) Reconcile(ctx context.Context, ex *extensionsv1alpha1.Extension) error {
+	namespace := ex.GetNamespace()
 	a.logger.Info("Reconcile: checking extension...") // , "shoot", cluster.Shoot.Name, "namespace", cluster.Shoot.Namespace)
 
 	mr := &resourcemanagerv1alpha1.ManagedResource{}
@@ -210,27 +248,14 @@ func (a *actuator) Reconcile(ctx context.Context, ex *extensionsv1alpha1.Extensi
 		if !apierrors.IsNotFound(err) {
 			return err
 		}
-
-		a.logger.Info("Reconcile: installing extension (managedresource)...") // , "shoot", cluster.Shoot.Name, "namespace", cluster.Shoot.Namespace)
-		// Depending on shoot, chartredner will have different capabilities based on K8s version..
-		chartRenderer, err := a.chartRendererFactory.NewChartRendererForShoot(cluster.Shoot.Spec.Kubernetes.Version)
-
-		chartValues := map[string]interface{}{
-			"images": map[string]string{
-				InstallationImageName: "foo", // TODO: imagevector.FindImage(InstallationImageName),
-			},
-		}
-
-		release, err := chartRenderer.Render(ChartPath, InstallationReleaseName, metav1.NamespaceSystem, chartValues)
+		secretData, err := a.generateSecretData(ctx, ex, ChartPath, namespace)
 		if err != nil {
 			return err
 		}
-
-		// Put chart into secret
-		secretData := map[string][]byte{ConfigKey: release.Manifest()}
-
 		// Reconcile managedresource and secret for shoot.
-		return managedresources.CreateForShoot(ctx, a.client, namespace, ManagedResourceName, false, secretData)
+		if err := managedresources.CreateForShoot(ctx, a.client, namespace, ManagedResourceName, false, secretData); err != nil {
+			return err
+		}
 	} else {
 		a.logger.Info("Reconcile: extension is already installed. Ignoring.") //, "shoot", cluster.Shoot.Name, "namespace", cluster.Shoot.Namespace)
 	}
@@ -244,9 +269,14 @@ func (a *actuator) Delete(ctx context.Context, ex *extensionsv1alpha1.Extension)
 	if err != nil {
 		return err
 	}
+
+	if err := a.deployDaemonsetToUninstallCriRm(ctx, ex); err != nil {
+		return err
+	}
+
 	a.logger.Info("Delete: deleting extension managedresources in shoot", "shoot", cluster.Shoot.Name, "namespace", cluster.Shoot.Namespace)
 
-	twoMinutes := 1 * time.Minute
+	twoMinutes := 2 * time.Minute
 
 	timeoutShootCtx, cancelShootCtx := context.WithTimeout(ctx, twoMinutes)
 	defer cancelShootCtx()
