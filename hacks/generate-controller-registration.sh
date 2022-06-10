@@ -25,7 +25,7 @@ spec:
   resources:
   - kind: Extension
     type: cri-rm-extension
-    globallyEnabled: true
+    globallyEnabled: false
 EOT
 
 echo "Successfully generated ControllerRegistration and ControllerDeployment example."
