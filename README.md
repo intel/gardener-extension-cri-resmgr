@@ -1,6 +1,8 @@
 # CRI-Resource-Manager extension for Gardener*
 
-**Note:** This is work in progress, not meant to run in production!
+
+| **Note/Warning** |
+| This is work in progress, not meant to run in production! |
 
 ### Introduction
 
