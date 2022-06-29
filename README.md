@@ -17,10 +17,11 @@ There are three charts:
 - charts/**cri-resmgr-installation** - internal chart that is included inside "installation" image and used to install `cri-resource-manager` binary inside worker nodes in **Shoot** clusters - it is not meant to be run manually but rather deployed by **gardener-extension-cri-resmgr** chart
 - charts/**cri-resmgr-installation** - internal chart that is included inside "installation" image and used to remove `cri-resource-manager` binary inside worker nodes in **Shoot** clusters - it is not meant to be run manually but rather deployed by **gardener-extension-cri-resmgr** chart
 
+## Getting started
 
-## I. Deploying to Gardener.
+### I. Deploying to Gardener.
 
-### Prerequisites
+#### Prerequisites
 
 - *kubectl* 1.20+
 - working dir for `mkdir ~/work`
@@ -29,7 +30,7 @@ There are three charts:
     git clone https://github.com/intel/gardener-extension-cri-resmgr ~/work/gardener-extension-cri-resmgr
     ```
 
-### 1. Build and publish docker images.
+#### 1. Build and publish docker images.
 
 ```
 make docker-images
@@ -52,22 +53,22 @@ make REGISTRY=registry-example.com/ publish-docker-images
 ```
 Image vector support will be added soon.
 
-### 2. Install extension by creating ControllerRegistration and ControllerDeployment in garden cluster.
+#### 2. Install extension by creating ControllerRegistration and ControllerDeployment in garden cluster.
 
 ```
 kubectl apply -f examples/ctrldeploy-ctrlreg.yaml
 ```
 
-### 3. Create shoot cluster with **cri-resmgr-extension**:
+#### 3. Create shoot cluster with **cri-resmgr-extension**:
 ```
 kubectl apply -f examples/shoot.yaml
 ```
 
-## II. Getting started locally (with kind-based local gardener setup).
+### II. Deploying locally (with kind-based local gardener setup).
 
-### Prepare local kind-based garden cluster
+#### Prepare local kind-based garden cluster
 
-#### 1. Clone the gardener
+##### 1. Clone the gardener
 ```
 mkdir -p ~/work/
 git clone https://github.com/gardener/gardener ~/work/gardener
@@ -75,7 +76,7 @@ cd ~/work/gardener
 git checkout v1.49.3
 ```
 
-#### 2. Prepare kind cluster 
+##### 2. Prepare kind cluster 
 
 This is based on https://github.com/gardener/gardener/blob/master/docs/deployment/getting_started_locally.md
 
@@ -95,7 +96,7 @@ Check everything is fine:
 kubectl get nodes
 ```
 
-####  3. Deploy local gardener
+#####  3. Deploy local gardener
 
 ```
 make gardener-up
@@ -106,16 +107,16 @@ Check that three gardener charts are installed:
 helm list -n garden
 ```
 
-### Deploy cri-resmgr extension
+#### Deploy cri-resmgr extension
 
-#### 4. (Optional) Regenerate ctrldeploy-ctrlreg.yaml file:
+##### 1. (Optional) Regenerate ctrldeploy-ctrlreg.yaml file:
 
 ```
 cd ~/work/gardener-extension-cri-resmgr
 ./hacks/generate-controller-registration.sh
 ```
 
-#### 5. Deploy cri-resmgr-extension as Gardener extension using ControllerRegistration/ControllerDeployment
+##### 2. Deploy cri-resmgr-extension as Gardener extension using ControllerRegistration/ControllerDeployment
 
 ```
 cd ~/work/gardener-extension-cri-resmgr
@@ -139,7 +140,7 @@ kubectl get controllerinstallation.core.gardener.cloud
 ```
 should no return "cri-resmgr extension" installation.
 
-#### 5. Deploy shoot "local" cluster.
+##### 3. Deploy shoot "local" cluster.
 
 Build an image with extension and upload to local kind cluster
 ```
@@ -171,14 +172,14 @@ In our shoot example, the extensions is also disabled by default and need to be 
 kubectl patch shoot local -n garden-local -p '{"spec":{"extensions": [ {"type": "cri-resmgr-extension", "disabled": false} ] } }'
 ```
 
-#### 6. Verify that ManagedResources are properly installed in shoot 'garden' (seed class) and  'shoot--local--local' namespace
+##### 4. Verify that ManagedResources are properly installed in shoot 'garden' (seed class) and  'shoot--local--local' namespace
 
 ```
 kubectl get managedresource -n garden | grep cri-resmgr-extension
 kubectl get managedresource -n shoot--local--local | grep extension-runtime-cri-resmgr
 ```
 
-#### 7. Check shoot cluster node is ready
+##### 5. Check shoot cluster node is ready
 
 First get credentials to access shoot cluster:
 
@@ -193,7 +194,7 @@ kubectl --kubeconfig=/tmp/kubeconfig-shoot-local.yaml get nodes
 kubectl --kubeconfig=/tmp/kubeconfig-shoot-local.yaml get pods -A
 ```
 
-#### 8. Check CRI-resource-manager is installed properly as proxy
+##### 6. Check CRI-resource-manager is installed properly as proxy
 
 ```
 kubectl exec -n shoot--local--local `kubectl get pod -n shoot--local--local --no-headers G machine-shoot | awk '{print $1}'` -- systemctl status cri-resource-manager kubelet -n 0
