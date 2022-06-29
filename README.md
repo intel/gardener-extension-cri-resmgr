@@ -121,11 +121,6 @@ kubectl apply -f ./examples/ctrldeploy-ctrlreg.yaml
 
 By default generated "ControllerRegistration" is not enabled globally, so you need to include this extension in shoot defintion. Check [this shoot.yaml](examples/shoot.yaml) as example.
 
-In our shoot example, the extensions is also disabled by defualt and need to be enabled after shoot is created with following command:
-
-```
-kubectl patch shoot local -n garden-local -p '{"spec":{"extensions": [ {"type": "cri-resmgr-extension", "disabled": false} ] } }'
-```
 
 Checkout installed objects:
 ```
@@ -166,11 +161,17 @@ Check that shoot cluster is ready:
 kubectl get shoots.core.gardener.cloud -n garden-local --watch -o wide
 ```
 
+In our shoot example, the extensions is also disabled by defualt and need to be enabled after shoot is created with following command:
+
+```
+kubectl patch shoot local -n garden-local -p '{"spec":{"extensions": [ {"type": "cri-resmgr-extension", "disabled": false} ] } }'
+```
+
 #### 6. Verify that ManagedResources are properly installed in shoot 'garden' (seed class) and  'shoot--local--local' namespace
 
 ```
 kubectl get managedresource -n garden | grep cri-resmgr-extension
-kubectl get managedresource -n shoot--local--local | grep cri-resmgr-installation
+kubectl get managedresource -n shoot--local--local | grep extension-runtime-cri-resmgr
 ```
 
 #### 7. Check shoot cluster node is ready
@@ -181,9 +182,10 @@ First get credentials to access shoot cluster:
 kubectl -n garden-local get secret local.kubeconfig -o jsonpath={.data.kubeconfig} | base64 -d > /tmp/kubeconfig-shoot-local.yaml
 ```
 
-and check status of the node:
+and check status of the node/pods:
 ```
 kubectl --kubeconfig=/tmp/kubeconfig-shoot-local.yaml get nodes
+kubectl --kubeconfig=/tmp/kubeconfig-shoot-local.yaml get pods -A
 ```
 
 #### 8. Check CRI-resource-manager is installed properly as proxy
@@ -191,3 +193,35 @@ kubectl --kubeconfig=/tmp/kubeconfig-shoot-local.yaml get nodes
 ```
 kubectl exec -n shoot--local--local `kubectl get pod -n shoot--local--local --no-headers G machine-shoot | awk '{print $1}'` -- systemctl status cri-resource-manager kubelet -n 0
 ```
+
+We should observe that:
+
+1. **cri-resource-manager** is installed as service
+
+```
+● cri-resource-manager.service - A CRI proxy with (hardware) resource aware container placement policies.
+     Loaded: loaded (/etc/systemd/system/cri-resource-manager.service; enabled; vendor preset: enabled)
+     Active: active (running) since Wed 2022-06-29 20:21:33 UTC; 2min 14s ago
+       Docs: https://github.com/intel/cri-resource-manager
+   Main PID: 10937 (cri-resmgr)
+      Tasks: 6 (limit: 69411)
+     Memory: 19.5M
+     CGroup: /docker/c4cf6958c7757cd0d66aed793a7d19f6364d936a9761c7f49c33894a65caab66/kubelet.slice/kubelet-kubepods.slice/kubelet-kubepods-besteffort.slice/kubelet-kubepods-besteffort-pod9c7ece81_7d98_4884_b214_8f2389308241.slice/cri-containerd-70b98bdb42eec15c4df4cd520d79105b7420f7be4997f4ae8f4b17503d006df4.scope/system.slice/cri-resource-manager.service
+             └─10937 /opt/intel/bin/cri-resmgr --fallback-config /etc/cri-resmgr/fallback.cfg
+```
+
+2. **kubelet** was reconfigured to use ``cri-resmgr.sock`` as its ``container-runtime-endpoint`` command line option:
+
+```
+● kubelet.service - kubelet daemon
+     Loaded: loaded (/etc/systemd/system/kubelet.service; enabled; vendor preset: enabled)
+     Active: active (running) since Wed 2022-06-29 20:21:39 UTC; 2min 9s ago
+       Docs: https://kubernetes.io/docs/admin/kubelet
+    Process: 11138 ExecStartPre=/var/lib/kubelet/copy-kubernetes-binary.sh kubelet (code=exited, status=0/SUCCESS)
+   Main PID: 11141 (kubelet)
+      Tasks: 13 (limit: 69411)
+     Memory: 57.1M
+     CGroup: /docker/c4cf6958c7757cd0d66aed793a7d19f6364d936a9761c7f49c33894a65caab66/kubelet.slice/kubelet-kubepods.slice/kubelet-kubepods-besteffort.slice/kubelet-kubepods-besteffort-pod9c7ece81_7d98_4884_b214_8f2389308241.slice/cri-containerd-70b98bdb42eec15c4df4cd520d79105b7420f7be4997f4ae8f4b17503d006df4.scope/system.slice/kubelet.service
+             └─11141 /opt/bin/kubelet --bootstrap-kubeconfig=/var/lib/kubelet/kubeconfig-bootstrap --config=/var/lib/kubelet/config/kubelet --kubeconfig=/var/lib/kubelet/kubeconfig-real --node-labels=worker.gardener.cloud/kubernetes-version=1.24.0 --container-runtime=remote --v=2 --container-runtime-endpoint=/var/run/cri-resmgr/cri-resmgr.sock
+```
+
