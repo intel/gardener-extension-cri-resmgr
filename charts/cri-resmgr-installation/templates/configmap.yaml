@@ -29,7 +29,10 @@ data:
     chroot /var/host bash -c "systemctl restart cri-resource-manager"
     sed -i  '/containerd/d' /var/host/etc/systemd/system/kubelet.service
     if ! grep -q container-runtime-endpoint  "/var/host/etc/systemd/system/kubelet.service"; then
-      sed '/KUBELET_EXTRA_ARGS/ s!$! \\\n    --container-runtime-endpoint=/var/run/cri-resmgr/cri-resmgr.sock\\!' -i /var/host/etc/systemd/system/kubelet.service
+      # matches GardenLinux kubelet config
+      sed '/KUBELET_EXTRA_ARGS \\/ s!$!\n    --container-runtime-endpoint=/var/run/cri-resmgr/cri-resmgr.sock\\!' -i /var/host/etc/systemd/system/kubelet.service
+      # matches kind-node kubelet config
+      sed '/KUBELET_EXTRA_ARGS$/ s!$! \\\n    --container-runtime-endpoint=/var/run/cri-resmgr/cri-resmgr.sock\\!' -i /var/host/etc/systemd/system/kubelet.service
     fi
     # Check if cri-resource-manager, containerd and kubelet is active
     while true; do

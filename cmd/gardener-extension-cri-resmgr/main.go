@@ -248,6 +248,7 @@ func (a *actuator) deployDaemonsetToUninstallCriResMgr(ctx context.Context, ex *
 	}
 	// Sleep to give daemonset a time to remove cri-resmgr
 	// TODO: detect if the script is finished
+	a.logger.Info("Sleep for 120 seconds to make sure remove script is done.")
 	time.Sleep(120 * time.Second)
 	return nil
 }
