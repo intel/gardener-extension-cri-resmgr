@@ -2,6 +2,7 @@
 
 
 | **Note/Warning** |
+| ---------------- |
 | This is work in progress, not meant to run in production! |
 
 ### Introduction
