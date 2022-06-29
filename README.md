@@ -239,7 +239,14 @@ We should observe that:
       Tasks: 13 (limit: 69411)
      Memory: 57.1M
      CGroup: /docker/c4cf6958c7757cd0d66aed793a7d19f6364d936a9761c7f49c33894a65caab66/kubelet.slice/kubelet-kubepods.slice/kubelet-kubepods-besteffort.slice/kubelet-kubepods-besteffort-pod9c7ece81_7d98_4884_b214_8f2389308241.slice/cri-containerd-70b98bdb42eec15c4df4cd520d79105b7420f7be4997f4ae8f4b17503d006df4.scope/system.slice/kubelet.service
-             └─11141 /opt/bin/kubelet --bootstrap-kubeconfig=/var/lib/kubelet/kubeconfig-bootstrap --config=/var/lib/kubelet/config/kubelet --kubeconfig=/var/lib/kubelet/kubeconfig-real --node-labels=worker.gardener.cloud/kubernetes-version=1.24.0 --container-runtime=remote --v=2 --container-runtime-endpoint=/var/run/cri-resmgr/cri-resmgr.sock
+             └─11141 /opt/bin/kubelet 
+             --bootstrap-kubeconfig=/var/lib/kubelet/kubeconfig-bootstrap 
+             --config=/var/lib/kubelet/config/kubelet 
+             --kubeconfig=/var/lib/kubelet/kubeconfig-real 
+             --node-labels=worker.gardener.cloud/kubernetes-version=1.24.0 
+             --container-runtime=remote 
+             --v=2 
+             --container-runtime-endpoint=/var/run/cri-resmgr/cri-resmgr.sock # <---
 ```
 
 ##### 7. Uninstalling (disabling) cri-resource-manager extension
@@ -274,5 +281,12 @@ Unit cri-resource-manager.service could not be found.
       Tasks: 12 (limit: 69411)
      Memory: 64.7M
      CGroup: /docker/c4cf6958c7757cd0d66aed793a7d19f6364d936a9761c7f49c33894a65caab66/kubelet.slice/kubelet-kubepods.slice/kubelet-kubepods-besteffort.slice/kubelet-kubepods-besteffort-pod9c7ece81_7d98_4884_b214_8f2389308241.slice/cri-containerd-70b98bdb42eec15c4df4cd520d79105b7420f7be4997f4ae8f4b17503d006df4.scope/system.slice/kubelet.service
-             └─32354 /opt/bin/kubelet --bootstrap-kubeconfig=/var/lib/kubelet/kubeconfig-bootstrap --config=/var/lib/kubelet/config/kubelet --kubeconfig=/var/lib/kubelet/kubeconfig-real --node-labels=worker.gardener.cloud/kubernetes-version=1.24.0 --container-runtime=remote --v=2 --container-runtime-endpoint=unix:///run/containerd/containerd.sock
+             └─32354 /opt/bin/kubelet 
+             --bootstrap-kubeconfig=/var/lib/kubelet/kubeconfig-bootstrap 
+             --config=/var/lib/kubelet/config/kubelet 
+             --kubeconfig=/var/lib/kubelet/kubeconfig-real 
+             --node-labels=worker.gardener.cloud/kubernetes-version=1.24.0 
+             --container-runtime=remote 
+             --v=2 
+             --container-runtime-endpoint=unix:///run/containerd/containerd.sock  # <---
 ```
