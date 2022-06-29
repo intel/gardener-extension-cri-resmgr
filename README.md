@@ -96,7 +96,8 @@ cp ~/work/gardener/example/gardener-local/kind/kubeconfig ~/.kube/config
 ```
 
 Check that kind cluster is ready:
-```
+
+```bash
 kubectl get nodes
 ```
 
@@ -153,10 +154,11 @@ Build an image with extension and upload to local kind cluster
 
 ```bash
 make docker-images
-# by default v2.isvimgreg.com registry is used (check 'Build and publish docker images' section for more info)
 ```
 
-Deploy those images to inside kind cluster (not need if public registry is used):
+by default ``v2.isvimgreg.com`` registry is used (check 'Build and publish docker images' section for more info)
+
+Deploy those images inside kind cluster (not needed if public registry is used):
 
 ```bash
 kind load docker-image v2.isvimgreg.com/gardener-extension-cri-resmgr:latest --name gardener-local
@@ -240,3 +242,37 @@ We should observe that:
              └─11141 /opt/bin/kubelet --bootstrap-kubeconfig=/var/lib/kubelet/kubeconfig-bootstrap --config=/var/lib/kubelet/config/kubelet --kubeconfig=/var/lib/kubelet/kubeconfig-real --node-labels=worker.gardener.cloud/kubernetes-version=1.24.0 --container-runtime=remote --v=2 --container-runtime-endpoint=/var/run/cri-resmgr/cri-resmgr.sock
 ```
 
+##### 7. Uninstalling (disabling) cri-resource-manager extension
+
+You can disabled "cri-resmgr extension" in existing shoot to uninstall cri-resource-manager from shoort worker node like this:
+
+```
+kubectl patch shoot local -n garden-local -p '{"spec":{"extensions": [ {"type": "cri-resmgr-extension", "disabled": true} ] } }'
+```
+
+now after executing this:
+
+```
+kubectl exec -n shoot--local--local `kubectl get pod -n shoot--local--local --no-headers G machine-shoot | awk '{print $1}'` -- systemctl status cri-resource-manager kubelet -n 0
+```
+
+there should not be "cri-resource-manager" systemd service unit anymore 
+
+```
+Unit cri-resource-manager.service could not be found.
+```
+
+... and "kubelet" should connect to containerd.sock as it was by default.
+
+```
+● kubelet.service - kubelet daemon
+     Loaded: loaded (/etc/systemd/system/kubelet.service; enabled; vendor preset: enabled)
+     Active: active (running) since Wed 2022-06-29 20:49:31 UTC; 1min 19s ago
+       Docs: https://kubernetes.io/docs/admin/kubelet
+    Process: 32351 ExecStartPre=/var/lib/kubelet/copy-kubernetes-binary.sh kubelet (code=exited, status=0/SUCCESS)
+   Main PID: 32354 (kubelet)
+      Tasks: 12 (limit: 69411)
+     Memory: 64.7M
+     CGroup: /docker/c4cf6958c7757cd0d66aed793a7d19f6364d936a9761c7f49c33894a65caab66/kubelet.slice/kubelet-kubepods.slice/kubelet-kubepods-besteffort.slice/kubelet-kubepods-besteffort-pod9c7ece81_7d98_4884_b214_8f2389308241.slice/cri-containerd-70b98bdb42eec15c4df4cd520d79105b7420f7be4997f4ae8f4b17503d006df4.scope/system.slice/kubelet.service
+             └─32354 /opt/bin/kubelet --bootstrap-kubeconfig=/var/lib/kubelet/kubeconfig-bootstrap --config=/var/lib/kubelet/config/kubelet --kubeconfig=/var/lib/kubelet/kubeconfig-real --node-labels=worker.gardener.cloud/kubernetes-version=1.24.0 --container-runtime=remote --v=2 --container-runtime-endpoint=unix:///run/containerd/containerd.sock
+```
