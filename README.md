@@ -75,7 +75,8 @@ This is based on https://github.com/gardener/gardener/blob/master/docs/deploymen
 #### Prepare local kind-based garden cluster
 
 ##### 1. Clone the gardener
-```
+
+```bash
 mkdir -p ~/work/
 git clone https://github.com/gardener/gardener ~/work/gardener
 cd ~/work/gardener
@@ -84,7 +85,7 @@ git checkout v1.49.3
 
 ##### 2. Prepare kind cluster 
 
-```
+```bash
 cd ~/work/gardener
 make kind-up
 
