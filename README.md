@@ -1,9 +1,9 @@
 # CRI-Resource-Manager extension for Gardener*
 
 
-| **Note/Warning** |
+| **Warning** |
 | ---------------- |
-| This is work in progress, not meant to run in production! |
+| Code in **master** branch is work in progress and not meant to run in **production** enviornment! |
 
 ### Introduction
 
