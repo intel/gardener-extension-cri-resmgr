@@ -3,7 +3,7 @@
 
 | **Warning** |
 | ---------------- |
-| Code in **master** branch is work in progress and not meant to run in **production** environment! |
+| Code in **master** branch is "work in progress" and not meant to run in **production** environment! |
 
 ### Introduction
 
@@ -53,18 +53,24 @@ make REGISTRY=registry-example.com/ publish-docker-images
 ```
 Image vector support will be added soon.
 
-#### 2. Install extension by creating ControllerRegistration and ControllerDeployment in garden cluster.
+#### 2. Install extension by creating **ControllerRegistration** and **ControllerDeployment** in garden cluster.
 
 ```
 kubectl apply -f examples/ctrldeploy-ctrlreg.yaml
 ```
 
-#### 3. Create shoot cluster with **cri-resmgr-extension**:
-```
-kubectl apply -f examples/shoot.yaml
+note that extension is *not* enabled globally so you need to include it in shoot spec definition like this:
+
+```yaml
+spec:
+  extensions:
+  - type: cri-resmgr-extension
 ```
 
-### II. Deploying locally (with kind-based local gardener setup).
+### II. Deploying locally.
+
+This is fully working exmaple that uses local deployed gardener and shoot created in kind cluster.
+This is based on https://github.com/gardener/gardener/blob/master/docs/deployment/getting_started_locally.md
 
 #### Prepare local kind-based garden cluster
 
@@ -78,32 +84,30 @@ git checkout v1.49.3
 
 ##### 2. Prepare kind cluster 
 
-This is based on https://github.com/gardener/gardener/blob/master/docs/deployment/getting_started_locally.md
-
-
 ```
 cd ~/work/gardener
 make kind-up
 
-kubectl cluster-info --context kind-gardener-local --kubeconfig /root/work/gardener/example/gardener-local/kind/kubeconfig
-cp /root/work/gardener/example/gardener-local/kind/kubeconfig /root/work/gardener/example/provider-local/base/kubeconfig
+kubectl cluster-info --context kind-gardener-local --kubeconfig ~/work/gardener/example/gardener-local/kind/kubeconfig
+cp ~/work/gardener/example/gardener-local/kind/kubeconfig ~/work/gardener/example/provider-local/base/kubeconfig
 # WARNING!: this overwrites your local kubeconfig
-cp /root/work/gardener/example/gardener-local/kind/kubeconfig /root/.kube/config
+cp ~/work/gardener/example/gardener-local/kind/kubeconfig ~/.kube/config
 ```
 
-Check everything is fine:
+Check that kind cluster is ready:
 ```
 kubectl get nodes
 ```
 
 #####  3. Deploy local gardener
 
-```
+```bash
 make gardener-up
 ```
 
 Check that three gardener charts are installed:
-```
+
+```bash
 helm list -n garden
 ```
 
@@ -111,45 +115,49 @@ helm list -n garden
 
 ##### 1. (Optional) Regenerate ctrldeploy-ctrlreg.yaml file:
 
-```
+```bash
 cd ~/work/gardener-extension-cri-resmgr
 ./hacks/generate-controller-registration.sh
 ```
 
 ##### 2. Deploy cri-resmgr-extension as Gardener extension using ControllerRegistration/ControllerDeployment
 
-```
+```bash
 cd ~/work/gardener-extension-cri-resmgr
 kubectl apply -f ./examples/ctrldeploy-ctrlreg.yaml
 ```
 
 By default generated "ControllerRegistration" is not enabled globally, so you need to include this extension in shoot definition. Check [this shoot.yaml](examples/shoot.yaml) as example.
 
-
 Checkout installed objects:
-```
+
+```bash
 kubectl get controllerregistrations.core.gardener.cloud cri-resmgr-extension
 kubectl get controllerdeployments.core.gardener.cloud cri-resmgr-extension
 ```
+
 There should be 'cri-resmgr-extension   Extension/cri-resmgr-extension' resources visible alongside cri-resmgr-extension deployment.
 
 Remember that "controller installation" should not be yet available - there is not shoot cluster deployed yet and extension is disabled by default.
 
-```
+```bash
 kubectl get controllerinstallation.core.gardener.cloud 
 ```
+
 should no return "cri-resmgr extension" installation.
 
 ##### 3. Deploy shoot "local" cluster.
 
 Build an image with extension and upload to local kind cluster
-```
+
+```bash
 make docker-images
 # by default v2.isvimgreg.com registry is used (check 'Build and publish docker images' section for more info)
 ```
 
 Deploy those images to inside kind cluster (not need if public registry is used):
-```
+
+```bash
 kind load docker-image v2.isvimgreg.com/gardener-extension-cri-resmgr:latest --name gardener-local
 kind load docker-image v2.isvimgreg.com/gardener-extension-cri-resmgr-installation:latest --name gardener-local
 ```
