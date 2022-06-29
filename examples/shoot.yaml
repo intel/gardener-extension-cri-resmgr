@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+#
 apiVersion: core.gardener.cloud/v1beta1
 kind: Shoot
 metadata:
@@ -24,21 +24,24 @@ spec:
   cloudProfileName: local
   secretBindingName: local # dummy, doesn't contain any credentials
   region: local
-  ### Mark as required extension or use globallyEnabled: true
-  # extensions:
-  #   - type: cri-resmgr-extension
+  ## Mark as required extension or use globallyEnabled: true
+  extensions:
+  - type: cri-resmgr-extension
 
   networking:
-    type: local
+    type: calico
+    providerConfig:
+      apiVersion: calico.networking.extensions.gardener.cloud/v1alpha1
+      kind: NetworkConfig
+      backend: none
+      typha:
+        enabled: false
   provider:
     type: local
     workers:
     - name: local
       machine:
         type: local
-        image: 
-          name: local
-          version: "1.0.0"
       cri:
         name: containerd
       minimum: 1
@@ -46,4 +49,4 @@ spec:
       maxSurge: 1
       maxUnavailable: 0
   kubernetes:
-    version: 1.21.0
+    version: 1.24.0

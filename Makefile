@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-REGISTRY                    := v2.isvimgreg.com
+REGISTRY                    := v2.isvimgreg.com/
 EXTENSION_IMAGE_NAME        := gardener-extension-cri-resmgr
 INSTALLATION_IMAGE_NAME     := gardener-extension-cri-resmgr-installation
 VERSION                     := latest
@@ -33,10 +33,10 @@ _install-binaries:
 	
 .PHONY: docker-images
 docker-images:
-	docker build -t $(REGISTRY)/$(EXTENSION_IMAGE_NAME):$(VERSION) -f Dockerfile --target $(EXTENSION_IMAGE_NAME) .
-	docker build -t $(REGISTRY)/$(INSTALLATION_IMAGE_NAME):$(VERSION) -f Dockerfile --target $(INSTALLATION_IMAGE_NAME) .
+	docker build -t $(REGISTRY)$(EXTENSION_IMAGE_NAME):$(VERSION) -f Dockerfile --target $(EXTENSION_IMAGE_NAME) .
+	docker build -t $(REGISTRY)$(INSTALLATION_IMAGE_NAME):$(VERSION) -f Dockerfile --target $(INSTALLATION_IMAGE_NAME) .
 
 .PHONY: publish-docker-images
 publish-docker-images:
-	docker push $(REGISTRY)/$(EXTENSION_IMAGE_NAME):$(VERSION)
-	docker push $(REGISTRY)/$(INSTALLATION_IMAGE_NAME):$(VERSION)
+	docker push $(REGISTRY)$(EXTENSION_IMAGE_NAME):$(VERSION)
+	docker push $(REGISTRY)$(INSTALLATION_IMAGE_NAME):$(VERSION)
