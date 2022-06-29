@@ -22,12 +22,14 @@ metadata:
 spec:
   seedName: local
   cloudProfileName: local
-  secretBindingName: local # dummy, doesn't contain any credentials
+  secretBindingName: local
   region: local
   ## Mark as required extension or use globallyEnabled: true
+  ## It is disabled by default
+  ## Enable it by changing disabled to false
   extensions:
   - type: cri-resmgr-extension
-
+    disabled: true
   networking:
     type: calico
     providerConfig:

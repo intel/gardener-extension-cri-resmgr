@@ -1,12 +1,10 @@
-# CRI-Resource-Manager extension for Gardener
+# CRI-Resource-Manager extension for Gardener*
 
 **Note:** This is work in progress, not meant to run in production!
 
-
-
 ### Introduction
 
-Those charts will deploy CRI-resource-manager as proxy between kubectl and containerd for "shoot" clusters deployed by Gardener.
+Those charts will deploy [CRI-resource-manager](https://github.com/intel/cri-resource-manager) as proxy between kubectl and containerd in "shoot" clusters deployed by Gardener*.
 
 ### Description
 
@@ -16,47 +14,48 @@ There are three charts:
 - charts/**cri-resmgr-installation** - internal chart that is included inside "installation" image and used to install `cri-resource-manager` binary inside worker nodes in **Shoot** clusters - it is not meant to be run manually but rather deployed by **gardener-extension-cri-resmgr** chart
 - charts/**cri-resmgr-installation** - internal chart that is included inside "installation" image and used to remove `cri-resource-manager` binary inside worker nodes in **Shoot** clusters - it is not meant to be run manually but rather deployed by **gardener-extension-cri-resmgr** chart
 
+
+## I. Deploying to Gardener.
+
 ### Prerequisites
 
-- working dir for `mkdir ~/work`
 - *kubectl* 1.20+
+- working dir for `mkdir ~/work`
 - *gardener-extension-cri-resmgr* is cloned to ~/work path like this:
     ```
     git clone https://github.com/intel/gardener-extension-cri-resmgr ~/work/gardener-extension-cri-resmgr
     ```
 
-## I. Deploying to Gardener.
-
-### Build and publish docker images.
+### 1. Build and publish docker images.
 
 ```
 make docker-images
 make publish-docker-images
 ```
 
-**Note** By default the "private" v2.isvimgreg.com registry is used (not yet available). If you want to use other registry should be used, please modify this files to point to other registry: 
+**Note** By default the "private" v2.isvimgreg.com registry is set and used. If you want to use other registry, please modify this files to point to other registry: 
 
-For example if you want use default docker.io registry:
+For example: if you want use **registry-example.com** as registry:
 
-* ``charts/cri-resmgr-installation/templates/daemonset.yaml`` and its **spec.template.spec.containers.image** value to "gardener-extension-cri-resmgr" 
-* ``charts/cri-resmgr-removal/templates/daemonset.yaml`` and its **spec.template.spec.containers.image** value to "gardener-extension-cri-resmgr" 
-* ``charts/gardener-extension-cri-resmgr/values.yaml`` and its **image.repository** value to "gardener-extension-cri-resmgr"
+* ``charts/cri-resmgr-installation/templates/daemonset.yaml`` and its **spec.template.spec.containers.image** value to "registry-example.com/gardener-extension-cri-resmgr" 
+* ``charts/cri-resmgr-removal/templates/daemonset.yaml`` and its **spec.template.spec.containers.image** value to "registry-example.com/gardener-extension-cri-resmgr" 
+* ``charts/gardener-extension-cri-resmgr/values.yaml`` and its **image.repository** value to "registry-example.com/gardener-extension-cri-resmgr"
 
 and specifiy REGISTRY env varible when building like this:
 
 ```
-make REGISTRY= docker-images
-make REGISTRY= publish-docker-images
+make REGISTRY=registry-example.com/ docker-images
+make REGISTRY=registry-example.com/ publish-docker-images
 ```
 Image vector support will be added soon.
 
-### Install extension by creating ControllerRegistration and ControllerDeployment in garden cluster.
+### 2. Install extension by creating ControllerRegistration and ControllerDeployment in garden cluster.
 
 ```
 kubectl apply -f examples/ctrldeploy-ctrlreg.yaml
 ```
 
-### Create shoot cluster with **cri-resmgr-extension**:
+### 3. Create shoot cluster with **cri-resmgr-extension**:
 ```
 kubectl apply -f examples/shoot.yaml
 ```
@@ -116,11 +115,17 @@ cd ~/work/gardener-extension-cri-resmgr
 #### 5. Deploy cri-resmgr-extension as Gardener extension using ControllerRegistration/ControllerDeployment
 
 ```
+cd ~/work/gardener-extension-cri-resmgr
 kubectl apply -f ./examples/ctrldeploy-ctrlreg.yaml
 ```
 
 By default generated "ControllerRegistration" is not enabled globally, so you need to include this extension in shoot defintion. Check [this shoot.yaml](examples/shoot.yaml) as example.
 
+In our shoot example, the extensions is also disabled by defualt and need to be enabled after shoot is created with following command:
+
+```
+kubectl patch shoot local -n garden-local -p '{"spec":{"extensions": [ {"type": "cri-resmgr-extension", "disabled": false} ] } }'
+```
 
 Checkout installed objects:
 ```
@@ -140,9 +145,16 @@ kubectl get controllerinstallation.core.gardener.cloud
 Build an image with extension and upload to local kind cluster
 ```
 make docker-images
+# by default v2.isvimgreg.com registry is used (check 'Build and publish docker images' section for more info)
+```
+
+Deploy those images to inside kind cluster (not need if public registry is used):
+```
 kind load docker-image v2.isvimgreg.com/gardener-extension-cri-resmgr:latest --name gardener-local
 kind load docker-image v2.isvimgreg.com/gardener-extension-cri-resmgr-installation:latest --name gardener-local
 ```
+
+Create shoot:
 
 ```
 kubectl apply -f examples/shoot.yaml
@@ -157,8 +169,6 @@ kubectl get shoots.core.gardener.cloud -n garden-local --watch -o wide
 #### 6. Verify that ManagedResources are properly installed in shoot 'garden' (seed class) and  'shoot--local--local' namespace
 
 ```
-kubectl get pod -A
-kubectl get pod -A | grep cri
 kubectl get managedresource -n garden | grep cri-resmgr-extension
 kubectl get managedresource -n shoot--local--local | grep cri-resmgr-installation
 ```
