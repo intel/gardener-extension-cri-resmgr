@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: v1
-kind: ServiceAccount
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
 metadata:
-  name: gardener-extension-cri-rm
-  namespace: {{ .Release.Namespace }}
-  labels:
-    app.kubernetes.io/name: gardener-extension-cri-rm
+  name: gardener-extension-cri-resmgr
+value: 1000000000
+globalDefault: false
+description: "Priority class for the Gardener extension: cri-resmgr."

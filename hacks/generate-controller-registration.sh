@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-chart="$(tar -C charts -c gardener-extension-cri-rm | gzip -n | base64 | tr -d '\n')"
+chart="$(tar -C charts -c gardener-extension-cri-resmgr | gzip -n | base64 | tr -d '\n')"
 OUT=examples/ctrldeploy-ctrlreg.yaml
 
 #FOR DEBUG
@@ -23,7 +23,7 @@ cat <<EOT > "$OUT"
 apiVersion: core.gardener.cloud/v1beta1
 kind: ControllerDeployment
 metadata:
-  name: cri-rm-extension
+  name: cri-resmgr-extension
 type: helm
 providerConfig:
   chart: $chart
@@ -31,14 +31,14 @@ providerConfig:
 apiVersion: core.gardener.cloud/v1beta1
 kind: ControllerRegistration
 metadata:
-  name: cri-rm-extension
+  name: cri-resmgr-extension
 spec:
   deployment:
     deploymentRefs:
-    - name: cri-rm-extension
+    - name: cri-resmgr-extension
   resources:
   - kind: Extension
-    type: cri-rm-extension
+    type: cri-resmgr-extension
     globallyEnabled: false
 EOT
 

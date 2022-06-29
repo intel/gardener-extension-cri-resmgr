@@ -52,19 +52,19 @@ import (
 )
 
 const (
-	ExtensionName = "cri-rm"
-	ExtensionType = "cri-rm-extension"
+	ExtensionName = "cri-resmgr"
+	ExtensionType = "cri-resmgr-extension"
 
-	ControllerName = "cri-rm-controller"
-	ActuatorName   = "cri-rm-actuator"
+	ControllerName = "cri-resmgr-controller"
+	ActuatorName   = "cri-resmgr-actuator"
 
-	ManagedResourceName = "extension-runtime-cri-rm"
+	ManagedResourceName = "extension-runtime-cri-resmgr"
 	ConfigKey           = "config.yaml"
 
-	ChartPath               = "charts/cri-rm-installation/"
-	ChartPathRemoval        = "charts/cri-rm-removal"
-	InstallationImageName   = "installation_image_name" // TODO: to be replaced with proper "gardener-extension-cri-rm-" when ready
-	InstallationReleaseName = "cri-rm-installation"
+	ChartPath               = "charts/cri-resmgr-installation/"
+	ChartPathRemoval        = "charts/cri-resmgr-removal"
+	InstallationImageName   = "installation_image_name" // TODO: to be replaced with proper "gardener-extension-cri-resmgr-" when ready
+	InstallationReleaseName = "cri-resmgr-installation"
 )
 
 func RegisterHealthChecks(mgr manager.Manager) error {
@@ -126,7 +126,7 @@ func main() {
 	)
 
 	cmd := &cobra.Command{
-		Use:   "cri-rm-controller-manager",
+		Use:   "cri-resmgr-controller-manager",
 		Short: "CRI Resource manager Controller manages components which install CRI-Resource-Manager as CRI proxy.",
 
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -246,7 +246,7 @@ func (a *actuator) deployDaemonsetToUninstallCriRm(ctx context.Context, ex *exte
 	if err := managedresources.CreateForShoot(ctx, a.client, namespace, ManagedResourceName, false, secretData); err != nil {
 		return err
 	}
-	// Sleep to give daemonset a time to remove cri-rm
+	// Sleep to give daemonset a time to remove cri-resmgr
 	// TODO: detect if the script is finished
 	time.Sleep(120 * time.Second)
 	return nil

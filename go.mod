@@ -1,4 +1,4 @@
-module github.com/gardener/gardener-extension-cri-rm
+module github.com/intel/gardener-extension-cri-resmgr
 
 go 1.16
 

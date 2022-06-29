@@ -26,7 +26,7 @@ spec:
   region: local
   ### Mark as required extension or use globallyEnabled: true
   # extensions:
-  #   - type: cri-rm-extension
+  #   - type: cri-resmgr-extension
 
   networking:
     type: local

@@ -15,15 +15,15 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: cri-rm-installation-script
+  name: cri-resmgr-installation-script
   namespace: kube-system
   annotations:
     resources.gardener.cloud/ignore: "true"
 data:
-  install-cri-rm.sh: |-
+  install-cri-resmgr.sh: |-
     #!/bin/bash
-    cp -r /cri-rm-installation/opt/ /var/host/
-    cp -r /cri-rm-installation/etc/ /var/host/
+    cp -r /cri-resmgr-installation/opt/ /var/host/
+    cp -r /cri-resmgr-installation/etc/ /var/host/
     cp /var/host/etc/cri-resmgr/fallback.cfg.sample /var/host/etc/cri-resmgr/fallback.cfg
     chroot /var/host bash -c "systemctl enable cri-resource-manager"
     chroot /var/host bash -c "systemctl restart cri-resource-manager"

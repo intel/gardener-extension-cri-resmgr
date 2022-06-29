@@ -15,43 +15,45 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: cri-rm-installation
+  name: cri-resmgr-removal
   namespace: kube-system
   labels:
-    app.kubernetes.io/name: cri-rm-installation
+    app.kubernetes.io/name: cri-resmgr-removal
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/name: cri-rm-installation
+      app.kubernetes.io/name: cri-resmgr-removal
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: cri-rm-installation
+        app.kubernetes.io/name: cri-resmgr-removal
     spec:
       hostPID: true
       hostIPC: true
       containers:
-      - name: container-runtime-cri-rm
-        # TODO: support for imagevector
-        image: v2.isvimgreg.com/gardener-extension-cri-rm-installation:latest
-        command: ["/scripts/install-cri-rm.sh"]
+      - name: container-runtime-cri-resmgr
+        image: v2.isvimgreg.com/gardener-extension-cri-resmgr-installation:latest
+        command: ["/scripts/remove-cri-resmgr.sh"]
         securityContext:
           privileged: true
         volumeMounts:
         - name: host-volume
           mountPath: /var/host
-        - name: cri-rm-installation-script
+        - name: cri-resmgr-remove-script
           mountPath: /scripts
         livenessProbe:
           exec:
-            command: ["chroot", "/var/host", "bash", "-c", "systemctl status cri-resource-manager"]
-          failureThreshold: 1
+            command: ["chroot", "/var/host", "bash", "-c", "systemctl status kubelet"]
           initialDelaySeconds: 10
       volumes:
       - name: host-volume
         hostPath:
           path: /
-      - name: cri-rm-installation-script
+      - name: cri-resmgr-remove-script
         configMap:
-          name: cri-rm-installation-script
+          name: cri-resmgr-remove-script
           defaultMode: 0744

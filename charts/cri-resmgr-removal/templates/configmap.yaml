@@ -15,15 +15,15 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: cri-rm-remove-script
+  name: cri-resmgr-remove-script
   namespace: kube-system
   annotations:
     resources.gardener.cloud/ignore: "true"
 data:
-  remove-cri-rm.sh: |-
+  remove-cri-resmgr.sh: |-
     #!/bin/bash
-    # Remove cri-rm from kubelet configuration
-    echo "Remove cri-rm from kubelet configuration"
+    # Remove cri-resmgr from kubelet configuration
+    echo "Remove cri-resmgr from kubelet configuration"
     sed -i '/\[Unit\]/aAfter=containerd.service' /var/host/etc/systemd/system/kubelet.service
     sed -i 's/\/var\/run\/cri-resmgr\/cri-resmgr.sock/unix:\/\/\/run\/containerd\/containerd.sock/g' /var/host/etc/systemd/system/kubelet.service
 
@@ -32,8 +32,8 @@ data:
     chroot /var/host bash -c "systemctl disable cri-resource-manager"
     chroot /var/host bash -c "systemctl stop cri-resource-manager"
 
-    # Remove files left after cri-rm
-    echo 'Remove files left after cri-rm'
+    # Remove files left after cri-resmgr
+    echo 'Remove files left after cri-resmgr'
     rm -rf /var/host/opt/intel
     rm -rf /var/host/etc/cri-resmgr
     rm -rf /var/host/etc/systemd/system/cri-resource-manager.service

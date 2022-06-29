@@ -22,14 +22,14 @@ COPY go.sum .
 RUN go install ./...
 
 ### extension
-FROM alpine:3.15.0 AS gardener-extension-cri-rm
+FROM alpine:3.15.0 AS gardener-extension-cri-resmgr
 
 COPY charts /charts
-COPY --from=builder /go/bin/gardener-extension-cri-rm /gardener-extension-cri-rm
-ENTRYPOINT ["/gardener-extension-cri-rm"]
+COPY --from=builder /go/bin/gardener-extension-cri-resmgr /gardener-extension-cri-resmgr
+ENTRYPOINT ["/gardener-extension-cri-resmgr"]
 
 ### installation
-FROM ubuntu:22.04 AS gardener-extension-cri-rm-installation
+FROM ubuntu:22.04 AS gardener-extension-cri-resmgr-installation
 RUN apt update -y && apt install -y make wget
 COPY Makefile .
-RUN make install-binaries
+RUN make _install-binaries

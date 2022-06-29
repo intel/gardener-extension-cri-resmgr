@@ -13,6 +13,6 @@
 # limitations under the License.
 
 image:
-  repository: v2.isvimgreg.com/gardener-extension-cri-rm
+  repository: v2.isvimgreg.com/gardener-extension-cri-resmgr
   tag: latest
   pullPolicy: Always

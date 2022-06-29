@@ -13,8 +13,8 @@
 # limitations under the License.
 
 REGISTRY                    := v2.isvimgreg.com
-EXTENSION_IMAGE_NAME        := gardener-extension-cri-rm
-INSTALLATION_IMAGE_NAME     := gardener-extension-cri-rm-installation
+EXTENSION_IMAGE_NAME        := gardener-extension-cri-resmgr
+INSTALLATION_IMAGE_NAME     := gardener-extension-cri-resmgr-installation
 VERSION                     := latest
 CRI_RM_VERSION              := 0.6.1rc1
 ARCHIVE_NAME                := cri-resource-manager-$(CRI_RM_VERSION).x86_64.tar.gz
@@ -22,20 +22,15 @@ CRI_RM_URL                  := https://github.com/intel/cri-resource-manager/rel
 
 .PHONY: start
 start:
-	go run ./cmd/gardener-extension-cri-rm --ignore-operation-annotation=true --leader-election=false
+	go run ./cmd/gardener-extension-cri-resmgr --ignore-operation-annotation=true --leader-election=false
 
-.PHONY: install
-install:
-	# TODO: Flags/version
-	go install ./...
-
-.PHONY: install-binaries
-install-binaries:
-	wget --directory-prefix=/cri-rm-installation https://github.com/intel/cri-resource-manager/releases/download/v$(CRI_RM_VERSION)/cri-resource-manager-$(CRI_RM_VERSION).x86_64.tar.gz
-	tar -xvf /cri-rm-installation/cri-resource-manager-$(CRI_RM_VERSION).x86_64.tar.gz --directory /cri-rm-installation
-	rm /cri-rm-installation/cri-resource-manager-$(CRI_RM_VERSION).x86_64.tar.gz
+.PHONY: _install-binaries
+_install-binaries:
+	# WARNING: this should be run in container
+	wget --directory-prefix=/cri-resmgr-installation https://github.com/intel/cri-resource-manager/releases/download/v$(CRI_RM_VERSION)/cri-resource-manager-$(CRI_RM_VERSION).x86_64.tar.gz
+	tar -xvf /cri-resmgr-installation/cri-resource-manager-$(CRI_RM_VERSION).x86_64.tar.gz --directory /cri-resmgr-installation
+	rm /cri-resmgr-installation/cri-resource-manager-$(CRI_RM_VERSION).x86_64.tar.gz
 	
-
 .PHONY: docker-images
 docker-images:
 	docker build -t $(REGISTRY)/$(EXTENSION_IMAGE_NAME):$(VERSION) -f Dockerfile --target $(EXTENSION_IMAGE_NAME) .
