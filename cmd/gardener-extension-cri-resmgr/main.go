@@ -235,7 +235,7 @@ func (a *actuator) generateSecretData(ctx context.Context, ex *extensionsv1alpha
 	return secretData, nil
 }
 
-func (a *actuator) deployDaemonsetToUninstallCriRm(ctx context.Context, ex *extensionsv1alpha1.Extension) error {
+func (a *actuator) deployDaemonsetToUninstallCriResMgr(ctx context.Context, ex *extensionsv1alpha1.Extension) error {
 	a.logger.Info("Uninstalling CRI-Resource-Manager")
 	namespace := ex.GetNamespace()
 	secretData, err := a.generateSecretData(ctx, ex, ChartPathRemoval, namespace)
@@ -284,7 +284,7 @@ func (a *actuator) Delete(ctx context.Context, ex *extensionsv1alpha1.Extension)
 		return err
 	}
 
-	if err := a.deployDaemonsetToUninstallCriRm(ctx, ex); err != nil {
+	if err := a.deployDaemonsetToUninstallCriResMgr(ctx, ex); err != nil {
 		return err
 	}
 

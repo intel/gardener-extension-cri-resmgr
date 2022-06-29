@@ -13,7 +13,7 @@
 # limitations under the License.
 
 ### builder
-FROM golang:1.17.6-alpine AS builder
+FROM golang:1.18.3-alpine3.16 AS builder
 
 WORKDIR /go/src/github.com/intel/cri-resource-manager/packaging/gardener
 COPY cmd .
@@ -22,7 +22,7 @@ COPY go.sum .
 RUN go install ./...
 
 ### extension
-FROM alpine:3.15.0 AS gardener-extension-cri-resmgr
+FROM alpine:3.16.0 AS gardener-extension-cri-resmgr
 
 COPY charts /charts
 COPY --from=builder /go/bin/gardener-extension-cri-resmgr /gardener-extension-cri-resmgr
