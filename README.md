@@ -69,7 +69,7 @@ spec:
 
 ### II. Deploying locally.
 
-This is fully working exmaple that uses local deployed gardener and shoot created in kind cluster.
+This is fully working example that uses local deployed gardener and shoot created in kind cluster.
 This is based on https://github.com/gardener/gardener/blob/master/docs/deployment/getting_started_locally.md
 
 #### Prepare local kind-based garden cluster
@@ -251,7 +251,7 @@ We should observe that:
 
 ##### 7. Uninstalling (disabling) cri-resource-manager extension
 
-You can disabled "cri-resmgr extension" in existing shoot to uninstall cri-resource-manager from shoort worker node like this:
+You can disable "cri-resmgr extension" in existing shoot to uninstall cri-resource-manager from shoot worker node like this:
 
 ```
 kubectl patch shoot local -n garden-local -p '{"spec":{"extensions": [ {"type": "cri-resmgr-extension", "disabled": true} ] } }'
