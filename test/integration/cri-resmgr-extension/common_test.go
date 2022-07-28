@@ -14,7 +14,7 @@ var (
 	backgroundCtx    = context.Background()
 	ExtensionType    = "cri-resmgr-extension"
 	projectNamespace = "garden-local"
-	kubeconfigPath   = "/home/mmucek/.kube/config"
+	kubeconfigPath   = os.Getenv("KUBECONFIG")
 	fiveteenMinutes = 15 * time.Minute
 	)
 
