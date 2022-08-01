@@ -22,6 +22,11 @@ metadata:
 data:
   install-cri-resmgr.sh: |-
     #!/bin/bash
+    # check if kubelet service file is a symlink
+    if [[ -L "/var/host/etc/systemd/system/kubelet.service" ]]; then
+      echo "err: kubelet.service file is a symlink"
+      exit 1
+    fi
     cp -r /cri-resmgr-installation/opt/ /var/host/
     cp -r /cri-resmgr-installation/etc/ /var/host/
     cp /var/host/etc/cri-resmgr/fallback.cfg.sample /var/host/etc/cri-resmgr/fallback.cfg
