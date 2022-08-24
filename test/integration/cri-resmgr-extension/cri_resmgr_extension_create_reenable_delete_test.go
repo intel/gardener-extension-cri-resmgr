@@ -2,7 +2,6 @@ package cri_resmgr_extension
 
 import (
 	"context"
-	"time"
 
 	"github.com/gardener/gardener/test/framework"
 	"github.com/onsi/ginkgo/v2"

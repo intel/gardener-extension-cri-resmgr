@@ -2,6 +2,7 @@ package cri_resmgr_extension
 
 import (
 	"context"
+	"os"
 	"time"
 
 	gardencorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
@@ -9,19 +10,18 @@ import (
 	"k8s.io/utils/pointer"
 )
 
-
 var (
 	backgroundCtx    = context.Background()
 	ExtensionType    = "cri-resmgr-extension"
 	projectNamespace = "garden-local"
 	kubeconfigPath   = os.Getenv("KUBECONFIG")
-	fiveteenMinutes = 15 * time.Minute
-	)
+	fiveteenMinutes  = 15 * time.Minute
+)
 
 func enableCriResmgr(shoot *gardencorev1beta1.Shoot) error {
 	for i, extension := range shoot.Spec.Extensions {
 		if extension.Type == ExtensionType {
-			if extension.Disabled != nil{
+			if extension.Disabled != nil {
 				shoot.Spec.Extensions[i].Disabled = pointer.Bool(false)
 			}
 		}
@@ -36,7 +36,7 @@ func enableCriResmgr(shoot *gardencorev1beta1.Shoot) error {
 func disableCriResmgr(shoot *gardencorev1beta1.Shoot) error {
 	for i, extension := range shoot.Spec.Extensions {
 		if extension.Type == ExtensionType {
-			if extension.Disabled != nil{
+			if extension.Disabled != nil {
 				shoot.Spec.Extensions[i].Disabled = pointer.Bool(true)
 			}
 		}

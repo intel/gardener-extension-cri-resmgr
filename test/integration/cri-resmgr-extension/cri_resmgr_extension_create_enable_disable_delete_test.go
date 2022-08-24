@@ -2,13 +2,11 @@ package cri_resmgr_extension
 
 import (
 	"context"
-	"time"
 
 	"github.com/gardener/gardener/test/framework"
 	"github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
 )
-
 
 var _ = ginkgo.Describe("cri-rm Extension Tests", ginkgo.Label("CRI-RM"), func() {
 	f := framework.NewShootCreationFramework(&framework.ShootCreationConfig{
