@@ -11,10 +11,11 @@ import (
 var _ = ginkgo.Describe("cri-rm Extension Tests", ginkgo.Label("CRI-RM"), func() {
 	f := framework.NewShootCreationFramework(&framework.ShootCreationConfig{
 		GardenerConfig: &framework.GardenerConfig{
+			ExistingShootName:  "first", // "Name of an existing shoot to use instead of creating a new one."
 			ProjectNamespace:   projectNamespace,
-			GardenerKubeconfig: kubeconfigPath,
-			SkipAccessingShoot: true,
-			CommonConfig:       &framework.CommonConfig{},
+			GardenerKubeconfig: kubeconfigPath, // KUBECONFIG
+			SkipAccessingShoot: false,          // if set to true then the test does not try to access the shoot via its kubeconfig
+			CommonConfig:       &framework.CommonConfig{LogLevel: "debug"},
 		},
 	})
 	f.Shoot = getShoot()

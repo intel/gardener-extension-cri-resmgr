@@ -13,7 +13,7 @@ import (
 var (
 	backgroundCtx    = context.Background()
 	ExtensionType    = "cri-resmgr-extension"
-	projectNamespace = "garden-local"
+	projectNamespace = "garden"
 	kubeconfigPath   = os.Getenv("KUBECONFIG")
 	fiveteenMinutes  = 15 * time.Minute
 )
