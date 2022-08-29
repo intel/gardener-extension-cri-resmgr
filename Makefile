@@ -25,6 +25,11 @@ build:
 	go build -v ./cmd/gardener-extension-cri-resmgr
 	go test -c -v ./test/integration/cri-resmgr-extension/...
 
+clean:
+	go clean -cache -modcache -testcache
+	rm cri-resmgr-extension.test
+	rm gardener-extension-cri-resmgr
+
 .PHONY: test
 test:
 	go test -v ./test/integration/cri-resmgr-extension/...
