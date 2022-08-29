@@ -2,6 +2,7 @@ module github.com/intel/gardener-extension-cri-resmgr
 
 go 1.19
 
+// TO BE REMOVED when concluded unnessesary ! :)
 // github.com/gardener/gardener-resource-manager/api => github.com/gardener/gardener-resource-manager/api v0.25.0
 // github.com/prometheus/client_golang => github.com/prometheus/client_golang v1.12.1 // keep this value in sync with sigs.k8s.io/controller-runtime
 // k8s.io/api => k8s.io/api v0.24.3
@@ -19,7 +20,7 @@ go 1.19
 // sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.12.1
 
 require (
-	github.com/gardener/gardener v1.53.0
+	github.com/gardener/gardener v1.54.0
 	github.com/go-logr/logr v1.2.3
 	github.com/onsi/ginkgo/v2 v2.1.4
 	github.com/onsi/gomega v1.19.0
