@@ -18,7 +18,7 @@ var _ = ginkgo.Describe("cri-resmgr disabling tests", ginkgo.Label("disable"), f
 		},
 	})
 	f.Shoot = getShoot()
-	f.Shoot.Name = "e2e-local"
+	f.Shoot.Name = "e2e-default"
 
 	ginkgo.It("Create Shoot, Enable cri-rm Extension, Disable cri-rm Extension, Delete Shoot", ginkgo.Label("good-case"), func() {
 		ginkgo.By("Create Shoot")

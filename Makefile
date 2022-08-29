@@ -41,14 +41,13 @@ e2e-tests:
 	echo ""
 	echo "Note2:"
 	echo "KUBECONFIG should point to kind-local gardener cluster"
-	echo "Following labels are available: enable, reenable, disable"
 	echo ""
 	echo "Note3:"
 	echo "ControllerRegistration and ControllerDeployment CRDs must be already deployed to cluster"
 	echo 
 	echo "Note4:"
 	echo "Following labels are available: enable, reenable, disable"
-	KUBECONFIG=/root/.kube/config ginkgo run --vv --progress --fail-fast --label-filter "enable" ./test/integration/cri-resmgr-extension
+	KUBECONFIG=/root/.kube/config ginkgo run --v --progress ./test/integration/cri-resmgr-extension
 
 .PHONY: start
 start:

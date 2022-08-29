@@ -22,8 +22,8 @@ var (
 
 	// _existingShootName = "first" // "Name of an existing shoot to use instead of creating a new one."
 	skipAccessingShoot = true // if set to true then the test does not try to access the shoot via its kubeconfig
-	commonConfig       = &framework.CommonConfig{}
-	// commonConfig       = &framework.CommonConfig{LogLevel: "debug"}
+	// commonConfig       = &framework.CommonConfig{}
+	commonConfig = &framework.CommonConfig{LogLevel: "debug"} // not sure is it needed at all
 )
 
 func enableCriResmgr(shoot *gardencorev1beta1.Shoot) error {
