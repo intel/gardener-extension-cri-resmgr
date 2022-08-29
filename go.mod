@@ -6,7 +6,7 @@ require (
 	github.com/gardener/gardener v1.36.0
 	github.com/go-logr/logr v0.4.0
 	github.com/prometheus/client_golang v1.13.0 // indirect
-	github.com/spf13/cobra v1.2.1
+	github.com/spf13/cobra v1.5.0
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/apimachinery v0.22.2
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
