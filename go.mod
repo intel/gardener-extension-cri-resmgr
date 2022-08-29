@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	github.com/gardener/gardener v1.36.0
-	github.com/go-logr/logr v0.4.0
+	github.com/go-logr/logr v1.2.3
 	github.com/prometheus/client_golang v1.13.0 // indirect
 	github.com/spf13/cobra v1.2.1
 	gopkg.in/yaml.v3 v3.0.1 // indirect
