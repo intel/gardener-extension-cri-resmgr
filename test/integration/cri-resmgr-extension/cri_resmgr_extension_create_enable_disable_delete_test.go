@@ -8,17 +8,17 @@ import (
 	"github.com/onsi/gomega"
 )
 
-var _ = ginkgo.Describe("cri-rm Extension Tests", ginkgo.Label("CRI-RM"), func() {
+var _ = ginkgo.Describe("cri-resmgr disabling tests", ginkgo.Label("disable"), func() {
 	f := framework.NewShootCreationFramework(&framework.ShootCreationConfig{
 		GardenerConfig: &framework.GardenerConfig{
-			// ExistingShootName:  "first", // "Name of an existing shoot to use instead of creating a new one."
 			ProjectNamespace:   projectNamespace,
-			GardenerKubeconfig: kubeconfigPath, // KUBECONFIG
-			SkipAccessingShoot: false,          // if set to true then the test does not try to access the shoot via its kubeconfig
-			CommonConfig:       &framework.CommonConfig{LogLevel: "debug"},
+			GardenerKubeconfig: kubeconfigPath,
+			SkipAccessingShoot: skipAccessingShoot,
+			CommonConfig:       commonConfig,
 		},
 	})
 	f.Shoot = getShoot()
+	f.Shoot.Name = "e2e-local"
 
 	ginkgo.It("Create Shoot, Enable cri-rm Extension, Disable cri-rm Extension, Delete Shoot", ginkgo.Label("good-case"), func() {
 		ginkgo.By("Create Shoot")

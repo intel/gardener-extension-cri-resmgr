@@ -8,17 +8,18 @@ import (
 	"github.com/onsi/gomega"
 )
 
-
-var _ = ginkgo.Describe("cri-rm Extension Tests", ginkgo.Label("CRI-RM"), func() {
+var _ = ginkgo.Describe("cri-resmgr enable tests", ginkgo.Label("enable"), func() {
 	f := framework.NewShootCreationFramework(&framework.ShootCreationConfig{
 		GardenerConfig: &framework.GardenerConfig{
 			ProjectNamespace:   projectNamespace,
 			GardenerKubeconfig: kubeconfigPath,
-			SkipAccessingShoot: true,
-			CommonConfig:       &framework.CommonConfig{},
+			SkipAccessingShoot: skipAccessingShoot,
+			CommonConfig:       commonConfig,
 		},
 	})
 	f.Shoot = getShoot()
+	f.Shoot.Name = "e2e-default"
+
 	ginkgo.It("Create Shoot, Enable cri-rm Extension, Delete Shoot", ginkgo.Label("good-case"), func() {
 		ginkgo.By("Create Shoot")
 		ctx, cancel := context.WithTimeout(backgroundCtx, fiveteenMinutes)

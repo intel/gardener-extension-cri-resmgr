@@ -30,9 +30,25 @@ clean:
 	rm cri-resmgr-extension.test
 	rm gardener-extension-cri-resmgr
 
-.PHONY: test
-test:
-	go test -v ./test/integration/cri-resmgr-extension/...
+
+
+.PHONY: e2e-tests
+e2e-tests:
+	echo "Note1:"
+	echo "Make sure following hosts are defined in etc/hosts"
+	echo "127.0.0.1 api.e2e-default.local.external.local.gardener.cloud"
+	echo "127.0.0.1 api.e2e-default.local.internal.local.gardener.cloud"
+	echo ""
+	echo "Note2:"
+	echo "KUBECONFIG should point to kind-local gardener cluster"
+	echo "Following labels are available: enable, reenable, disable"
+	echo ""
+	echo "Note3:"
+	echo "ControllerRegistration and ControllerDeployment CRDs must be already deployed to cluster"
+	echo 
+	echo "Note4:"
+	echo "Following labels are available: enable, reenable, disable"
+	KUBECONFIG=/root/.kube/config ginkgo run --vv --progress --fail-fast --label-filter "enable" ./test/integration/cri-resmgr-extension
 
 .PHONY: start
 start:
