@@ -20,6 +20,15 @@ CRI_RM_VERSION              := 0.6.1rc1
 ARCHIVE_NAME                := cri-resource-manager-$(CRI_RM_VERSION).x86_64.tar.gz
 CRI_RM_URL                  := https://github.com/intel/cri-resource-manager/releases/download/v$(CRI_RM_VERSION)/$(ARCHIVE_NAME)
 
+.PHONY: build
+build:
+	go build -v ./cmd/gardener-extension-cri-resmgr
+	go test -c -v ./test/integration/cri-resmgr-extension/...
+
+.PHONY: test
+test:
+	go test -v ./test/integration/cri-resmgr-extension/...
+
 .PHONY: start
 start:
 	go run ./cmd/gardener-extension-cri-resmgr --ignore-operation-annotation=true --leader-election=false
