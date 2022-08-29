@@ -185,7 +185,8 @@ func main() {
 	optionAggregator.AddFlags(cmd.Flags())
 
 	if err := cmd.ExecuteContext(ctx); err != nil {
-		controllercmd.LogErrAndExit(err, "error executing the main controller command")
+		runtimelog.Log.Error(err, "error executing the main controller command")
+		os.Exit(1)
 	}
 
 }
