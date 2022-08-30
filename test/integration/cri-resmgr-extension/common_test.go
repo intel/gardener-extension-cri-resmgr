@@ -18,7 +18,7 @@ var (
 	ExtensionType    = "cri-resmgr-extension"
 	projectNamespace = "garden-local"
 	kubeconfigPath   = os.Getenv("KUBECONFIG")
-	fiveteenMinutes  = 15 * time.Minute
+	fiveteenMinutes  = 30 * time.Minute // just a hack
 
 	// _existingShootName = "first" // "Name of an existing shoot to use instead of creating a new one."
 	skipAccessingShoot = true // if set to true then the test does not try to access the shoot via its kubeconfig

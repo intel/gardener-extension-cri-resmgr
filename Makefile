@@ -47,7 +47,7 @@ e2e-tests:
 	echo 
 	echo "Note4:"
 	echo "Following labels are available: enable, reenable, disable"
-	KUBECONFIG=/root/.kube/config ginkgo run --v --progress ./test/integration/cri-resmgr-extension
+	ginkgo run --v --progress ./test/integration/cri-resmgr-extension
 
 .PHONY: start
 start:

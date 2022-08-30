@@ -166,6 +166,11 @@ kind load docker-image v2.isvimgreg.com/gardener-extension-cri-resmgr-installati
 kind load docker-image ghcr.io/gardener/machine-controller-manager-provider-local/node:latest --name gardener-local
 ```
 
+or just call
+```
+./hacks/kind-load-images.sh
+```
+
 Create shoot:
 
 ```
@@ -290,4 +295,18 @@ Unit cri-resource-manager.service could not be found.
              --container-runtime=remote 
              --v=2 
              --container-runtime-endpoint=unix:///run/containerd/containerd.sock  # <---
+```
+
+
+### III. Running integration tests
+
+Assuming having gardner cloned in ~/work/gardener
+```
+make -C ~/work/gardner kind-up
+cp ~/work/gardener/example/gardener-local/kind/kubeconfig ~/.kube/config
+./hacks/kind-load-images.sh
+make -C ~/work/gardner gardener-up
+kubectl apply -f ./examples/ctrldeploy-ctrlreg.yaml
+make e2e-tests KUBECONFIG=$HOME/.kube/config
+
 ```
