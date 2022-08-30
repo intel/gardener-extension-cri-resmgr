@@ -310,10 +310,10 @@ and already set /etc/hosts properly with following entries:
 
 then:
 ```
-make -C ~/work/gardner kind-up
+make -C ~/work/gardener kind-up
 cp ~/work/gardener/example/gardener-local/kind/kubeconfig ~/.kube/config
 ./hacks/kind-load-images.sh
-make -C ~/work/gardner gardener-up
+make -C ~/work/gardener gardener-up
 kubectl apply -f ./examples/ctrldeploy-ctrlreg.yaml
 make e2e-tests KUBECONFIG=$HOME/.kube/config
 
