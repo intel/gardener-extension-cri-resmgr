@@ -301,6 +301,14 @@ Unit cri-resource-manager.service could not be found.
 ### III. Running integration tests
 
 Assuming having gardner cloned in ~/work/gardener
+
+and already set /etc/hosts properly with following entries:
+```
+127.0.0.1 api.e2e-default.local.external.local.gardener.cloud
+127.0.0.1 api.e2e-default.local.internal.local.gardener.cloud
+```
+
+then:
 ```
 make -C ~/work/gardner kind-up
 cp ~/work/gardener/example/gardener-local/kind/kubeconfig ~/.kube/config
