@@ -80,7 +80,7 @@ This is based on https://github.com/gardener/gardener/blob/master/docs/deploymen
 mkdir -p ~/work/
 git clone https://github.com/gardener/gardener ~/work/gardener
 cd ~/work/gardener
-git checkout v1.49.3
+git checkout v1.54.0
 ```
 
 ##### 2. Prepare kind cluster 
@@ -163,6 +163,12 @@ Deploy those images inside kind cluster (not needed if public registry is used):
 ```bash
 kind load docker-image v2.isvimgreg.com/gardener-extension-cri-resmgr:latest --name gardener-local
 kind load docker-image v2.isvimgreg.com/gardener-extension-cri-resmgr-installation:latest --name gardener-local
+kind load docker-image ghcr.io/gardener/machine-controller-manager-provider-local/node:latest --name gardener-local
+```
+
+or just call
+```
+./hacks/kind-load-images.sh
 ```
 
 Create shoot:
@@ -289,4 +295,26 @@ Unit cri-resource-manager.service could not be found.
              --container-runtime=remote 
              --v=2 
              --container-runtime-endpoint=unix:///run/containerd/containerd.sock  # <---
+```
+
+
+### III. Running integration tests
+
+Assuming having gardner cloned in ~/work/gardener
+
+and already set /etc/hosts properly with following entries:
+```
+127.0.0.1 api.e2e-default.local.external.local.gardener.cloud
+127.0.0.1 api.e2e-default.local.internal.local.gardener.cloud
+```
+
+then:
+```
+make -C ~/work/gardener kind-up
+cp ~/work/gardener/example/gardener-local/kind/kubeconfig ~/.kube/config
+./hacks/kind-load-images.sh
+make -C ~/work/gardener gardener-up
+kubectl apply -f ./examples/ctrldeploy-ctrlreg.yaml
+make e2e-tests KUBECONFIG=$HOME/.kube/config
+
 ```

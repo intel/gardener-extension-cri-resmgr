@@ -2,26 +2,34 @@ package cri_resmgr_extension
 
 import (
 	"context"
+	"os"
 	"time"
 
 	gardencorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
+	"github.com/gardener/gardener/test/framework"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/utils/pointer"
 )
 
-
 var (
+	// commonLabel      = "cri-rm"
 	backgroundCtx    = context.Background()
 	ExtensionType    = "cri-resmgr-extension"
 	projectNamespace = "garden-local"
 	kubeconfigPath   = os.Getenv("KUBECONFIG")
-	fiveteenMinutes = 15 * time.Minute
-	)
+	fiveteenMinutes  = 30 * time.Minute // just a hack
+
+	// _existingShootName = "first" // "Name of an existing shoot to use instead of creating a new one."
+	skipAccessingShoot = true // if set to true then the test does not try to access the shoot via its kubeconfig
+	// commonConfig       = &framework.CommonConfig{}
+	commonConfig = &framework.CommonConfig{LogLevel: "debug"} // not sure is it needed at all
+)
 
 func enableCriResmgr(shoot *gardencorev1beta1.Shoot) error {
 	for i, extension := range shoot.Spec.Extensions {
 		if extension.Type == ExtensionType {
-			if extension.Disabled != nil{
+			if extension.Disabled != nil {
 				shoot.Spec.Extensions[i].Disabled = pointer.Bool(false)
 			}
 		}
@@ -36,7 +44,7 @@ func enableCriResmgr(shoot *gardencorev1beta1.Shoot) error {
 func disableCriResmgr(shoot *gardencorev1beta1.Shoot) error {
 	for i, extension := range shoot.Spec.Extensions {
 		if extension.Type == ExtensionType {
-			if extension.Disabled != nil{
+			if extension.Disabled != nil {
 				shoot.Spec.Extensions[i].Disabled = pointer.Bool(true)
 			}
 		}
@@ -51,7 +59,7 @@ func disableCriResmgr(shoot *gardencorev1beta1.Shoot) error {
 func getShoot() *gardencorev1beta1.Shoot {
 	return &gardencorev1beta1.Shoot{
 		ObjectMeta: metav1.ObjectMeta{
-			GenerateName: "local",
+			GenerateName: "", // will be overridden anyway
 			Namespace:    projectNamespace,
 			Annotations:  map[string]string{},
 		},
@@ -61,10 +69,11 @@ func getShoot() *gardencorev1beta1.Shoot {
 			CloudProfileName:  "local",
 			SeedName:          pointer.String("local"),
 			Kubernetes: gardencorev1beta1.Kubernetes{
-				Version: "1.23.1",
+				Version: "1.24.0",
 			},
 			Networking: gardencorev1beta1.Networking{
-				Type: "local",
+				Type:           "calico",
+				ProviderConfig: &runtime.RawExtension{Raw: []byte(`{"apiVersion":"calico.networking.extensions.gardener.cloud/v1alpha1","kind":"NetworkConfig","typha":{"enabled":false},"backend":"none"}`)},
 			},
 			Provider: gardencorev1beta1.Provider{
 				Type: "local",
