@@ -316,5 +316,10 @@ cp ~/work/gardener/example/gardener-local/kind/kubeconfig ~/.kube/config
 make -C ~/work/gardener gardener-up
 kubectl apply -f ./examples/ctrldeploy-ctrlreg.yaml
 make e2e-tests KUBECONFIG=$HOME/.kube/config
+```
 
+access to e2e shoot with k9s example:
+
+```
+k9s --kubeconfig <(kubectl view-secret -n garden-local e2e-default.kubeconfig kubeconfig)
 ```
