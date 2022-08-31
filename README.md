@@ -318,6 +318,27 @@ kubectl apply -f ./examples/ctrldeploy-ctrlreg.yaml
 make e2e-tests KUBECONFIG=$HOME/.kube/config
 ```
 
+Additional options avaiable provided by test framework:
+when running manually with ginkgo:
+```
+KUBECONFIG=$HOME/.kube/config ginkgo -v --progress --label-filter enable ./test/e2e/... -- -verbose debug -disable-dump -project-namespace testbroken
+```
+
+```
+  -disable-dump
+        Disable the state dump if a test fails
+  -existing-shoot-name string
+        Name of an existing shoot to use instead of creating a new one.
+  -kubecfg string
+        the path to the kubeconfig  of the garden cluster that will be used for integration tests
+  -project-namespace string
+        specify the gardener project namespace to run tests
+  -skip-accessing-shoot
+        if set to true then the test does not try to access the shoot via its kubeconfig
+  -verbose string
+        verbosity level (defaults to info)
+```
+
 access to e2e shoot with k9s example:
 
 ```

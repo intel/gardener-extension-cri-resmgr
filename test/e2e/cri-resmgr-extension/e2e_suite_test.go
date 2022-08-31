@@ -5,14 +5,14 @@ import (
 	"os"
 	"testing"
 
+	"github.com/gardener/gardener/test/framework"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-
-	"github.com/gardener/gardener/test/framework"
 )
 
 func TestMain(m *testing.M) {
-	framework.RegisterGardenerFrameworkFlags()
+	// Note: flags usaage were not tested! Meant to be used with integration setup.
+	framework.RegisterShootCreationFrameworkFlags() // shot name/perfix , cloudProfile, seed name, allowPrivilegedContainers ... calls Garden
 	flag.Parse()
 	os.Exit(m.Run())
 }

@@ -14,46 +14,41 @@ import (
 
 var (
 	// commonLabel      = "cri-rm"
-	backgroundCtx    = context.Background()
-	ExtensionType    = "cri-resmgr-extension"
-	projectNamespace = "garden-local"
-	kubeconfigPath   = os.Getenv("KUBECONFIG")
-	fiveteenMinutes  = 30 * time.Minute // just a hack
+	backgroundCtx   = context.Background()
+	fiveteenMinutes = 15 * time.Minute
+	ExtensionType   = "cri-resmgr-extension"
 
-	// _existingShootName = "first" // "Name of an existing shoot to use instead of creating a new one."
+	// Those options can be overridden with arguments like: -verbose, -disable-dump, -existing-shoot-name -kubecfg -project-namespace
+	projectNamespace   = "garden-local"
+	kubeconfigPath     = os.Getenv("KUBECONFIG")
 	skipAccessingShoot = true // if set to true then the test does not try to access the shoot via its kubeconfig
-	// commonConfig       = &framework.CommonConfig{}
-	commonConfig = &framework.CommonConfig{LogLevel: "debug"} // not sure is it needed at all
+	commonConfig       = &framework.CommonConfig{}
+
+	kubernetesVersion = "1.24.0"
 )
 
-func enableCriResmgr(shoot *gardencorev1beta1.Shoot) error {
+func enableOrDisableCriResmgr(shoot *gardencorev1beta1.Shoot, disabled bool) error {
 	for i, extension := range shoot.Spec.Extensions {
 		if extension.Type == ExtensionType {
 			if extension.Disabled != nil {
-				shoot.Spec.Extensions[i].Disabled = pointer.Bool(false)
+				shoot.Spec.Extensions[i].Disabled = pointer.Bool(disabled)
 			}
 		}
 	}
-	shoot.Spec.Extensions = append(shoot.Spec.Extensions, gardencorev1beta1.Extension{
-		Type:     ExtensionType,
-		Disabled: pointer.Bool(false),
-	})
+	if len(shoot.Spec.Extensions) == 0 {
+		shoot.Spec.Extensions = append(shoot.Spec.Extensions, gardencorev1beta1.Extension{
+			Type:     ExtensionType,
+			Disabled: pointer.Bool(disabled),
+		})
+	}
 	return nil
 }
 
+func enableCriResmgr(shoot *gardencorev1beta1.Shoot) error {
+	return enableOrDisableCriResmgr(shoot, false)
+}
 func disableCriResmgr(shoot *gardencorev1beta1.Shoot) error {
-	for i, extension := range shoot.Spec.Extensions {
-		if extension.Type == ExtensionType {
-			if extension.Disabled != nil {
-				shoot.Spec.Extensions[i].Disabled = pointer.Bool(true)
-			}
-		}
-	}
-	shoot.Spec.Extensions = append(shoot.Spec.Extensions, gardencorev1beta1.Extension{
-		Type:     ExtensionType,
-		Disabled: pointer.Bool(true),
-	})
-	return nil
+	return enableOrDisableCriResmgr(shoot, true)
 }
 
 func getShoot() *gardencorev1beta1.Shoot {
@@ -69,7 +64,7 @@ func getShoot() *gardencorev1beta1.Shoot {
 			CloudProfileName:  "local",
 			SeedName:          pointer.String("local"),
 			Kubernetes: gardencorev1beta1.Kubernetes{
-				Version: "1.24.0",
+				Version: kubernetesVersion,
 			},
 			Networking: gardencorev1beta1.Networking{
 				Type:           "calico",
