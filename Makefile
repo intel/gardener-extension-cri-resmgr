@@ -46,7 +46,7 @@ e2e-tests:
 	@echo "Note4:"
 	@echo "Following labels are available: enable, reenable, disable"
 	# Note seed 1 is used to keep order from simples to more complex cases (TODO to be replaced with SERIAL)
-	ginkgo run -v --progress --seed 1 --timeout 2h ./test/e2e/cri-resmgr-extension
+	ginkgo run -v --progress --seed 1 --slow-spec-threshold 2h --timeout 2h ./test/e2e/cri-resmgr-extension
 
 .PHONY: start
 start:
