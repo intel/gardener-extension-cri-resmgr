@@ -30,24 +30,23 @@ clean:
 	rm cri-resmgr-extension.test
 	rm gardener-extension-cri-resmgr
 
-
-
 .PHONY: e2e-tests
 e2e-tests:
-	echo "Note1:"
-	echo "Make sure following hosts are defined in etc/hosts"
-	echo "127.0.0.1 api.e2e-default.local.external.local.gardener.cloud"
-	echo "127.0.0.1 api.e2e-default.local.internal.local.gardener.cloud"
-	echo ""
-	echo "Note2:"
-	echo "KUBECONFIG should point to kind-local gardener cluster"
-	echo ""
-	echo "Note3:"
-	echo "ControllerRegistration and ControllerDeployment CRDs must be already deployed to cluster"
-	echo 
-	echo "Note4:"
-	echo "Following labels are available: enable, reenable, disable"
-	ginkgo run -v --progress --timeout 2h ./test/e2e/cri-resmgr-extension
+	@echo "Note1:"
+	@echo "Make sure following hosts are defined in etc/hosts"
+	@echo "127.0.0.1 api.e2e-default.local.external.local.gardener.cloud"
+	@echo "127.0.0.1 api.e2e-default.local.internal.local.gardener.cloud"
+	@echo ""
+	@echo "Note2:"
+	@echo "KUBECONFIG should point to kind-local gardener cluster"
+	@echo ""
+	@echo "Note3:"
+	@echo "ControllerRegistration and ControllerDeployment CRDs must be already deployed to cluster"
+	@echo 
+	@echo "Note4:"
+	@echo "Following labels are available: enable, reenable, disable"
+	# Note seed 1 is used to keep order from simples to more complex cases (TODO to be replaced with SERIAL)
+	ginkgo run -v --progress --seed 1 --timeout 2h ./test/e2e/cri-resmgr-extension
 
 .PHONY: start
 start:
