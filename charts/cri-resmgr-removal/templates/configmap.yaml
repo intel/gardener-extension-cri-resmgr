@@ -22,6 +22,11 @@ metadata:
 data:
   remove-cri-resmgr.sh: |-
     #!/bin/bash
+    # Check if kubelet service file is a symlink
+    if [[ -L "/var/host/etc/systemd/system/kubelet.service" ]]; then
+      echo "err: kubelet.service file is a symlink"
+      exit 1
+    fi
     # Remove cri-resmgr from kubelet configuration
     echo "Remove cri-resmgr from kubelet configuration"
     sed -i '/\[Unit\]/aAfter=containerd.service' /var/host/etc/systemd/system/kubelet.service
