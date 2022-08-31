@@ -11,8 +11,8 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	// Note: flags usaage were not tested! Meant to be used with integration setup.
-	framework.RegisterShootCreationFrameworkFlags() // shot name/perfix , cloudProfile, seed name, allowPrivilegedContainers ... calls Garden
+	// Flags to be used against existing shoot in our dedicated infrastructure.
+	framework.RegisterGardenerFrameworkFlags()
 	flag.Parse()
 	os.Exit(m.Run())
 }

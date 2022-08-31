@@ -6,6 +6,7 @@ import (
 	"time"
 
 	gardencorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
+	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
 	"github.com/gardener/gardener/test/framework"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -56,7 +57,11 @@ func getShoot() *gardencorev1beta1.Shoot {
 		ObjectMeta: metav1.ObjectMeta{
 			GenerateName: "", // will be overridden anyway
 			Namespace:    projectNamespace,
-			Annotations:  map[string]string{},
+			Annotations: map[string]string{
+				// Should speed up shoot cleanup: https://github.com/gardener/gardener/blob/5f62609530c035caa4115f80ae16d0e52f7b0d14/pkg/apis/core/v1beta1/constants/types_constants.go#L533
+				v1beta1constants.AnnotationShootInfrastructureCleanupWaitPeriodSeconds: "0",
+				v1beta1constants.AnnotationShootCloudConfigExecutionMaxDelaySeconds:    "0",
+			},
 		},
 		Spec: gardencorev1beta1.ShootSpec{
 			Region:            "local",
