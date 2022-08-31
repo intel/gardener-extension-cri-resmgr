@@ -17,7 +17,7 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func TestIntegration(t *testing.T) {
+func TestE2E(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Integration Suite")
+	RunSpecs(t, "E2E Suite")
 }

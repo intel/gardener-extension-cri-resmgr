@@ -20,7 +20,7 @@ var _ = ginkgo.Describe("cri-resmgr enable tests", ginkgo.Label("enable"), func(
 	f.Shoot = getShoot()
 	f.Shoot.Name = "e2e-default"
 
-	ginkgo.It("Create Shoot, Enable cri-rm Extension, Delete Shoot", ginkgo.Label("good-case"), func() {
+	ginkgo.It("Create Shoot, Enable cri-rm Extension, Delete Shoot", func() {
 		ginkgo.By("Create Shoot")
 		ctx, cancel := context.WithTimeout(backgroundCtx, fiveteenMinutes)
 		defer cancel()

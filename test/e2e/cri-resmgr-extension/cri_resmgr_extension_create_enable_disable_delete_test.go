@@ -8,7 +8,7 @@ import (
 	"github.com/onsi/gomega"
 )
 
-var _ = ginkgo.Describe("cri-resmgr reenable tests", ginkgo.Label("reenable"), func() {
+var _ = ginkgo.Describe("cri-resmgr disabling tests", ginkgo.Label("disable"), func() {
 	f := framework.NewShootCreationFramework(&framework.ShootCreationConfig{
 		GardenerConfig: &framework.GardenerConfig{
 			ProjectNamespace:   projectNamespace,
@@ -20,7 +20,7 @@ var _ = ginkgo.Describe("cri-resmgr reenable tests", ginkgo.Label("reenable"), f
 	f.Shoot = getShoot()
 	f.Shoot.Name = "e2e-default"
 
-	ginkgo.It("Create Shoot, Enable cri-resmgr Extension, Disable cri-resmgr Extension, Enable cri-resmgr, Delete Shoot", ginkgo.Label("good-case"), func() {
+	ginkgo.It("Create Shoot, Enable cri-rm Extension, Disable cri-rm Extension, Delete Shoot", func() {
 		ginkgo.By("Create Shoot")
 		ctx, cancel := context.WithTimeout(backgroundCtx, fiveteenMinutes)
 		defer cancel()
@@ -36,11 +36,6 @@ var _ = ginkgo.Describe("cri-resmgr reenable tests", ginkgo.Label("reenable"), f
 		ctx, cancel = context.WithTimeout(backgroundCtx, fiveteenMinutes)
 		defer cancel()
 		gomega.Expect(f.UpdateShoot(ctx, f.Shoot, disableCriResmgr)).To(gomega.Succeed())
-
-		ginkgo.By("Enable cri-resmgr extension")
-		ctx, cancel = context.WithTimeout(backgroundCtx, fiveteenMinutes)
-		defer cancel()
-		gomega.Expect(f.UpdateShoot(ctx, f.Shoot, enableCriResmgr)).To(gomega.Succeed())
 
 		ginkgo.By("Delete Shoot")
 		ctx, cancel = context.WithTimeout(backgroundCtx, fiveteenMinutes)

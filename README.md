@@ -298,7 +298,7 @@ Unit cri-resource-manager.service could not be found.
 ```
 
 
-### III. Running integration tests
+### III. Running e2e tests
 
 Assuming having gardner cloned in ~/work/gardener
 

@@ -23,7 +23,7 @@ CRI_RM_URL                  := https://github.com/intel/cri-resource-manager/rel
 .PHONY: build
 build:
 	go build -v ./cmd/gardener-extension-cri-resmgr
-	go test -c -v ./test/integration/cri-resmgr-extension/...
+	go test -c -v ./test/e2e/cri-resmgr-extension/...
 
 clean:
 	go clean -cache -modcache -testcache
@@ -47,7 +47,7 @@ e2e-tests:
 	echo 
 	echo "Note4:"
 	echo "Following labels are available: enable, reenable, disable"
-	ginkgo run --v --progress ./test/integration/cri-resmgr-extension
+	ginkgo run -v --progress --timeout 2h ./test/e2e/cri-resmgr-extension
 
 .PHONY: start
 start:
