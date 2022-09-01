@@ -80,7 +80,7 @@ This is based on https://github.com/gardener/gardener/blob/master/docs/deploymen
 mkdir -p ~/work/
 git clone https://github.com/gardener/gardener ~/work/gardener
 cd ~/work/gardener
-git checkout v1.49.3
+git checkout v1.54.0
 ```
 
 ##### 2. Prepare kind cluster 
@@ -163,6 +163,12 @@ Deploy those images inside kind cluster (not needed if public registry is used):
 ```bash
 kind load docker-image v2.isvimgreg.com/gardener-extension-cri-resmgr:latest --name gardener-local
 kind load docker-image v2.isvimgreg.com/gardener-extension-cri-resmgr-installation:latest --name gardener-local
+kind load docker-image ghcr.io/gardener/machine-controller-manager-provider-local/node:latest --name gardener-local
+```
+
+or just call
+```
+./hacks/kind-load-images.sh
 ```
 
 Create shoot:
@@ -289,4 +295,52 @@ Unit cri-resource-manager.service could not be found.
              --container-runtime=remote 
              --v=2 
              --container-runtime-endpoint=unix:///run/containerd/containerd.sock  # <---
+```
+
+
+### III. Running e2e tests
+
+Assuming having gardner cloned in ~/work/gardener
+
+and already set /etc/hosts properly with following entries:
+```
+127.0.0.1 api.e2e-default.local.external.local.gardener.cloud
+127.0.0.1 api.e2e-default.local.internal.local.gardener.cloud
+```
+
+then:
+```
+make -C ~/work/gardener kind-up
+cp ~/work/gardener/example/gardener-local/kind/kubeconfig ~/.kube/config
+./hacks/kind-load-images.sh
+make -C ~/work/gardener gardener-up
+kubectl apply -f ./examples/ctrldeploy-ctrlreg.yaml
+make e2e-tests KUBECONFIG=$HOME/.kube/config
+```
+
+Additional options avaiable provided by test framework:
+when running manually with ginkgo:
+```
+KUBECONFIG=$HOME/.kube/config ginkgo -v --progress --label-filter enable ./test/e2e/... -- -verbose debug -disable-dump -project-namespace testbroken
+```
+
+```
+  -disable-dump
+        Disable the state dump if a test fails
+  -existing-shoot-name string
+        Name of an existing shoot to use instead of creating a new one.
+  -kubecfg string
+        the path to the kubeconfig  of the garden cluster that will be used for integration tests
+  -project-namespace string
+        specify the gardener project namespace to run tests
+  -skip-accessing-shoot
+        if set to true then the test does not try to access the shoot via its kubeconfig
+  -verbose string
+        verbosity level (defaults to info)
+```
+
+access to e2e shoot with k9s example:
+
+```
+k9s --kubeconfig <(kubectl view-secret -n garden-local e2e-default.kubeconfig kubeconfig)
 ```

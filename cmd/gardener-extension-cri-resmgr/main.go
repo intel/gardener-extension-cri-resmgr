@@ -28,10 +28,9 @@ import (
 	controllercmd "github.com/gardener/gardener/extensions/pkg/controller/cmd"
 	"github.com/gardener/gardener/extensions/pkg/controller/extension"
 	"github.com/gardener/gardener/extensions/pkg/controller/healthcheck"
-	healthcheckconfig "github.com/gardener/gardener/extensions/pkg/controller/healthcheck/config"
 	"github.com/gardener/gardener/extensions/pkg/controller/healthcheck/general"
 	"github.com/gardener/gardener/extensions/pkg/util"
-	gardencorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
+	gardenercorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	resourcemanagerv1alpha1 "github.com/gardener/gardener/pkg/apis/resources/v1alpha1"
 	"github.com/gardener/gardener/pkg/logger"
@@ -73,7 +72,7 @@ const (
 func RegisterHealthChecks(mgr manager.Manager) error {
 	defaultSyncPeriod := time.Second * 30
 	opts := healthcheck.DefaultAddArgs{
-		HealthCheckConfig: healthcheckconfig.HealthCheckConfig{SyncPeriod: metav1.Duration{Duration: defaultSyncPeriod}},
+		HealthCheckConfig: extensionsconfig.HealthCheckConfig{SyncPeriod: metav1.Duration{Duration: defaultSyncPeriod}},
 	}
 	return healthcheck.DefaultRegistration(
 		ExtensionType,
@@ -85,7 +84,7 @@ func RegisterHealthChecks(mgr manager.Manager) error {
 		nil,
 		[]healthcheck.ConditionTypeToHealthCheck{
 			{
-				ConditionType: string(gardencorev1beta1.ShootSystemComponentsHealthy),
+				ConditionType: string(gardenercorev1beta1.ShootSystemComponentsHealthy),
 				HealthCheck:   general.CheckManagedResource(ManagedResourceName),
 			},
 		},
@@ -188,7 +187,8 @@ func main() {
 	optionAggregator.AddFlags(cmd.Flags())
 
 	if err := cmd.ExecuteContext(ctx); err != nil {
-		controllercmd.LogErrAndExit(err, "error executing the main controller command")
+		runtimelog.Log.Error(err, "error executing the main controller command")
+		os.Exit(1)
 	}
 
 }
@@ -260,7 +260,7 @@ func (a *actuator) deployDaemonsetToUninstallCriResMgr(ctx context.Context, ex *
 	return nil
 }
 
-func (a *actuator) Reconcile(ctx context.Context, ex *extensionsv1alpha1.Extension) error {
+func (a *actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extensionsv1alpha1.Extension) error {
 	namespace := ex.GetNamespace()
 	a.logger.Info("Reconcile: checking extension...") // , "shoot", cluster.Shoot.Name, "namespace", cluster.Shoot.Namespace)
 
@@ -285,7 +285,7 @@ func (a *actuator) Reconcile(ctx context.Context, ex *extensionsv1alpha1.Extensi
 	return nil
 }
 
-func (a *actuator) Delete(ctx context.Context, ex *extensionsv1alpha1.Extension) error {
+func (a *actuator) Delete(ctx context.Context, logger logr.Logger, ex *extensionsv1alpha1.Extension) error {
 	namespace := ex.GetNamespace()
 	cluster, err := controller.GetCluster(ctx, a.client, namespace)
 	if err != nil {
@@ -314,12 +314,12 @@ func (a *actuator) Delete(ctx context.Context, ex *extensionsv1alpha1.Extension)
 	return nil
 }
 
-func (a *actuator) Restore(ctx context.Context, ex *extensionsv1alpha1.Extension) error {
-	return a.Reconcile(ctx, ex)
+func (a *actuator) Restore(ctx context.Context, logger logr.Logger, ex *extensionsv1alpha1.Extension) error {
+	return a.Reconcile(ctx, logger, ex)
 }
 
-func (a *actuator) Migrate(ctx context.Context, ex *extensionsv1alpha1.Extension) error {
-	return a.Delete(ctx, ex)
+func (a *actuator) Migrate(ctx context.Context, logger logr.Logger, ex *extensionsv1alpha1.Extension) error {
+	return a.Delete(ctx, logger, ex)
 }
 
 func (a *actuator) InjectConfig(config *rest.Config) error {
