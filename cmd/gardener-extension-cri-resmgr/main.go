@@ -19,8 +19,10 @@ import (
 	"fmt"
 	"os"
 	"time"
+	"pkg/imagevector"
 
 	// Gardener
+	extensionsconfig "github.com/gardener/gardener/extensions/pkg/apis/config"
 	"github.com/gardener/gardener/extensions/pkg/controller"
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
 	controllercmd "github.com/gardener/gardener/extensions/pkg/controller/cmd"
@@ -37,6 +39,7 @@ import (
 	managedresources "github.com/gardener/gardener/pkg/utils/managedresources"
 
 	// Other
+	//"github.com/gardener/gardener-extension-cri-resmgr/pkg/imagevector"
 	"github.com/go-logr/logr"
 	"github.com/spf13/cobra"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -63,7 +66,7 @@ const (
 
 	ChartPath               = "charts/cri-resmgr-installation/"
 	ChartPathRemoval        = "charts/cri-resmgr-removal"
-	InstallationImageName   = "installation_image_name" // TODO: to be replaced with proper "gardener-extension-cri-resmgr-" when ready
+	InstallationImageName   = "gardener-extension-cri-resmgr-installation"
 	InstallationReleaseName = "cri-resmgr-installation"
 )
 
@@ -221,9 +224,13 @@ func (a *actuator) generateSecretData(ctx context.Context, ex *extensionsv1alpha
 	if err != nil {
 		return emptyMap, err
 	}
+	image, err := imagevector.ImageVector().FindImage(InstallationImageName)
+	if err != nil {
+		return err
+	}
 	chartValues := map[string]interface{}{
 		"images": map[string]string{
-			InstallationImageName: "foo", // TODO: imagevector.FindImage(InstallationImageName),
+			InstallationImageName: image,
 		},
 	}
 	release, err := chartRenderer.Render(chartPath, InstallationReleaseName, metav1.NamespaceSystem, chartValues)
