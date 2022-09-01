@@ -20,6 +20,34 @@ CRI_RM_VERSION              := 0.6.1rc1
 ARCHIVE_NAME                := cri-resource-manager-$(CRI_RM_VERSION).x86_64.tar.gz
 CRI_RM_URL                  := https://github.com/intel/cri-resource-manager/releases/download/v$(CRI_RM_VERSION)/$(ARCHIVE_NAME)
 
+.PHONY: build
+build:
+	go build -v ./cmd/gardener-extension-cri-resmgr
+	go test -c -v ./test/e2e/cri-resmgr-extension/...
+
+clean:
+	go clean -cache -modcache -testcache
+	rm cri-resmgr-extension.test
+	rm gardener-extension-cri-resmgr
+
+.PHONY: e2e-tests
+e2e-tests:
+	@echo "Note1:"
+	@echo "Make sure following hosts are defined in etc/hosts"
+	@echo "127.0.0.1 api.e2e-default.local.external.local.gardener.cloud"
+	@echo "127.0.0.1 api.e2e-default.local.internal.local.gardener.cloud"
+	@echo ""
+	@echo "Note2:"
+	@echo "KUBECONFIG should point to kind-local gardener cluster"
+	@echo ""
+	@echo "Note3:"
+	@echo "ControllerRegistration and ControllerDeployment CRDs must be already deployed to cluster"
+	@echo 
+	@echo "Note4:"
+	@echo "Following labels are available: enable, reenable, disable"
+	# Note seed 1 is used to keep order from simples to more complex cases (TODO to be replaced with SERIAL)
+	ginkgo run -v --progress --seed 1 --slow-spec-threshold 2h --timeout 2h ./test/e2e/cri-resmgr-extension
+
 .PHONY: start
 start:
 	go run ./cmd/gardener-extension-cri-resmgr --ignore-operation-annotation=true --leader-election=false
