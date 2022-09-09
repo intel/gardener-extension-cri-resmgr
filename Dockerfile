@@ -17,6 +17,8 @@ FROM golang:1.18.3-alpine3.16 AS builder
 
 WORKDIR /go/src/github.com/intel/cri-resource-manager/packaging/gardener
 COPY cmd .
+COPY pkg pkg
+COPY charts charts
 COPY go.mod .
 COPY go.sum .
 RUN go install ./...

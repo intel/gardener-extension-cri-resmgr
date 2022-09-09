@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"os"
 	"time"
-	"pkg/imagevector"
 
 	// Gardener
 	extensionsconfig "github.com/gardener/gardener/extensions/pkg/apis/config"
@@ -38,8 +37,8 @@ import (
 	managedresources "github.com/gardener/gardener/pkg/utils/managedresources"
 
 	// Other
-	//"github.com/gardener/gardener-extension-cri-resmgr/pkg/imagevector"
 	"github.com/go-logr/logr"
+	"github.com/intel/gardener-extension-cri-resmgr/pkg/imagevector"
 	"github.com/spf13/cobra"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -226,11 +225,11 @@ func (a *actuator) generateSecretData(ctx context.Context, ex *extensionsv1alpha
 	}
 	image, err := imagevector.ImageVector().FindImage(InstallationImageName)
 	if err != nil {
-		return err
+		return emptyMap, err
 	}
 	chartValues := map[string]interface{}{
 		"images": map[string]string{
-			InstallationImageName: image,
+			InstallationImageName: image.String(),
 		},
 	}
 	release, err := chartRenderer.Render(chartPath, InstallationReleaseName, metav1.NamespaceSystem, chartValues)

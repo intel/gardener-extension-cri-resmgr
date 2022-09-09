@@ -1,11 +1,9 @@
 package imagevector
 
 import (
-	"strings"
-
-	"github.com/gardener/gardener-extension-cri-resmgr/charts"
 	"github.com/gardener/gardener/pkg/utils/imagevector"
-	"k8s.io/apimachinery/pkg/util/runtime"
+	"github.com/intel/gardener-extension-cri-resmgr/charts"
+	"strings"
 )
 
 var imageVector imagevector.ImageVector
@@ -13,12 +11,12 @@ var imageVector imagevector.ImageVector
 func init() {
 	var imageVector, err = imagevector.Read(strings.NewReader(charts.ImagesYAML))
 	if err != nil {
-		return err
+		return
 	}
 
 	imageVector, err = imagevector.WithEnvOverride(imageVector)
 	if err != nil {
-		return err
+		return
 	}
 }
 
