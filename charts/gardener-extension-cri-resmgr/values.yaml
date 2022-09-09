@@ -16,3 +16,11 @@ image:
   repository: v2.isvimgreg.com/gardener-extension-cri-resmgr
   tag: latest
   pullPolicy: Always
+
+replicaCount: 1
+
+# TO BE USED TO CREATE CONFIGMAP for extension as default values
+# for config to bez used as a way to override config for all shoots
+configs:
+  foo: |
+    some-foo-from-base-chart

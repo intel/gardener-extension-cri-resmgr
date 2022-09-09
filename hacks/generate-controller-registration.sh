@@ -27,6 +27,16 @@ metadata:
 type: helm
 providerConfig:
   chart: $chart
+  ### for development purposes
+  #values:
+  #  replicaCount: 0
+  #  image:
+  #    repository: v2.isvimgreg.com/gardener-extension-cri-resmgr
+  #    tag: latest
+  #    pullPolicy: Always
+  #  configs:
+  #    foo2: |
+  #      foo-2-from-ctrldeploy
 ---
 apiVersion: core.gardener.cloud/v1beta1
 kind: ControllerRegistration
@@ -40,6 +50,7 @@ spec:
   - kind: Extension
     type: cri-resmgr-extension
     globallyEnabled: false
+    reconcileTimeout: "60s"
 EOT
 
 echo "Successfully generated ControllerRegistration and ControllerDeployment example."

@@ -50,7 +50,7 @@ e2e-tests:
 
 .PHONY: start
 start:
-	go run ./cmd/gardener-extension-cri-resmgr --ignore-operation-annotation=true --leader-election=false
+	go run ./cmd/gardener-extension-cri-resmgr --ignore-operation-annotation=true
 
 .PHONY: _install-binaries
 _install-binaries:

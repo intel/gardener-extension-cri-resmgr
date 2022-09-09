@@ -16,6 +16,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"time"
@@ -33,13 +34,11 @@ import (
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	resourcemanagerv1alpha1 "github.com/gardener/gardener/pkg/apis/resources/v1alpha1"
 	"github.com/gardener/gardener/pkg/logger"
-	kutil "github.com/gardener/gardener/pkg/utils/kubernetes"
 	managedresources "github.com/gardener/gardener/pkg/utils/managedresources"
 
 	// Other
 	"github.com/go-logr/logr"
 	"github.com/spf13/cobra"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
@@ -90,10 +89,10 @@ func RegisterHealthChecks(mgr manager.Manager) error {
 }
 
 type Options struct {
-	restOptions       *controllercmd.RESTOptions
-	managerOptions    *controllercmd.ManagerOptions
-	controllerOptions *controllercmd.ControllerOptions
-	reconcileOptions  *controllercmd.ReconcilerOptions
+	restOptions       *controllercmd.RESTOptions       // kubeconfig / masterurl
+	controllerOptions *controllercmd.ControllerOptions // MaxConcurrentReconciles
+	reconcileOptions  *controllercmd.ReconcilerOptions // IgnoreOpreationAnnotatino
+	// managerOptions    *controllercmd.ManagerOptions    // LeaderElection options + Webhook options + Metrics + Health
 }
 
 // ---------------------------------------------------------------------------------------
@@ -101,26 +100,27 @@ type Options struct {
 // ---------------------------------------------------------------------------------------
 
 func main() {
-	runtimelog.SetLogger(logger.ZapLogger(true))
+	runtimelog.SetLogger(logger.ZapLogger(true)) // development true
 
 	ctx := signals.SetupSignalHandler()
 
 	options := &Options{
 		restOptions: &controllercmd.RESTOptions{},
-		managerOptions: &controllercmd.ManagerOptions{
-			LeaderElection:          false,
-			LeaderElectionID:        controllercmd.LeaderElectionNameID(ExtensionName),
-			LeaderElectionNamespace: os.Getenv("LEADER_ELECTION_NAMESPACE"),
-		},
 		controllerOptions: &controllercmd.ControllerOptions{
 			MaxConcurrentReconciles: 1,
 		},
 		reconcileOptions: &controllercmd.ReconcilerOptions{},
+		// TODO: disabled until we validate/use HA/leaders
+		// managerOptions: &controllercmd.ManagerOptions{
+		// 	LeaderElection:          false,
+		// 	LeaderElectionID:        controllercmd.LeaderElectionNameID(ExtensionName),
+		// 	LeaderElectionNamespace: os.Getenv("LEADER_ELECTION_NAMESPACE"),
+		// },
 	}
 
 	optionAggregator := controllercmd.NewOptionAggregator(
 		options.restOptions,
-		options.managerOptions,
+		// options.managerOptions, // disabled until leader/webhooks or metrics/healthchecks are required to configure
 		options.controllerOptions,
 		options.reconcileOptions,
 	)
@@ -134,8 +134,13 @@ func main() {
 				return fmt.Errorf("error completing options: %s", err)
 			}
 
-			mgrOpts := options.managerOptions.Completed().Options()
-			mgrOpts.MetricsBindAddress = "0"
+			// TODO: Flags version to allow override leader and
+			// mgrOpts := options.managerOptions.Completed().Options()
+			// mgrOpts.MetricsBindAddress = "0"
+			mgrOpts := manager.Options{
+				LeaderElection:     false,
+				MetricsBindAddress: "0",
+			}
 
 			// mgrOpts.ClientDisableCacheFor = []client.Object{
 			// 	&corev1.Secret{},    // TODO: resolve race condition with small rsync time
@@ -149,17 +154,26 @@ func main() {
 			if err := extensionscontroller.AddToScheme(scheme); err != nil {
 				return err
 			}
-			if err := resourcemanagerv1alpha1.AddToScheme(mgr.GetScheme()); err != nil {
+			if err := resourcemanagerv1alpha1.AddToScheme(scheme); err != nil {
 				return err
 			}
 
-			// enable healthcheck
-			if err := RegisterHealthChecks(mgr); err != nil {
-				return err
-			}
+			// Enable healthcheck.
+			// Registration adds additionall controller that watches over Extension/Cluster.
+			// if err := RegisterHealthChecks(mgr); err != nil {
+			// 	return err
+			// }
 
-			// For development purposes.
-			ignoreOperationAnnotation := false
+			ignoreOperationAnnotation := options.reconcileOptions.Completed().IgnoreOperationAnnotation
+			// if true:
+			//		predicates: only observe "generate change"
+			// 		watches:  watch Cluster (and map to extensions) and Extension
+			//
+			// if false (default):
+			//      predicates: (defaultControllerPredicates) watches for "operation annotation" to be reconile/migrate/restore
+			//					or deletionTimestamp is set or lastOperation is not succesfull state (on Extension object)
+			// 		watches: only Extension
+			log.Log.Info("Reconciller options", "ignoreOperationAnnotation", ignoreOperationAnnotation)
 
 			if err := extension.Add(mgr, extension.AddArgs{
 				Actuator:                  NewActuator(),
@@ -167,8 +181,8 @@ func main() {
 				Name:                      ControllerName,
 				FinalizerSuffix:           ExtensionType,
 				Resync:                    60 * time.Minute, // was 60 // FIXME: with 1 second resync we have race condition during deletion
+				Type:                      ExtensionType,    // to be used for TypePredicate
 				Predicates:                extension.DefaultPredicates(ignoreOperationAnnotation),
-				Type:                      ExtensionType,
 				IgnoreOperationAnnotation: ignoreOperationAnnotation,
 			}); err != nil {
 				return fmt.Errorf("error configuring actuator: %s", err)
@@ -210,15 +224,11 @@ type actuator struct {
 	logger               logr.Logger
 }
 
-func (a *actuator) generateSecretData(ctx context.Context, ex *extensionsv1alpha1.Extension, chartPath string, namespace string) (map[string][]byte, error) {
+func (a *actuator) generateSecretData(ctx context.Context, ex *extensionsv1alpha1.Extension,
+	chartPath string, namespace string, k8sversion string, configs map[string]string) (map[string][]byte, error) {
 	emptyMap := map[string][]byte{}
-	// Find what shoot cluster we dealing with.
-	cluster, err := controller.GetCluster(ctx, a.client, namespace)
-	if err != nil {
-		return emptyMap, err
-	}
 	// Depending on shoot, chartredner will have different capabilities based on K8s version.
-	chartRenderer, err := a.chartRendererFactory.NewChartRendererForShoot(cluster.Shoot.Spec.Kubernetes.Version)
+	chartRenderer, err := a.chartRendererFactory.NewChartRendererForShoot(k8sversion)
 	if err != nil {
 		return emptyMap, err
 	}
@@ -226,55 +236,108 @@ func (a *actuator) generateSecretData(ctx context.Context, ex *extensionsv1alpha
 		"images": map[string]string{
 			InstallationImageName: "foo", // TODO: imagevector.FindImage(InstallationImageName),
 		},
+		"configs": configs,
 	}
 	release, err := chartRenderer.Render(chartPath, InstallationReleaseName, metav1.NamespaceSystem, chartValues)
+	//release, err := chartRenderer.RenderEmbeddedFS(chartPath, InstallationReleaseName, metav1.NamespaceSystem, chartValues)
 	if err != nil {
 		return emptyMap, err
 	}
 	// Put chart into secret
-	secretData := map[string][]byte{ConfigKey: release.Manifest()}
+	secretData := map[string][]byte{"installation_chart": release.Manifest()}
 	return secretData, nil
 }
 
-func (a *actuator) deployDaemonsetToUninstallCriResMgr(ctx context.Context, ex *extensionsv1alpha1.Extension) error {
-	a.logger.Info("Uninstalling CRI-Resource-Manager")
-	namespace := ex.GetNamespace()
-	secretData, err := a.generateSecretData(ctx, ex, ChartPathRemoval, namespace)
-	if err != nil {
-		return err
-	}
-	// Reconcile managedresource and secret for shoot.
-	if err := managedresources.CreateForShoot(ctx, a.client, namespace, ManagedResourceName, false, secretData); err != nil {
-		return err
-	}
-	// Sleep to give daemonset a time to remove cri-resmgr
-	// TODO: detect if the script is finished
-	a.logger.Info("Sleep for 120 seconds to make sure remove script is done.")
-	time.Sleep(120 * time.Second)
-	return nil
+// func (a *actuator) deployDaemonsetToUninstallCriResMgr(ctx context.Context, ex *extensionsv1alpha1.Extension) error {
+// 	a.logger.Info("Uninstalling CRI-Resource-Manager")
+// 	namespace := ex.GetNamespace()
+// 	// Find what shoot cluster we dealing with.
+// 	// to find k8s version for chart renderer
+// 	// and get providerConfig for configurations for CRI-resource-manager configmaps
+// 	cluster, err := controller.GetCluster(ctx, a.client, namespace)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	secretData, err := a.generateSecretData(ctx, ex, ChartPathRemoval, namespace, cluster.Shoot.Spec.Kubernetes.Version, map[string]string{})
+// 	if err != nil {
+// 		return err
+// 	}
+// 	// Reconcile managedresource and secret for shoot.
+// 	if err := managedresources.CreateForShoot(ctx, a.client, namespace, ManagedResourceName, false, secretData); err != nil {
+// 		return err
+// 	}
+// 	// Sleep to give daemonset a time to remove cri-resmgr
+// 	// TODO: detect if the script is finished
+// 	a.logger.Info("Sleep for 120 seconds to make sure remove script is done.")
+// 	time.Sleep(120 * time.Second)
+// 	return nil
+// }
+
+// CriResMgrConfig is a providerConfig specific type for CRI-res-mgr extension.
+type CriResMgrConfig struct {
+	// Just for test
+	Foo bool `json:"foo,omitempty"`
+	// Configs is a map of name of config file for cri-resource-manager and its contents.
+	Configs map[string]string `json:"configs,omitempty"`
 }
 
 func (a *actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extensionsv1alpha1.Extension) error {
 	namespace := ex.GetNamespace()
 	a.logger.Info("Reconcile: checking extension...") // , "shoot", cluster.Shoot.Name, "namespace", cluster.Shoot.Namespace)
 
-	mr := &resourcemanagerv1alpha1.ManagedResource{}
-	if err := a.client.Get(ctx, kutil.Key(namespace, ManagedResourceName), mr); err != nil {
-		// Continue only if not found.
-		if !apierrors.IsNotFound(err) {
-			return err
-		}
-		secretData, err := a.generateSecretData(ctx, ex, ChartPath, namespace)
-		if err != nil {
-			return err
-		}
-		// Reconcile managedresource and secret for shoot.
-		if err := managedresources.CreateForShoot(ctx, a.client, namespace, ManagedResourceName, false, secretData); err != nil {
-			return err
-		}
-	} else {
-		a.logger.Info("Reconcile: extension is already installed. Ignoring.") //, "shoot", cluster.Shoot.Name, "namespace", cluster.Shoot.Namespace)
+	// Find what shoot cluster we dealing with.
+	// to find k8s version for chart renderer
+	// and get providerConfig for configurations for CRI-resource-manager configmaps
+	cluster, err := controller.GetCluster(ctx, a.client, namespace)
+	if err != nil {
+		return err
 	}
+	a.logger.Info("Provider config found:", "providerConfig", cluster.Shoot.Spec.Extensions[0].ProviderConfig)
+
+	// parse provideConfig
+	var providerConfig *runtime.RawExtension
+	var criResMgrConfig *CriResMgrConfig
+
+	for _, extension := range cluster.Shoot.Spec.Extensions {
+		if extension.Type == ExtensionType {
+			providerConfig = extension.ProviderConfig
+		}
+	}
+
+	// Has to be empty to allow helm values to merge
+	configs := map[string]string{}
+	if providerConfig != nil {
+		if err := json.Unmarshal(providerConfig.Raw, &criResMgrConfig); err != nil {
+			// gardencorev1beta1helper "github.com/gardener/gardener/pkg/apis/core/v1beta1/helper"
+			// conditionValid = gardencorev1beta1helper.UpdatedCondition(conditionValid, gardencorev1beta1.ConditionFalse, "ChartInformationInvalid", fmt.Sprintf("CRI-ResMgr Extension (providerConfig) connfig cannot be unmarshalled: %+v", err))
+			panic(err)
+			// logger.Error(err, "error unmarhasling providerConfig", "providerConfig", string(providerConfig.Raw))
+			// return err
+		}
+		configs = criResMgrConfig.Configs
+	}
+	logger.Info("parseConfig:", "criResMgrConfig", criResMgrConfig)
+
+	secretData, err := a.generateSecretData(ctx, ex, ChartPath, namespace, cluster.Shoot.Spec.Kubernetes.Version, configs)
+	if err != nil {
+		panic(err)
+		// return err
+	}
+
+	// Reconcile managedresource and secret for shoot.
+	if err := managedresources.CreateForShoot(ctx, a.client, namespace, ManagedResourceName, false, secretData); err != nil {
+		return err
+	}
+
+	// mr := &resourcemanagerv1alpha1.ManagedResource{}
+	// if err := a.client.Get(ctx, kutil.Key(namespace, ManagedResourceName), mr); err != nil {
+	// 	// Continue only if not found.
+	// 	if !apierrors.IsNotFound(err) {
+	// 		return err
+	// 	}
+	// } else {
+	// 	a.logger.Info("Reconcile: extension is already installed. Ignoring.") //, "shoot", cluster.Shoot.Name, "namespace", cluster.Shoot.Namespace)
+	// }
 
 	return nil
 }
@@ -286,13 +349,13 @@ func (a *actuator) Delete(ctx context.Context, logger logr.Logger, ex *extension
 		return err
 	}
 
-	if err := a.deployDaemonsetToUninstallCriResMgr(ctx, ex); err != nil {
-		return err
-	}
+	// if err := a.deployDaemonsetToUninstallCriResMgr(ctx, ex); err != nil {
+	// 	return err
+	// }
 
 	a.logger.Info("Delete: deleting extension managedresources in shoot", "shoot", cluster.Shoot.Name, "namespace", cluster.Shoot.Namespace)
 
-	twoMinutes := 2 * time.Minute
+	twoMinutes := 1 * time.Minute
 
 	timeoutShootCtx, cancelShootCtx := context.WithTimeout(ctx, twoMinutes)
 	defer cancelShootCtx()

@@ -1,0 +1,13 @@
+{{ range $config_name, $config_contents := .Values.configs }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: kube-system
+  name: "cri-resmgr-config.{{ $config_name }}"
+#  annotations:
+#    resources.gardener.cloud/ignore: "true"
+data:
+  policy: {{- $config_contents | toYaml | indent 2 }}
+ 
+{{ end }}
