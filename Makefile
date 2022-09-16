@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-.PHONY: build clean e2e-tests test start _install-binaries cri-agent-docker-image docker-images publish-docker-images
+.PHONY: build clean e2e-test test start _install-binaries cri-agent-docker-image docker-images publish-docker-images
 
 REGISTRY                    := v2.isvimgreg.com/
 EXTENSION_IMAGE_NAME        := gardener-extension-cri-resmgr
@@ -32,7 +32,7 @@ build:
 	go test -c -v ./cmd/gardener-extension-cri-resmgr
 
 test:
-	# required because this tests try to render charts project root directory
+	# Note: manual build required because this tests try to render charts project accessilbe only from root directory
 	go test -c -v ./cmd/gardener-extension-cri-resmgr
 	./gardener-extension-cri-resmgr.test --ginkgo.vv -test.v --ginkgo.progress
 
@@ -41,7 +41,7 @@ clean:
 	rm cri-resmgr-extension.test
 	rm gardener-extension-cri-resmgr
 
-e2e-tests:
+e2e-test:
 	@echo "Note1:"
 	@echo "Make sure following hosts are defined in etc/hosts"
 	@echo "127.0.0.1 api.e2e-default.local.external.local.gardener.cloud"
