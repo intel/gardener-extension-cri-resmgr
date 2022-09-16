@@ -41,11 +41,6 @@ spec:
           mountPath: /var/host
         - name: cri-resmgr-installation-script
           mountPath: /scripts
-        {{- if .Values.image.imageVectorOverwrite }}
-        - name: imagevector-overwrite
-          mountPath: /charts_overwrite/
-          readOnly: true
-        {{- end }}
         livenessProbe:
           exec:
             command: ["chroot", "/var/host", "bash", "-c", "systemctl status cri-resource-manager"]
@@ -59,9 +54,3 @@ spec:
         configMap:
           name: cri-resmgr-installation-script
           defaultMode: 0744
-      {{- if .Values.image.imageVectorOverwrite }}
-      - name: imagevector-overwrite
-        configMap:
-          name: gardener-extension-cri-resmgr-installation-imagevector-overwrite
-          defaultMode: 420
-      {{- end }}

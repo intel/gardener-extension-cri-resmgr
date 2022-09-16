@@ -16,9 +16,3 @@ image:
   repository: v2.isvimgreg.com/gardener-extension-cri-resmgr-installation
   tag: latest
   pullPolicy: Always
-
-imageVectorOverwrite: |
-  images:
-  - name: gardener-extension-cri-resmgr-installation
-    tag: latest
-    repository: v2.isvimgreg.com/gardener-extension-cri-resmgr-installation
