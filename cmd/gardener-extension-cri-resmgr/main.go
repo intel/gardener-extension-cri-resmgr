@@ -64,6 +64,7 @@ const (
 	ChartPathRemoval        = "charts/cri-resmgr-removal"
 	InstallationImageName   = "installation_image_name" // TODO: to be replaced with proper "gardener-extension-cri-resmgr-" when ready
 	InstallationReleaseName = "cri-resmgr-installation"
+	InstallationSecretKey   = "installation_chart"
 )
 
 func RegisterHealthChecks(mgr manager.Manager) error {
@@ -210,25 +211,25 @@ func main() {
 // ---------------------------------------------------------------------------------------
 
 func NewActuator() extension.Actuator {
-	return &actuator{
-		chartRendererFactory: extensionscontroller.ChartRendererFactoryFunc(util.NewChartRendererForShoot),
+	return &Actuator{
+		ChartRendererFactory: extensionscontroller.ChartRendererFactoryFunc(util.NewChartRendererForShoot),
 		logger:               log.Log.WithName(ActuatorName),
 	}
 }
 
-type actuator struct {
+type Actuator struct {
 	client               client.Client
 	config               *rest.Config
-	chartRendererFactory extensionscontroller.ChartRendererFactory
+	ChartRendererFactory extensionscontroller.ChartRendererFactory
 	decoder              runtime.Decoder
 	logger               logr.Logger
 }
 
-func (a *actuator) generateSecretData(ctx context.Context, ex *extensionsv1alpha1.Extension,
+func (a *Actuator) GenerateSecretData(ctx context.Context, ex *extensionsv1alpha1.Extension,
 	chartPath string, namespace string, k8sversion string, configs map[string]string) (map[string][]byte, error) {
 	emptyMap := map[string][]byte{}
 	// Depending on shoot, chartredner will have different capabilities based on K8s version.
-	chartRenderer, err := a.chartRendererFactory.NewChartRendererForShoot(k8sversion)
+	chartRenderer, err := a.ChartRendererFactory.NewChartRendererForShoot(k8sversion)
 	if err != nil {
 		return emptyMap, err
 	}
@@ -240,11 +241,12 @@ func (a *actuator) generateSecretData(ctx context.Context, ex *extensionsv1alpha
 	}
 	release, err := chartRenderer.Render(chartPath, InstallationReleaseName, metav1.NamespaceSystem, chartValues)
 	//release, err := chartRenderer.RenderEmbeddedFS(chartPath, InstallationReleaseName, metav1.NamespaceSystem, chartValues)
+
 	if err != nil {
 		return emptyMap, err
 	}
 	// Put chart into secret
-	secretData := map[string][]byte{"installation_chart": release.Manifest()}
+	secretData := map[string][]byte{InstallationSecretKey: release.Manifest()}
 	return secretData, nil
 }
 
@@ -281,7 +283,7 @@ type CriResMgrConfig struct {
 	Configs map[string]string `json:"configs,omitempty"`
 }
 
-func (a *actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extensionsv1alpha1.Extension) error {
+func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extensionsv1alpha1.Extension) error {
 	namespace := ex.GetNamespace()
 	a.logger.Info("Reconcile: checking extension...") // , "shoot", cluster.Shoot.Name, "namespace", cluster.Shoot.Namespace)
 
@@ -318,7 +320,7 @@ func (a *actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extens
 	}
 	logger.Info("parseConfig:", "criResMgrConfig", criResMgrConfig)
 
-	secretData, err := a.generateSecretData(ctx, ex, ChartPath, namespace, cluster.Shoot.Spec.Kubernetes.Version, configs)
+	secretData, err := a.GenerateSecretData(ctx, ex, ChartPath, namespace, cluster.Shoot.Spec.Kubernetes.Version, configs)
 	if err != nil {
 		panic(err)
 		// return err
@@ -342,7 +344,7 @@ func (a *actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extens
 	return nil
 }
 
-func (a *actuator) Delete(ctx context.Context, logger logr.Logger, ex *extensionsv1alpha1.Extension) error {
+func (a *Actuator) Delete(ctx context.Context, logger logr.Logger, ex *extensionsv1alpha1.Extension) error {
 	namespace := ex.GetNamespace()
 	cluster, err := controller.GetCluster(ctx, a.client, namespace)
 	if err != nil {
@@ -371,25 +373,25 @@ func (a *actuator) Delete(ctx context.Context, logger logr.Logger, ex *extension
 	return nil
 }
 
-func (a *actuator) Restore(ctx context.Context, logger logr.Logger, ex *extensionsv1alpha1.Extension) error {
+func (a *Actuator) Restore(ctx context.Context, logger logr.Logger, ex *extensionsv1alpha1.Extension) error {
 	return a.Reconcile(ctx, logger, ex)
 }
 
-func (a *actuator) Migrate(ctx context.Context, logger logr.Logger, ex *extensionsv1alpha1.Extension) error {
+func (a *Actuator) Migrate(ctx context.Context, logger logr.Logger, ex *extensionsv1alpha1.Extension) error {
 	return a.Delete(ctx, logger, ex)
 }
 
-func (a *actuator) InjectConfig(config *rest.Config) error {
+func (a *Actuator) InjectConfig(config *rest.Config) error {
 	a.config = config
 	return nil
 }
 
-func (a *actuator) InjectClient(client client.Client) error {
+func (a *Actuator) InjectClient(client client.Client) error {
 	a.client = client
 	return nil
 }
 
-func (a *actuator) InjectScheme(scheme *runtime.Scheme) error {
+func (a *Actuator) InjectScheme(scheme *runtime.Scheme) error {
 	a.decoder = serializer.NewCodecFactory(scheme, serializer.EnableStrict).UniversalDecoder()
 	return nil
 }

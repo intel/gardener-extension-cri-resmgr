@@ -80,7 +80,7 @@ This is based on https://github.com/gardener/gardener/blob/master/docs/deploymen
 mkdir -p ~/work/
 git clone https://github.com/gardener/gardener ~/work/gardener
 cd ~/work/gardener
-git checkout v1.54.0
+git checkout v1.54.1
 ```
 
 ##### 2. Prepare kind cluster 
@@ -90,7 +90,6 @@ cd ~/work/gardener
 make kind-up
 
 kubectl cluster-info --context kind-gardener-local --kubeconfig ~/work/gardener/example/gardener-local/kind/kubeconfig
-cp ~/work/gardener/example/gardener-local/kind/kubeconfig ~/work/gardener/example/provider-local/base/kubeconfig
 # WARNING!: this overwrites your local kubeconfig
 cp ~/work/gardener/example/gardener-local/kind/kubeconfig ~/.kube/config
 ```

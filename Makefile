@@ -15,10 +15,13 @@
 REGISTRY                    := v2.isvimgreg.com/
 EXTENSION_IMAGE_NAME        := gardener-extension-cri-resmgr
 INSTALLATION_IMAGE_NAME     := gardener-extension-cri-resmgr-installation
+AGENT_IMAGE_NAME            := gardener-extension-cri-resmgr-agent
 VERSION                     := latest
-CRI_RM_VERSION              := 0.6.1rc1
-ARCHIVE_NAME                := cri-resource-manager-$(CRI_RM_VERSION).x86_64.tar.gz
-CRI_RM_URL                  := https://github.com/intel/cri-resource-manager/releases/download/v$(CRI_RM_VERSION)/$(ARCHIVE_NAME)
+CRI_RM_VERSION              := 0.7.2
+CRI_RM_ARCHIVE_NAME         := cri-resource-manager-$(CRI_RM_VERSION).x86_64.tar.gz
+CRI_RM_URL_RELEASE          := https://github.com/intel/cri-resource-manager/releases/download/v$(CRI_RM_VERSION)/$(CRI_RM_ARCHIVE_NAME)
+CRI_RM_SRC_ARCHIVE_NAME     := vendored-cri-resource-manager-$(CRI_RM_VERSION).tar.gz
+CRI_RM_URL_SRC              := https://github.com/intel/cri-resource-manager/releases/download/v$(CRI_RM_VERSION)/$(CRI_RM_SRC_ARCHIVE_NAME)
 
 .PHONY: build
 build:
@@ -55,12 +58,20 @@ start:
 .PHONY: _install-binaries
 _install-binaries:
 	# WARNING: this should be run in container
-	wget --directory-prefix=/cri-resmgr-installation https://github.com/intel/cri-resource-manager/releases/download/v$(CRI_RM_VERSION)/cri-resource-manager-$(CRI_RM_VERSION).x86_64.tar.gz
-	tar -xvf /cri-resmgr-installation/cri-resource-manager-$(CRI_RM_VERSION).x86_64.tar.gz --directory /cri-resmgr-installation
-	rm /cri-resmgr-installation/cri-resource-manager-$(CRI_RM_VERSION).x86_64.tar.gz
+	wget --directory-prefix=/cri-resmgr-installation $(CRI_RM_URL_RELEASE)
+	tar -xvf /cri-resmgr-installation/$(CRI_RM_ARCHIVE_NAME) --directory /cri-resmgr-installation
+	rm /cri-resmgr-installation/$(CRI_RM_ARCHIVE_NAME)
+
+.PHONY: cri-agent-docker-image
+cri-agent-docker-image:
+	-mkdir tmpbuild
+	wget --directory-prefix=tmpbuild -nc $(CRI_RM_URL_SRC)
+	tar -C tmpbuild -xzvf tmpbuild/$(CRI_RM_SRC_ARCHIVE_NAME)
+	# use exiting Dockerfile from cri-resource-manager source code
+	docker build -t $(REGISTRY)$(AGENT_IMAGE_NAME):$(VERSION) -f tmpbuild/cri-resource-manager-$(CRI_RM_VERSION)/cmd/cri-resmgr-agent/Dockerfile  tmpbuild/cri-resource-manager-$(CRI_RM_VERSION)
 	
 .PHONY: docker-images
-docker-images:
+docker-images: cri-agent-docker-image
 	docker build -t $(REGISTRY)$(EXTENSION_IMAGE_NAME):$(VERSION) -f Dockerfile --target $(EXTENSION_IMAGE_NAME) .
 	docker build -t $(REGISTRY)$(INSTALLATION_IMAGE_NAME):$(VERSION) -f Dockerfile --target $(INSTALLATION_IMAGE_NAME) .
 
@@ -68,3 +79,5 @@ docker-images:
 publish-docker-images:
 	docker push $(REGISTRY)$(EXTENSION_IMAGE_NAME):$(VERSION)
 	docker push $(REGISTRY)$(INSTALLATION_IMAGE_NAME):$(VERSION)
+	docker push $(REGISTRY)$(AGENT_IMAGE_NAME):$(VERSION)
+	
