@@ -23,7 +23,6 @@ import (
 
 	// Gardener
 	extensionsconfig "github.com/gardener/gardener/extensions/pkg/apis/config"
-	"github.com/gardener/gardener/extensions/pkg/controller"
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
 	controllercmd "github.com/gardener/gardener/extensions/pkg/controller/cmd"
 	"github.com/gardener/gardener/extensions/pkg/controller/extension"
@@ -45,7 +44,6 @@ import (
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
-	runtimelog "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
 )
@@ -101,7 +99,7 @@ type Options struct {
 // ---------------------------------------------------------------------------------------
 
 func main() {
-	runtimelog.SetLogger(logger.ZapLogger(true)) // development true
+	log.SetLogger(logger.ZapLogger(true)) // development true
 
 	ctx := signals.SetupSignalHandler()
 
@@ -200,7 +198,7 @@ func main() {
 	optionAggregator.AddFlags(cmd.Flags())
 
 	if err := cmd.ExecuteContext(ctx); err != nil {
-		runtimelog.Log.Error(err, "error executing the main controller command")
+		log.Log.Error(err, "error executing the main controller command")
 		os.Exit(1)
 	}
 
@@ -290,7 +288,7 @@ func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extens
 	// Find what shoot cluster we dealing with.
 	// to find k8s version for chart renderer
 	// and get providerConfig for configurations for CRI-resource-manager configmaps
-	cluster, err := controller.GetCluster(ctx, a.client, namespace)
+	cluster, err := extensionscontroller.GetCluster(ctx, a.client, namespace)
 	if err != nil {
 		return err
 	}
@@ -347,7 +345,7 @@ func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extens
 
 func (a *Actuator) Delete(ctx context.Context, logger logr.Logger, ex *extensionsv1alpha1.Extension) error {
 	namespace := ex.GetNamespace()
-	cluster, err := controller.GetCluster(ctx, a.client, namespace)
+	cluster, err := extensionscontroller.GetCluster(ctx, a.client, namespace)
 	if err != nil {
 		return err
 	}
