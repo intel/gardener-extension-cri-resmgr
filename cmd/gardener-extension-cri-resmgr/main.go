@@ -160,15 +160,15 @@ func main() {
 			}
 
 			// Enable healthcheck.
-			// Registration adds additionall controller that watches over Extension/Cluster.
-			// if err := RegisterHealthChecks(mgr); err != nil {
-			// 	return err
-			// }
+			// "Registration" adds additionall controller that watches over Extension/Cluster.
+			if err := RegisterHealthChecks(mgr); err != nil {
+				return err
+			}
 
 			ignoreOperationAnnotation := options.reconcileOptions.Completed().IgnoreOperationAnnotation
 			// if true:
-			//		predicates: only observe "generate change"
-			// 		watches:  watch Cluster (and map to extensions) and Extension
+			//		predicates: only observe "generation change" predciate (oldObject.generation != newObject.generation)
+			// 		watches:  watch Cluster (additionally and map to extensions) and Extension
 			//
 			// if false (default):
 			//      predicates: (defaultControllerPredicates) watches for "operation annotation" to be reconile/migrate/restore
@@ -294,7 +294,8 @@ func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extens
 	if err != nil {
 		return err
 	}
-	a.logger.Info("Provider config found:", "providerConfig", cluster.Shoot.Spec.Extensions[0].ProviderConfig)
+
+	//a.logger.V(10).Info("Provider config found:", "providerConfig", string(cluster.Shoot.Spec.Extensions[0].ProviderConfig.Raw))
 
 	// parse provideConfig
 	var providerConfig *runtime.RawExtension

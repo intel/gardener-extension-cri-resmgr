@@ -17,7 +17,71 @@ There are three charts:
 - charts/**cri-resmgr-installation** - internal chart that is included inside "installation" image and used to install `cri-resource-manager` binary inside worker nodes in **Shoot** clusters - it is not meant to be run manually but rather deployed by **gardener-extension-cri-resmgr** chart
 - charts/**cri-resmgr-installation** - internal chart that is included inside "installation" image and used to remove `cri-resource-manager` binary inside worker nodes in **Shoot** clusters - it is not meant to be run manually but rather deployed by **gardener-extension-cri-resmgr** chart
 
+## Configuring CRI-resource-manager
+
+There are multiple options to pass configuration file to cri-resource-manager systemd unit:
+
+* a) using "configs" HELM chart value in ControllerDeployment values (HELM chart values)
+
+```
+apiVersion: core.gardener.cloud/v1beta1
+kind: ControllerDeployment
+metadata:
+  name: cri-resmgr-extension
+type: helm
+providerConfig:
+  chart: H4sI....
+  values:
+    configs:
+      default: |
+        ... SOME DEFAULT CONFIG ...
+```
+
+this "default" config will be used for all the shoots
+
+* b) using providerConfig "configs" field for specifc shoot
+
+```
+apiVersion: core.gardener.cloud/v1beta1
+kind: Shoot
+metadata:
+  name: local
+spec:
+  ...
+  extensions:
+  - type: cri-resmgr-extension
+    providerConfig:
+      configs:
+        fallback: |+
+        ... SOME DEFAULT CONFIG ...
+        default: |+
+        ... SOME DEFAULT CONFIG ...
+```
+
+configs specified within shoot definition will override release built-in **configs** and **configs** provided by **ControllerDeployment**
+
+each key of **configs** will generate ConfigMap in the kube-system namespace will following name:
+
+**cri-resmgr-config.KEY** e.g. **cri-resmgr-config.default**
+
+**default** and **fallback** have special meaning:
+
+* **fallback** will be mounted inside installation daemonset and copied to /etc/cri-resmgr/fallback.cfg - this config is used before cri-resmgr-agent can provide "dynamic" config (lowest priority)
+* **default** will used by cri-resmgr-agent to **override** **fallback** config on all the nodes
+* **node.$NODE_NAME** will be used cri-resmgr-agent and applied only to specified NODE_NAME
+* **force** will be used to override "configuration" pushed by cri-resmgr-agent (TODO: not implemented yet!) (highest priority) (adds --force-config to cri-resource-manager process in systemd unit definition) 
+
+**NOTE** things below arenot implemented yet! - probably will be replaced 
+* **group.$GROUP_NAME** will be used cri-resmgr-agent and applied only to nodes will label "cri-resource-manager.intel.com/group" with value GROUP_NAME (Idea: integrate somehow with worker.garden.sapcloud.io/group label)
+
+More about priorities and type of config can be found here:
+
+* https://intel.github.io/cri-resource-manager/stable/docs/node-agent.html
+* https://intel.github.io/cri-resource-manager/stable/docs/setup.html#using-cri-resource-manager-agent-and-a-configmap
+
 ## Getting started
+
+
 
 ### I. Deploying to Gardener.
 
@@ -86,8 +150,7 @@ git checkout v1.54.1
 ##### 2. Prepare kind cluster 
 
 ```bash
-cd ~/work/gardener
-make kind-up
+make -C ~/work/gardner kind-up
 
 kubectl cluster-info --context kind-gardener-local --kubeconfig ~/work/gardener/example/gardener-local/kind/kubeconfig
 # WARNING!: this overwrites your local kubeconfig
@@ -103,13 +166,13 @@ kubectl get nodes
 #####  3. Deploy local gardener
 
 ```bash
-make gardener-up
+make -C ~/work/gardener/ gardener-up
 ```
 
 Check that three gardener charts are installed:
 
 ```bash
-helm list -n garden
+helm list -n garden -a
 ```
 
 #### Deploy cri-resmgr extension
@@ -117,14 +180,12 @@ helm list -n garden
 ##### 1. (Optional) Regenerate ctrldeploy-ctrlreg.yaml file:
 
 ```bash
-cd ~/work/gardener-extension-cri-resmgr
 ./hacks/generate-controller-registration.sh
 ```
 
 ##### 2. Deploy cri-resmgr-extension as Gardener extension using ControllerRegistration/ControllerDeployment
 
 ```bash
-cd ~/work/gardener-extension-cri-resmgr
 kubectl apply -f ./examples/ctrldeploy-ctrlreg.yaml
 ```
 
@@ -152,7 +213,7 @@ should no return "cri-resmgr extension" installation.
 Build an image with extension and upload to local kind cluster
 
 ```bash
-make docker-images
+make build-images
 ```
 
 by default ``v2.isvimgreg.com`` registry is used (check 'Build and publish docker images' section for more info)
@@ -162,12 +223,18 @@ Deploy those images inside kind cluster (not needed if public registry is used):
 ```bash
 kind load docker-image v2.isvimgreg.com/gardener-extension-cri-resmgr:latest --name gardener-local
 kind load docker-image v2.isvimgreg.com/gardener-extension-cri-resmgr-installation:latest --name gardener-local
+kind load docker-image v2.isvimgreg.com/gardener-extension-cri-resmgr-agent:latest --name gardener-local
 kind load docker-image ghcr.io/gardener/machine-controller-manager-provider-local/node:latest --name gardener-local
 ```
 
 or just call
 ```
 ./hacks/kind-load-images.sh
+```
+
+Optionally (TODO: when image vector support is ready!!!):
+```
+make REGISTRY=localhost:5001/ build-images push-images
 ```
 
 Create shoot:
@@ -179,7 +246,7 @@ kubectl apply -f examples/shoot.yaml
 Check that shoot cluster is ready:
 
 ```
-kubectl get shoots.core.gardener.cloud -n garden-local --watch -o wide
+kubectl get shoots -n garden-local --watch -o wide
 ```
 
 In our shoot example, the extensions is also disabled by default and need to be enabled after shoot is created with following command:

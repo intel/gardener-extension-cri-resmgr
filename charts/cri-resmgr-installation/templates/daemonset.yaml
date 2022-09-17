@@ -50,8 +50,15 @@ spec:
           mountPath: /var/host
         - name: cri-resmgr-installation-script
           mountPath: /scripts
-        - name: config-volume
+        - name: config-volume-fallback
           mountPath: /etc/cri-resmgr/
+          # https://kubernetes.io/docs/concepts/configuration/configmap/#mounted-configmaps-are-updated-automatically
+          # using subPath brokes autoupdate 
+          # subPath: fallback.cfg
+        {{ if .Values.configs.force }}
+        - name: config-volume-force
+          mountPath: /configs
+        {{ end }}
         livenessProbe:
           exec:
             command: ["chroot", "/var/host", "bash", "-c", "systemctl status cri-resource-manager"]
@@ -65,9 +72,17 @@ spec:
         configMap:
           name: cri-resmgr-installation-script
           defaultMode: 0744
-      - name: config-volume
+      - name: config-volume-fallback
         configMap:
           name: cri-resmgr-config.fallback
           items:
           - key: policy
             path: fallback.cfg
+      {{ if .Values.configs.force }}
+      - name: config-volume-force
+        configMap:
+          name: cri-resmgr-config.force
+          items:
+          - key: policy
+            path: force.cfg
+      {{ end }}

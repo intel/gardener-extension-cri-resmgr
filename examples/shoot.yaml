@@ -32,15 +32,15 @@ spec:
     disabled: false
     providerConfig:
       foo: true
-      configs:
-        default: |+
-          Active: default-test
-          AvailableResources:
-            cpu: cpuset:0-63
-        fallback: |+
-          Active: fallback-test
-          AvailableResources:
-            cpu: cpuset:0-63
+      # configs:
+      #   default: |+
+      #     Active: default-test
+      #     AvailableResources:
+      #       cpu: cpuset:0-63
+      #   fallback: |+
+      #     Active: fallback-test
+      #     AvailableResources:
+      #       cpu: cpuset:0-63
 
   networking:
     type: calico

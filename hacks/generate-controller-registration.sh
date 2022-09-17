@@ -27,11 +27,11 @@ metadata:
 type: helm
 providerConfig:
   chart: $chart
-  ### for development purposes
+  ### for development purposes (if you want to starte with "make start"
   #values:
   #  replicaCount: 0
   #  image:
-  #    repository: v2.isvimgreg.com/gardener-extension-cri-resmgr
+  #    repository: localhost:5001/gardener-extension-cri-resmgr
   #    tag: latest
   #    pullPolicy: Always
   #  configs:

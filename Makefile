@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-.PHONY: build clean e2e-test test start _install-binaries cri-agent-docker-image docker-images publish-docker-images
+.PHONY: build clean e2e-test test start _install-binaries _build-agent-image build-images push-images
 
 REGISTRY                    := v2.isvimgreg.com/
 EXTENSION_IMAGE_NAME        := gardener-extension-cri-resmgr
@@ -25,6 +25,7 @@ CRI_RM_ARCHIVE_NAME         := cri-resource-manager-$(CRI_RM_VERSION).x86_64.tar
 CRI_RM_URL_RELEASE          := https://github.com/intel/cri-resource-manager/releases/download/v$(CRI_RM_VERSION)/$(CRI_RM_ARCHIVE_NAME)
 CRI_RM_SRC_ARCHIVE_NAME     := vendored-cri-resource-manager-$(CRI_RM_VERSION).tar.gz
 CRI_RM_URL_SRC              := https://github.com/intel/cri-resource-manager/releases/download/v$(CRI_RM_VERSION)/$(CRI_RM_SRC_ARCHIVE_NAME)
+IGNORE_OPERATION_ANNOTATION := false
 
 build:
 	go build -v ./cmd/gardener-extension-cri-resmgr
@@ -59,7 +60,7 @@ e2e-test:
 	ginkgo run -v --progress --seed 1 --slow-spec-threshold 2h --timeout 2h ./test/e2e/cri-resmgr-extension
 
 start:
-	go run ./cmd/gardener-extension-cri-resmgr --ignore-operation-annotation=true
+	go run ./cmd/gardener-extension-cri-resmgr --ignore-operation-annotation=$(IGNORE_OPERATION_ANNOTATION)
 
 _install-binaries:
 	# WARNING: this should be run in container
@@ -67,18 +68,18 @@ _install-binaries:
 	tar -xvf /cri-resmgr-installation/$(CRI_RM_ARCHIVE_NAME) --directory /cri-resmgr-installation
 	rm /cri-resmgr-installation/$(CRI_RM_ARCHIVE_NAME)
 
-cri-agent-docker-image:
+_build-agent-image:
 	-mkdir tmpbuild
 	wget --directory-prefix=tmpbuild -nc $(CRI_RM_URL_SRC)
 	tar -C tmpbuild -xzvf tmpbuild/$(CRI_RM_SRC_ARCHIVE_NAME)
 	# use exiting Dockerfile from cri-resource-manager source code
 	docker build -t $(REGISTRY)$(AGENT_IMAGE_NAME):$(VERSION) -f tmpbuild/cri-resource-manager-$(CRI_RM_VERSION)/cmd/cri-resmgr-agent/Dockerfile  tmpbuild/cri-resource-manager-$(CRI_RM_VERSION)
 	
-docker-images: cri-agent-docker-image
+build-images: _build-agent-image
 	docker build -t $(REGISTRY)$(EXTENSION_IMAGE_NAME):$(VERSION) -f Dockerfile --target $(EXTENSION_IMAGE_NAME) .
 	docker build -t $(REGISTRY)$(INSTALLATION_IMAGE_NAME):$(VERSION) -f Dockerfile --target $(INSTALLATION_IMAGE_NAME) .
 
-publish-docker-images:
+push-images:
 	docker push $(REGISTRY)$(EXTENSION_IMAGE_NAME):$(VERSION)
 	docker push $(REGISTRY)$(INSTALLATION_IMAGE_NAME):$(VERSION)
 	docker push $(REGISTRY)$(AGENT_IMAGE_NAME):$(VERSION)
