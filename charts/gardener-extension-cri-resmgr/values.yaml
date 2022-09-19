@@ -16,30 +16,15 @@ image:
   repository: v2.isvimgreg.com/gardener-extension-cri-resmgr
   tag: latest
   pullPolicy: Always
-<<<<<<< HEAD
 
-replicaCount: 1
 
-# TO BE USED TO CREATE CONFIGMAP for extension as default values
-# for config to bez used as a way to override config for all shoots
-configs:
-  foo: |
-    some-foo-from-base-chart
-||||||| 9ad0cb4
-=======
-
-imageVectorOverwrite: |
-  images:
-  - name: gardener-extension-cri-resmgr
-    tag: imagevector-test
-    repository: v2.isvimgreg.com/gardener-extension-cri-resmgr
->>>>>>> mmucek/image-vector
-
-imageVectorOverwrite: |
-  images:
-  - name: gardener-extension-cri-resmgr
-    tag: imagevector-test
-    repository: v2.isvimgreg.com/gardener-extension-cri-resmgr
+### Just an example of how imageVectorOverwite can be provided for installation image
+### Default value is defined in charts.go package by embeding charts/images.yaml
+# imageVectorOverwrite: |
+#   images:
+#   - name: gardener-extension-cri-resmgr-installation
+#     tag: imagevector-test
+#     repository: v2.isvimgreg.com/gardener-extension-cri-resmgr-installation
 
 replicaCount: 1
 

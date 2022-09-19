@@ -34,7 +34,7 @@ spec:
       terminationGracePeriodSeconds: 60
       containers:
       - name: container-runtime-cri-resmgr
-        image: {{ include "image" . }}
+        image: {{ .Values.image }}
         command: ["/scripts/install-cri-resmgr.sh"]
         # DOESN't WORK BECAUSE kubelet is killed and strage things happens
         #lifecycle:

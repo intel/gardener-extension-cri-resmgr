@@ -1,15 +1,17 @@
 package imagevector
 
 import (
+	"strings"
+
 	"github.com/gardener/gardener/pkg/utils/imagevector"
 	"github.com/intel/gardener-extension-cri-resmgr/charts"
-	"strings"
 )
 
 var imageVector imagevector.ImageVector
 
 func init() {
-	var imageVector, err = imagevector.Read(strings.NewReader(charts.ImagesYAML))
+	var err error
+	imageVector, err = imagevector.Read(strings.NewReader(charts.ImagesYAML))
 	if err != nil {
 		return
 	}

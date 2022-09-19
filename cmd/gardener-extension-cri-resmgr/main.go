@@ -237,9 +237,7 @@ func (a *Actuator) GenerateSecretData(ctx context.Context, ex *extensionsv1alpha
 		return emptyMap, err
 	}
 	chartValues := map[string]interface{}{
-		"images": map[string]string{
-			InstallationImageName: image.String(),
-		},
+		"image":   image.String(),
 		"configs": configs,
 	}
 	release, err := chartRenderer.Render(chartPath, InstallationReleaseName, metav1.NamespaceSystem, chartValues)
