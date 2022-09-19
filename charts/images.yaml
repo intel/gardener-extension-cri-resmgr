@@ -1,0 +1,9 @@
+images:
+- name: gardener-extension-cri-resmgr
+  sourceRepository: https://github.com/intel/gardener-extension-cri-resmgr
+  repository: v2.isvimgreg.com/gardener-extension-cri-resmgr
+  tag: latest
+- name: gardener-extension-cri-resmgr-installation
+  sourceRepository: https://github.com/intel/gardener-extension-cri-resmgr
+  repository: v2.isvimgreg.com/gardener-extension-cri-resmgr-installation
+  tag: latest

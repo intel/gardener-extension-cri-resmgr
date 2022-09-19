@@ -37,6 +37,7 @@ import (
 
 	// Other
 	"github.com/go-logr/logr"
+	"github.com/intel/gardener-extension-cri-resmgr/pkg/imagevector"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -60,7 +61,7 @@ const (
 
 	ChartPath               = "charts/cri-resmgr-installation/"
 	ChartPathRemoval        = "charts/cri-resmgr-removal"
-	InstallationImageName   = "installation_image_name" // TODO: to be replaced with proper "gardener-extension-cri-resmgr-" when ready
+	InstallationImageName   = "gardener-extension-cri-resmgr-installation"
 	InstallationReleaseName = "cri-resmgr-installation"
 	InstallationSecretKey   = "installation_chart"
 )
@@ -231,9 +232,13 @@ func (a *Actuator) GenerateSecretData(ctx context.Context, ex *extensionsv1alpha
 	if err != nil {
 		return emptyMap, err
 	}
+	image, err := imagevector.ImageVector().FindImage(InstallationImageName)
+	if err != nil {
+		return emptyMap, err
+	}
 	chartValues := map[string]interface{}{
 		"images": map[string]string{
-			InstallationImageName: "foo", // TODO: imagevector.FindImage(InstallationImageName),
+			InstallationImageName: image.String(),
 		},
 		"configs": configs,
 	}

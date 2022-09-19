@@ -34,8 +34,7 @@ spec:
       terminationGracePeriodSeconds: 60
       containers:
       - name: container-runtime-cri-resmgr
-        # TODO: support for imagevector
-        image: v2.isvimgreg.com/gardener-extension-cri-resmgr-installation:latest
+        image: {{ include "image" . }}
         command: ["/scripts/install-cri-resmgr.sh"]
         # DOESN't WORK BECAUSE kubelet is killed and strage things happens
         #lifecycle:

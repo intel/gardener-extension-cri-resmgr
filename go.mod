@@ -29,6 +29,8 @@ require (
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
 	k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9
 	sigs.k8s.io/controller-runtime v0.12.1
+// github.com/intel/gardener-extension-cri-resmgr/pkg/imagevector v0.0.0-00010101000000-000000000000
+// github.com/intel/gardener-extension-cri-resmgr/charts v0.0.0-00010101000000-000000000000 // indirect
 )
 
 require (
@@ -125,3 +127,9 @@ require (
 )
 
 replace k8s.io/client-go => k8s.io/client-go v0.24.3
+
+replace (
+	// Required for local development - remove before merging
+	github.com/intel/gardener-extension-cri-resmgr/charts => ./charts
+	github.com/intel/gardener-extension-cri-resmgr/pkg/imagevector => ./pkg/imagevector
+)
