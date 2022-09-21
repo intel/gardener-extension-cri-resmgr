@@ -27,13 +27,18 @@ metadata:
 type: helm
 providerConfig:
   chart: $chart
-  ### for development purposes (if you want to starte with "make start"
+  ## Example values for development/testing puropses
   #values:
-  #  replicaCount: 0
+  #  replicaCount: 0            # for development purposes (if you want to start with "make start")
   #  image:
   #    repository: localhost:5001/gardener-extension-cri-resmgr
   #    tag: latest
   #    pullPolicy: Always
+  #  imageVectorOverwrite: |
+  #    images:
+  #    - name: gardener-extension-cri-resmgr-installation
+  #      tag: latest
+  #      repository: localhost:5001/gardener-extension-cri-resmgr-installation
   #  configs:
   #    foo2: |
   #      foo-2-from-ctrldeploy

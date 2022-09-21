@@ -15,11 +15,11 @@
 #
 .PHONY: build clean e2e-test test start _install-binaries _build-agent-image build-images push-images
 
-REGISTRY                    := v2.isvimgreg.com/
+REGISTRY                    := localhost:5001/
 EXTENSION_IMAGE_NAME        := gardener-extension-cri-resmgr
 INSTALLATION_IMAGE_NAME     := gardener-extension-cri-resmgr-installation
 AGENT_IMAGE_NAME            := gardener-extension-cri-resmgr-agent
-VERSION                     := latest
+TAG                         := latest
 CRI_RM_VERSION              := 0.7.2
 CRI_RM_ARCHIVE_NAME         := cri-resource-manager-$(CRI_RM_VERSION).x86_64.tar.gz
 CRI_RM_URL_RELEASE          := https://github.com/intel/cri-resource-manager/releases/download/v$(CRI_RM_VERSION)/$(CRI_RM_ARCHIVE_NAME)
@@ -29,8 +29,8 @@ IGNORE_OPERATION_ANNOTATION := false
 
 build:
 	go build -v ./cmd/gardener-extension-cri-resmgr
-	go test -c -v -o gardener-extension-cri-resmgr.e2e-tests ./test/e2e/cri-resmgr-extension/...
-	go test -c -v ./cmd/gardener-extension-cri-resmgr
+	go test -c -v  ./test/e2e/cri-resmgr-extension/. -o gardener-extension-cri-resmgr.e2e-tests
+	go test -c -v ./pkg/actuator -o ./gardener-extension-cri-resmgr.actuator.test
 
 test:
 	# This one (that renders charts) requires manual compilation because must be root from root project directory (access to charts directory)
@@ -73,13 +73,13 @@ _build-agent-image:
 	wget --directory-prefix=tmpbuild -nc $(CRI_RM_URL_SRC)
 	tar -C tmpbuild -xzvf tmpbuild/$(CRI_RM_SRC_ARCHIVE_NAME)
 	# use exiting Dockerfile from cri-resource-manager source code
-	docker build -t $(REGISTRY)$(AGENT_IMAGE_NAME):$(VERSION) -f tmpbuild/cri-resource-manager-$(CRI_RM_VERSION)/cmd/cri-resmgr-agent/Dockerfile  tmpbuild/cri-resource-manager-$(CRI_RM_VERSION)
+	docker build -t $(REGISTRY)$(AGENT_IMAGE_NAME):$(TAG) -f tmpbuild/cri-resource-manager-$(CRI_RM_VERSION)/cmd/cri-resmgr-agent/Dockerfile  tmpbuild/cri-resource-manager-$(CRI_RM_VERSION)
 	
 build-images: _build-agent-image
-	docker build -t $(REGISTRY)$(EXTENSION_IMAGE_NAME):$(VERSION) -f Dockerfile --target $(EXTENSION_IMAGE_NAME) .
-	docker build -t $(REGISTRY)$(INSTALLATION_IMAGE_NAME):$(VERSION) -f Dockerfile --target $(INSTALLATION_IMAGE_NAME) .
+	docker build -t $(REGISTRY)$(EXTENSION_IMAGE_NAME):$(TAG) -f Dockerfile --target $(EXTENSION_IMAGE_NAME) .
+	docker build -t $(REGISTRY)$(INSTALLATION_IMAGE_NAME):$(TAG) -f Dockerfile --target $(INSTALLATION_IMAGE_NAME) .
 
 push-images:
-	docker push $(REGISTRY)$(EXTENSION_IMAGE_NAME):$(VERSION)
-	docker push $(REGISTRY)$(INSTALLATION_IMAGE_NAME):$(VERSION)
-	docker push $(REGISTRY)$(AGENT_IMAGE_NAME):$(VERSION)
+	docker push $(REGISTRY)$(EXTENSION_IMAGE_NAME):$(TAG)
+	docker push $(REGISTRY)$(INSTALLATION_IMAGE_NAME):$(TAG)
+	docker push $(REGISTRY)$(AGENT_IMAGE_NAME):$(TAG)

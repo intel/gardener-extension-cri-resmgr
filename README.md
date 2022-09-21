@@ -101,21 +101,33 @@ make build-images
 make push-images
 ```
 
-**Note** By default the "private" v2.isvimgreg.com registry is set and used. If you want to use other registry, please modify this files to point to other registry: 
-
-For example: if you want use **registry-example.com** as registry:
-
-* ``charts/cri-resmgr-installation/templates/daemonset.yaml`` and its **spec.template.spec.containers.image** value to "registry-example.com/gardener-extension-cri-resmgr" 
-* ``charts/cri-resmgr-removal/templates/daemonset.yaml`` and its **spec.template.spec.containers.image** value to "registry-example.com/gardener-extension-cri-resmgr" 
-* ``charts/gardener-extension-cri-resmgr/values.yaml`` and its **image.repository** value to "registry-example.com/gardener-extension-cri-resmgr"
-
-... and specify REGISTRY env variable when building like this:
-
+**Note** By default the "private" localhost:5001 and "latest" tag registry is set and used. If you want to use other registry, please modify this files to point to other registry: 
 ```
-make REGISTRY=registry-example.com/ build-images
-make REGISTRY=registry-example.com/ push-images
+make REGISTRY=registry-example.com/ TAG=mybranch build-images push-images
 ```
-Image vector support will be added soon.
+
+Then one can overwrite images using image vector configuration in **ControllerDeployment**, like this:
+
+```yaml
+apiVersion: core.gardener.cloud/v1beta1
+kind: ControllerDeployment
+metadata:
+  name: cri-resmgr-extension
+type: helm
+providerConfig:
+  chart: H4sIAAAAAAAA....
+  values:
+   image:
+     repository: registry-example.com/gardener-extension-cri-resmgr
+     tag: mybranch
+     pullPolicy: Always
+   imageVectorOverwrite: |
+     images:
+     - name: gardener-extension-cri-resmgr-installation
+       tag: mybranch
+       repository: registry-example.com/gardener-extension-cri-resmgr-installation
+```
+
 
 #### 2. Install extension by creating **ControllerRegistration** and **ControllerDeployment** in garden cluster.
 
@@ -213,29 +225,27 @@ should no return "cri-resmgr extension" installation.
 Build an image with extension and upload to local kind cluster
 
 ```bash
-make build-images
+make build-images push-images
 ```
 
-by default ``v2.isvimgreg.com`` registry is used (check 'Build and publish docker images' section for more info)
+by default ``localhost:5001`` registry is used (check 'Build and publish docker images' section for more info)
 
+<!-- 
+TO BE REMOVED when checked!
+TODO: NOT NEEDED ANYMORE because local registry (localhost:5001) is used.
 Deploy those images inside kind cluster (not needed if public registry is used):
-
 ```bash
 kind load docker-image v2.isvimgreg.com/gardener-extension-cri-resmgr:latest --name gardener-local
 kind load docker-image v2.isvimgreg.com/gardener-extension-cri-resmgr-installation:latest --name gardener-local
 kind load docker-image v2.isvimgreg.com/gardener-extension-cri-resmgr-agent:latest --name gardener-local
 kind load docker-image ghcr.io/gardener/machine-controller-manager-provider-local/node:latest --name gardener-local
-```
+``` 
 
 or just call
 ```
 ./hacks/kind-load-images.sh
 ```
-
-Optionally (TODO: when image vector support is ready!!!):
-```
-make REGISTRY=localhost:5001/ build-images push-images
-```
+-->
 
 Create shoot:
 

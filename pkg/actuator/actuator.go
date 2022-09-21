@@ -67,12 +67,19 @@ func (a *Actuator) GenerateSecretData(ctx context.Context, ex *extensionsv1alpha
 	if err != nil {
 		return emptyMap, err
 	}
-	image, err := imagevector.ImageVector().FindImage(consts.InstallationImageName)
+	installationImage, err := imagevector.ImageVector().FindImage(consts.InstallationImageName)
+	if err != nil {
+		return emptyMap, err
+	}
+	agentImage, err := imagevector.ImageVector().FindImage(consts.AgentImageName)
 	if err != nil {
 		return emptyMap, err
 	}
 	chartValues := map[string]interface{}{
-		"image":   image.String(),
+		"images": map[string]string{
+			consts.InstallationImageName: installationImage.String(),
+			consts.AgentImageName:        agentImage.String(),
+		},
 		"configs": configs,
 	}
 	release, err := chartRenderer.Render(chartPath, consts.InstallationReleaseName, metav1.NamespaceSystem, chartValues)
@@ -126,6 +133,7 @@ func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extens
 	// Find what shoot cluster we dealing with.
 	// to find k8s version for chart renderer
 	// and get providerConfig for configurations for CRI-resource-manager configmaps
+	// with imageVector support this would allow to choose different version of extensions depending on k8s version
 	cluster, err := extensionscontroller.GetCluster(ctx, a.client, namespace)
 	if err != nil {
 		return err

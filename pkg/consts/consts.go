@@ -27,6 +27,7 @@ const (
 	ChartPath               = "charts/cri-resmgr-installation/"
 	ChartPathRemoval        = "charts/cri-resmgr-removal"
 	InstallationImageName   = "gardener-extension-cri-resmgr-installation"
+	AgentImageName          = "gardener-extension-cri-resmgr-agent"
 	InstallationReleaseName = "cri-resmgr-installation"
 	InstallationSecretKey   = "installation_chart"
 )

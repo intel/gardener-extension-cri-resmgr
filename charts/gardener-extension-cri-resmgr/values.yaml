@@ -23,8 +23,11 @@ image:
 # imageVectorOverwrite: |
 #   images:
 #   - name: gardener-extension-cri-resmgr-installation
-#     tag: imagevector-test
-#     repository: v2.isvimgreg.com/gardener-extension-cri-resmgr-installation
+#     tag: latest
+#     repository: localhost:5001/gardener-extension-cri-resmgr-installation
+#   - name: gardener-extension-cri-resmgr-agent
+#     tag: latest
+#     repository: localhost:5001/gardener-extension-cri-resmgr-agent
 
 replicaCount: 1
 

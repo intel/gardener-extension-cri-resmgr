@@ -13,8 +13,10 @@
 # limitations under the License.
 
 # Default value for installation image, can be overwritten with imageVectorOverwrite in ControllerDeployment
-# with name="gardener-extension-cri-resmgr-installation"
-image:  v2.isvimgreg.com/gardener-extension-cri-resmgr-installation:latest
+# with name="gardener-extension-cri-resmgr-{installation,agent}"
+images: 
+  gardener-extension-cri-resmgr-installation: localhost:5001/gardener-extension-cri-resmgr-installation:latest
+  gardener-extension-cri-resmgr-agent: localhost:5001/gardener-extension-cri-resmgr-agent:latest
 
 configs:
   fallback: |
