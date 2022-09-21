@@ -34,19 +34,25 @@ replicaCount: 1
 # TO BE USED TO CREATE CONFIGMAP for extension as default values
 # for config to bez used as a way to override config for all shoots
 configs:
-  foo: |
+  foo1: |
+    from extension chart values.yaml 
     first line 
     second line
 
     some space
-  foo2: |
-    foo-2-from-ctrldeploy
-    but what if have multiline
+
   foo3: |
+    from extension chart values.yaml 
+    but what if have multiline
+    not spaces
+
+  foo3: |
+    comment: "from extension chart values.yaml"
     config:
       name: "this is proper"
       foo: bar
-  foo4DEFAULT: |
+
+  foo4default: |
     ### This is OVERRIDE default policy from cri-resmgr-installation chart/values.yaml
     policy:
       Active: topology-aware
