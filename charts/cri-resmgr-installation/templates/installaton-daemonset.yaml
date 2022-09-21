@@ -33,8 +33,8 @@ spec:
       # give a minute to uninstall cri-rm
       terminationGracePeriodSeconds: 60
       containers:
-      - name: container-runtime-cri-resmgr
-        image: {{ .Values.image }}
+      - name: installation
+        image: {{ index .Values.images "gardener-extension-cri-resmgr-installation" }}
         command: ["/scripts/install-cri-resmgr.sh"]
         # DOESN't WORK BECAUSE kubelet is killed and strage things happens
         #lifecycle:

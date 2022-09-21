@@ -61,8 +61,7 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: spec.nodeName
-          # TODO: support for imagevector
-          image: v2.isvimgreg.com/gardener-extension-cri-resmgr-agent:latest
+          image: {{ index .Values.images "gardener-extension-cri-resmgr-agent" }}
           imagePullPolicy: Always # for testing
           securityContext:
             allowPrivilegeEscalation: false
