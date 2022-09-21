@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package actuator_test
+package configs_test
 
 import (
 	"os"
@@ -20,12 +20,9 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/onsi/gomega/format"
 )
 
 func TestCharts(t *testing.T) {
-	// because we output very large charts
-	format.MaxLength = 0
 	RegisterFailHandler(Fail)
 	// Go up twice configs/pkg to project root directory
 	err := os.Chdir("../..")

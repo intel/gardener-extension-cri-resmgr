@@ -20,11 +20,9 @@ import (
 	"github.com/intel/gardener-extension-cri-resmgr/cmd/gardener-extension-cri-resmgr/app"
 
 	// Gardener
-
 	"github.com/gardener/gardener/pkg/logger"
 
 	// Other
-
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
 )

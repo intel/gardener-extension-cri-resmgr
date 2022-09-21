@@ -5,12 +5,22 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "unitests",
+            "name": "unittests-actuator",
             "type": "go",
             "request": "launch",
             "mode": "test",
             "program": "./pkg/actuator",
-            "cwd": "${workspaceFolder}",
+            "cwd": "./pkg/actuator",
+            "showGlobalVariables": true,
+            "args": []
+        },
+        {
+            "name": "unittests-configs",
+            "type": "go",
+            "request": "launch",
+            "mode": "test",
+            "program": "./pkg/configs",
+            "cwd": "./pkg/configs",
             "showGlobalVariables": true,
             "args": []
         },

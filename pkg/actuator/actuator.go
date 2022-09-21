@@ -16,10 +16,11 @@ package actuator
 
 import (
 	"context"
-	"encoding/json"
+	"fmt"
 	"time"
 
 	// Local
+	"github.com/intel/gardener-extension-cri-resmgr/pkg/configs"
 	"github.com/intel/gardener-extension-cri-resmgr/pkg/consts"
 
 	// Gardener
@@ -59,7 +60,7 @@ type Actuator struct {
 	logger               logr.Logger
 }
 
-func (a *Actuator) GenerateSecretData(ctx context.Context, ex *extensionsv1alpha1.Extension,
+func (a *Actuator) GenerateSecretData(logger logr.Logger, ctx context.Context, ex *extensionsv1alpha1.Extension,
 	chartPath string, namespace string, k8sversion string, configs map[string]string) (map[string][]byte, error) {
 	emptyMap := map[string][]byte{}
 	// Depending on shoot, chartredner will have different capabilities based on K8s version.
@@ -67,11 +68,19 @@ func (a *Actuator) GenerateSecretData(ctx context.Context, ex *extensionsv1alpha
 	if err != nil {
 		return emptyMap, err
 	}
-	installationImage, err := imagevector.ImageVector().FindImage(consts.InstallationImageName)
+	imageVector := imagevector.ImageVector()
+	if len(imageVector) > 0 {
+		for i, imageSource := range imageVector {
+
+			logger.Info(fmt.Sprintf("imageVector[%d].imageSource", i), "imageSource", *imageSource)
+		}
+	}
+
+	installationImage, err := imageVector.FindImage(consts.InstallationImageName)
 	if err != nil {
 		return emptyMap, err
 	}
-	agentImage, err := imagevector.ImageVector().FindImage(consts.AgentImageName)
+	agentImage, err := imageVector.FindImage(consts.AgentImageName)
 	if err != nil {
 		return emptyMap, err
 	}
@@ -93,39 +102,6 @@ func (a *Actuator) GenerateSecretData(ctx context.Context, ex *extensionsv1alpha
 	return secretData, nil
 }
 
-// func (a *actuator) deployDaemonsetToUninstallCriResMgr(ctx context.Context, ex *extensionsv1alpha1.Extension) error {
-// 	a.logger.Info("Uninstalling CRI-Resource-Manager")
-// 	namespace := ex.GetNamespace()
-// 	// Find what shoot cluster we dealing with.
-// 	// to find k8s version for chart renderer
-// 	// and get providerConfig for configurations for CRI-resource-manager configmaps
-// 	cluster, err := controller.GetCluster(ctx, a.client, namespace)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	secretData, err := a.generateSecretData(ctx, ex, ChartPathRemoval, namespace, cluster.Shoot.Spec.Kubernetes.Version, map[string]string{})
-// 	if err != nil {
-// 		return err
-// 	}
-// 	// Reconcile managedresource and secret for shoot.
-// 	if err := managedresources.CreateForShoot(ctx, a.client, namespace, ManagedResourceName, false, secretData); err != nil {
-// 		return err
-// 	}
-// 	// Sleep to give daemonset a time to remove cri-resmgr
-// 	// TODO: detect if the script is finished
-// 	a.logger.Info("Sleep for 120 seconds to make sure remove script is done.")
-// 	time.Sleep(120 * time.Second)
-// 	return nil
-// }
-
-// CriResMgrConfig is a providerConfig specific type for CRI-res-mgr extension.
-type CriResMgrConfig struct {
-	// Just for test
-	Foo bool `json:"foo,omitempty"`
-	// Configs is a map of name of config file for cri-resource-manager and its contents.
-	Configs map[string]string `json:"configs,omitempty"`
-}
-
 func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extensionsv1alpha1.Extension) error {
 	namespace := ex.GetNamespace()
 	a.logger.Info("Reconcile: checking extension...") // , "shoot", cluster.Shoot.Name, "namespace", cluster.Shoot.Namespace)
@@ -139,33 +115,14 @@ func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extens
 		return err
 	}
 
-	//a.logger.V(10).Info("Provider config found:", "providerConfig", string(cluster.Shoot.Spec.Extensions[0].ProviderConfig.Raw))
-
-	// parse provideConfig
-	var providerConfig *runtime.RawExtension
-	var criResMgrConfig *CriResMgrConfig
-
-	for _, extension := range cluster.Shoot.Spec.Extensions {
-		if extension.Type == consts.ExtensionType {
-			providerConfig = extension.ProviderConfig
-		}
+	// Get configs either from providerConfig and merged it with provided files
+	configs, err := configs.GetConfigs(a.logger, cluster.Shoot.Spec.Extensions)
+	if err != nil {
+		panic(err)
+		// return err
 	}
 
-	// Has to be empty to allow helm values to merge
-	configs := map[string]string{}
-	if providerConfig != nil {
-		if err := json.Unmarshal(providerConfig.Raw, &criResMgrConfig); err != nil {
-			// gardencorev1beta1helper "github.com/gardener/gardener/pkg/apis/core/v1beta1/helper"
-			// conditionValid = gardencorev1beta1helper.UpdatedCondition(conditionValid, gardencorev1beta1.ConditionFalse, "ChartInformationInvalid", fmt.Sprintf("CRI-ResMgr Extension (providerConfig) connfig cannot be unmarshalled: %+v", err))
-			panic(err)
-			// logger.Error(err, "error unmarhasling providerConfig", "providerConfig", string(providerConfig.Raw))
-			// return err
-		}
-		configs = criResMgrConfig.Configs
-	}
-	logger.Info("parseConfig:", "criResMgrConfig", criResMgrConfig)
-
-	secretData, err := a.GenerateSecretData(ctx, ex, consts.ChartPath, namespace, cluster.Shoot.Spec.Kubernetes.Version, configs)
+	secretData, err := a.GenerateSecretData(logger, ctx, ex, consts.ChartPath, namespace, cluster.Shoot.Spec.Kubernetes.Version, configs)
 	if err != nil {
 		panic(err)
 		// return err

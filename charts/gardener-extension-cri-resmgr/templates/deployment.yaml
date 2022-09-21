@@ -47,14 +47,19 @@ spec:
         {{- end}}
         command:
         - /gardener-extension-cri-resmgr
-        {{- if .Values.imageVectorOverwrite }}
         volumeMounts:
+        - name: configs
+          mountPath: /cri-resmgr/configs/
+        {{- if .Values.imageVectorOverwrite }}
         - name: imagevector-overwrite
           mountPath: /charts_overwrite/
           readOnly: true
         {{- end }}
-      {{- if .Values.imageVectorOverwrite }}
       volumes:
+      - name: configs
+        configMap:
+          name: gardener-extension-cri-resmgr-configs
+      {{- if .Values.imageVectorOverwrite }}
       - name: imagevector-overwrite
         configMap:
           name: gardener-extension-cri-resmgr-imagevector-overwrite

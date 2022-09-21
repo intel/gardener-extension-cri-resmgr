@@ -1,0 +1,16 @@
+{{- if .Values.configs }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gardener-extension-cri-resmgr-configs
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: gardener-extension-cri-resmgr
+data:
+  {{- .Values.configs | toYaml | nindent 2 }}
+  {{/* 
+  # {{- range $configName, $configContents := .Values.configs }}
+  # {{ $configName }}: {{ $configContents | toYaml}}
+  # {{- end }}
+  */}}
+{{- end }}

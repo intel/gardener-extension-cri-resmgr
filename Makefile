@@ -33,9 +33,8 @@ build:
 	go test -c -v ./pkg/actuator -o ./gardener-extension-cri-resmgr.actuator.test
 
 test:
-	# This one (that renders charts) requires manual compilation because must be root from root project directory (access to charts directory)
-	go test -c -v ./pkg/actuator -o ./gardener-extension-cri-resmgr.actuator.test
-	./gardener-extension-cri-resmgr.actuator.test --ginkgo.vv -test.v --ginkgo.progress
+	# Those tests (renders charts, uses env to read files) change CWD during execution, required becuse realy on charts and fixtures
+	ginkgo ./pkg/...
 
 clean:
 	go clean -cache -modcache -testcache

@@ -39,9 +39,11 @@ providerConfig:
   #    - name: gardener-extension-cri-resmgr-installation
   #      tag: latest
   #      repository: localhost:5001/gardener-extension-cri-resmgr-installation
-  #  configs:
-  #    foo2: |
-  #      foo-2-from-ctrldeploy
+  configs:
+    foo2: |
+      foo-2-from-ctrldeploy
+    foo3: |
+      foo-3-from-ctrldeploy
 ---
 apiVersion: core.gardener.cloud/v1beta1
 kind: ControllerRegistration
