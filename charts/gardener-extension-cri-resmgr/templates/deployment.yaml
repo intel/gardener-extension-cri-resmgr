@@ -40,25 +40,33 @@ spec:
       - name: gardener-extension-cri-resmgr
         image: {{ include "image" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        {{- if .Values.imageVectorOverwrite }}
         env:
+        {{- if .Values.imageVectorOverwrite }}
         - name: IMAGEVECTOR_OVERWRITE
           value: /charts_overwrite/images_overwrite.yaml
+        {{- end}}
+        {{- if .Values.configs }}
+        - name: CONFIGS_OVERWRITE
+          value: /cri-resmgr-configs
         {{- end}}
         command:
         - /gardener-extension-cri-resmgr
         volumeMounts:
+        {{- if .Values.configs }}
         - name: configs
-          mountPath: /cri-resmgr/configs/
+          mountPath: /cri-resmgr-configs
+        {{- end}}
         {{- if .Values.imageVectorOverwrite }}
         - name: imagevector-overwrite
           mountPath: /charts_overwrite/
           readOnly: true
         {{- end }}
       volumes:
+      {{- if .Values.configs }}
       - name: configs
         configMap:
           name: gardener-extension-cri-resmgr-configs
+      {{- end }}
       {{- if .Values.imageVectorOverwrite }}
       - name: imagevector-overwrite
         configMap:
