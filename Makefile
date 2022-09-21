@@ -33,9 +33,9 @@ build:
 	go test -c -v ./cmd/gardener-extension-cri-resmgr
 
 test:
-	# Note: manual build required because this tests try to render charts project accessilbe only from root directory
-	go test -c -v ./cmd/gardener-extension-cri-resmgr
-	./gardener-extension-cri-resmgr.test --ginkgo.vv -test.v --ginkgo.progress
+	# This one (that renders charts) requires manual compilation because must be root from root project directory (access to charts directory)
+	go test -c -v ./pkg/actuator -o ./gardener-extension-cri-resmgr.actuator.test
+	./gardener-extension-cri-resmgr.actuator.test --ginkgo.vv -test.v --ginkgo.progress
 
 clean:
 	go clean -cache -modcache -testcache

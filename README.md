@@ -97,8 +97,8 @@ More about priorities and type of config can be found here:
 #### 1. Build and publish docker images.
 
 ```
-make docker-images
-make publish-docker-images
+make build-images
+make push-images
 ```
 
 **Note** By default the "private" v2.isvimgreg.com registry is set and used. If you want to use other registry, please modify this files to point to other registry: 
@@ -112,8 +112,8 @@ For example: if you want use **registry-example.com** as registry:
 ... and specify REGISTRY env variable when building like this:
 
 ```
-make REGISTRY=registry-example.com/ docker-images
-make REGISTRY=registry-example.com/ publish-docker-images
+make REGISTRY=registry-example.com/ build-images
+make REGISTRY=registry-example.com/ push-images
 ```
 Image vector support will be added soon.
 

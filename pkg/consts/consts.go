@@ -12,31 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package imagevector
+package consts
 
-import (
-	"strings"
+const (
+	ExtensionName = "cri-resmgr"
+	ExtensionType = "cri-resmgr-extension"
 
-	"github.com/gardener/gardener/pkg/utils/imagevector"
-	"github.com/intel/gardener-extension-cri-resmgr/charts"
+	ControllerName = "cri-resmgr-controller"
+	ActuatorName   = "cri-resmgr-actuator"
+
+	ManagedResourceName = "extension-runtime-cri-resmgr"
+	ConfigKey           = "config.yaml"
+
+	ChartPath               = "charts/cri-resmgr-installation/"
+	ChartPathRemoval        = "charts/cri-resmgr-removal"
+	InstallationImageName   = "gardener-extension-cri-resmgr-installation"
+	InstallationReleaseName = "cri-resmgr-installation"
+	InstallationSecretKey   = "installation_chart"
 )
-
-var imageVector imagevector.ImageVector
-
-func init() {
-	var err error
-	imageVector, err = imagevector.Read(strings.NewReader(charts.ImagesYAML))
-	if err != nil {
-		return
-	}
-
-	imageVector, err = imagevector.WithEnvOverride(imageVector)
-	if err != nil {
-		return
-	}
-}
-
-// ImageVector contains all images from charts/images.yaml
-func ImageVector() imagevector.ImageVector {
-	return imageVector
-}

@@ -12,31 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package imagevector
+package actuator_test
 
 import (
-	"strings"
+	"testing"
 
-	"github.com/gardener/gardener/pkg/utils/imagevector"
-	"github.com/intel/gardener-extension-cri-resmgr/charts"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/format"
 )
 
-var imageVector imagevector.ImageVector
-
-func init() {
-	var err error
-	imageVector, err = imagevector.Read(strings.NewReader(charts.ImagesYAML))
-	if err != nil {
-		return
-	}
-
-	imageVector, err = imagevector.WithEnvOverride(imageVector)
-	if err != nil {
-		return
-	}
-}
-
-// ImageVector contains all images from charts/images.yaml
-func ImageVector() imagevector.ImageVector {
-	return imageVector
+func TestCharts(t *testing.T) {
+	// because we output very large charts
+	format.MaxLength = 0
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "CRI-resource-manager extension test suite")
 }
