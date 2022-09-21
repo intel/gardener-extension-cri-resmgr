@@ -15,13 +15,15 @@
 ### builder
 FROM golang:1.18.3-alpine3.16 AS builder
 
-WORKDIR /go/src/github.com/intel/cri-resource-manager/packaging/gardener
-COPY cmd .
-COPY pkg pkg
-COPY charts charts
+WORKDIR /gardener-extension-cri-resmgr
 COPY go.mod .
 COPY go.sum .
-RUN go install ./...
+RUN go mod download
+COPY cmd cmd
+COPY cmd/gardener-extension-cri-resmgr/app cmd/gardener-extension-cri-resmgr/app
+COPY pkg pkg
+COPY charts charts
+RUN go install ./cmd/gardener-extension-cri-resmgr/...
 
 ### extension
 FROM alpine:3.16.0 AS gardener-extension-cri-resmgr
