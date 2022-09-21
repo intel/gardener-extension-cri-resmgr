@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	// Local
 	"github.com/intel/gardener-extension-cri-resmgr/pkg/consts"
@@ -54,6 +55,10 @@ func GetConfigs(logger logr.Logger, extensions []v1beta1.Extension) (map[string]
 		for _, dirEntry := range dirInfo {
 			configName := dirEntry.Name()
 			fullPath := filepath.Join(path.Name(), dirEntry.Name())
+			// ignore entries starting with dot (hidden or directories create by kuberntes when mounting configMaps)
+			if strings.HasPrefix(configName, ".") || strings.HasPrefix(configName, "..") {
+				continue
+			}
 			configContents, err := os.ReadFile(fullPath)
 			if err != nil {
 				return nil, fmt.Errorf("cannot read file of config file: %w", err)

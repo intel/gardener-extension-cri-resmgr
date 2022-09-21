@@ -28,22 +28,22 @@ type: helm
 providerConfig:
   chart: $chart
   ## Example values for development/testing puropses
-  #values:
-  #  replicaCount: 0            # for development purposes (if you want to start with "make start")
-  #  image:
-  #    repository: localhost:5001/gardener-extension-cri-resmgr
-  #    tag: latest
-  #    pullPolicy: Always
-  #  imageVectorOverwrite: |
-  #    images:
-  #    - name: gardener-extension-cri-resmgr-installation
-  #      tag: latest
-  #      repository: localhost:5001/gardener-extension-cri-resmgr-installation
-  configs:
-    foo2: |
-      foo-2-from-ctrldeploy
-    foo3: |
-      foo-3-from-ctrldeploy
+  values:
+    #replicaCount: 0            # for development purposes (if you want to start with "make start")
+    image:
+      repository: localhost:5001/gardener-extension-cri-resmgr
+      tag: pawelbranch
+      pullPolicy: Always
+    imageVectorOverwrite: |
+      images:
+      - name: gardener-extension-cri-resmgr-installation
+        tag: pawelbranch
+        repository: localhost:5001/gardener-extension-cri-resmgr-installation
+    configs:
+      foo2: |
+        foo-2-from-ctrldeploy
+      foo3: |
+        foo-3-from-ctrldeploy
 ---
 apiVersion: core.gardener.cloud/v1beta1
 kind: ControllerRegistration
