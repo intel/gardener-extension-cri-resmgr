@@ -12,14 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-image:
-  repository: v2.isvimgreg.com/gardener-extension-cri-resmgr
-  tag: latest
-  pullPolicy: Always
+replicaCount: 1
 
-
-### Just an example of how imageVectorOverwite can be provided for installation image
+### TODO:  REMOVE before merging to master
+### Just an example of how image and imageVectorOverwite can be provided for installation image
 ### Default value is defined in charts.go package by embeding charts/images.yaml
+### Those values committed to repo will overwrite "one truth location" charts/images.yaml
+# Please do not uncomment those - are here only for testing/development purposes.
+# image:
+#   repository: localhost:5001/gardener-extension-cri-resmgr
+#   tag: latest
+#   pullPolicy: Always
 # imageVectorOverwrite: |
 #   images:
 #   - name: gardener-extension-cri-resmgr-installation
@@ -29,9 +32,7 @@ image:
 #     tag: latest
 #     repository: localhost:5001/gardener-extension-cri-resmgr-agent
 
-replicaCount: 1
-
-### TODO:  REMOVE before merging 
+### TODO:  REMOVE before merging  to master
 # if we want to specify default values other that builtin or downloaded sample from release
 # TO BE USED TO CREATE CONFIGMAP for extension as default values
 # for config to bez used as a way to override config for all shoots
