@@ -12,11 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+### TODO: remove merging to master - values from chart/images.{go,yaml} should be enough 
+### and only one source of truth.
 # Default value for installation image, can be overwritten with imageVectorOverwrite in ControllerDeployment
 # with name="gardener-extension-cri-resmgr-{installation,agent}"
-images: 
-  gardener-extension-cri-resmgr-installation: localhost:5001/gardener-extension-cri-resmgr-installation:latest
-  gardener-extension-cri-resmgr-agent: localhost:5001/gardener-extension-cri-resmgr-agent:latest
+#images: 
+#  gardener-extension-cri-resmgr-installation: localhost:5001/gardener-extension-cri-resmgr-installation:latest
+#  gardener-extension-cri-resmgr-agent: localhost:5001/gardener-extension-cri-resmgr-agent:latest
 
 ### TODO decide do we want to use this as default (uncomment) or the builtin or the one provided as sample 
 #configs:

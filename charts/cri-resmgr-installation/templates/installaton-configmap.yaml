@@ -67,7 +67,7 @@ data:
     fi
     function install() {
       echo Installing binaries from /opt/ to host /
-      cp -r /cri-resmgr-installation/opt/ /var/host/
+      cp -v -r /cri-resmgr-installation/opt/ /var/host/
 
       echo Installing systemd unit
       cp -v /cri-resmgr-installation/etc/systemd/system/cri-resource-manager.service  /var/host/etc/systemd/system/cri-resource-manager.service
@@ -82,7 +82,7 @@ data:
         echo 'Installing mounted configuration file from /etc/cri-resmgr/fallback.cfg to host /etc/cri-resmgr'
         cp -v /etc/cri-resmgr/fallback.cfg /var/host/etc/cri-resmgr/fallback.cfg
       else 
-        echo 'Installing fallback configuration file from container image (from release tgz).
+        echo 'Installing fallback configuration file from container image (from release tgz).'
         cp -v /cri-resmgr-installation/etc/cri-resmgr/fallback.cfg.sample /var/host/etc/cri-resmgr/fallback.cfg
       fi
 
