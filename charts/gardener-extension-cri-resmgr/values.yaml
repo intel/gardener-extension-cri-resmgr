@@ -14,15 +14,16 @@
 
 replicaCount: 1
 
+image:
+  repository: localhost:5001/gardener-extension-cri-resmgr
+  tag: latest
+  pullPolicy: Always
+
 ### TODO:  REMOVE before merging to master
 ### Just an example of how image and imageVectorOverwite can be provided for installation image
 ### Default value is defined in charts.go package by embeding charts/images.yaml
 ### Those values committed to repo will overwrite "one truth location" charts/images.yaml
 # Please do not uncomment those - are here only for testing/development purposes.
-# image:
-#   repository: localhost:5001/gardener-extension-cri-resmgr
-#   tag: latest
-#   pullPolicy: Always
 # imageVectorOverwrite: |
 #   images:
 #   - name: gardener-extension-cri-resmgr-installation

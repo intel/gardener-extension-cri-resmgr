@@ -66,6 +66,8 @@ metadata:
   name: cri-resmgr-extension
 spec:
   deployment:
+    # For development purpose - deploy the extensions before even shoots are created (or enabled)
+    policy: Always
     deploymentRefs:
     - name: cri-resmgr-extension
   resources:

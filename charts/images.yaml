@@ -1,9 +1,5 @@
-# Default values for image location extension/installation and agent. Use localhost:5001 (local provider registry) until images will be published.
+# Default values for image location internal installation and agent. Use localhost:5001 (local provider registry) until images will be published.
 images:
-- name: gardener-extension-cri-resmgr
-  sourceRepository: https://github.com/intel/gardener-extension-cri-resmgr
-  repository: localhost:5001/gardener-extension-cri-resmgr
-  tag: latest
 - name: gardener-extension-cri-resmgr-installation
   sourceRepository: https://github.com/intel/gardener-extension-cri-resmgr
   repository: localhost:5001/gardener-extension-cri-resmgr-installation
