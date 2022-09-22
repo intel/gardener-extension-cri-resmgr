@@ -162,7 +162,7 @@ git checkout v1.54.1
 ##### 2. Prepare kind cluster 
 
 ```bash
-make -C ~/work/gardner kind-up
+make -C ~/work/gardener kind-up
 
 kubectl cluster-info --context kind-gardener-local --kubeconfig ~/work/gardener/example/gardener-local/kind/kubeconfig
 # WARNING!: this overwrites your local kubeconfig
