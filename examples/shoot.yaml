@@ -29,18 +29,17 @@ spec:
   ## Enable it by changing disabled to false
   extensions:
   - type: cri-resmgr-extension
-    disabled: false
-    providerConfig:
-      foo: true
-      # configs:
-      #   default: |+
-      #     Active: default-test
-      #     AvailableResources:
-      #       cpu: cpuset:0-63
-      #   fallback: |+
-      #     Active: fallback-test
-      #     AvailableResources:
-      #       cpu: cpuset:0-63
+    disabled: true
+    #providerConfig:
+    #  # configs:
+    #  #   default: |+
+    #  #     Active: default-test
+    #  #     AvailableResources:
+    #  #       cpu: cpuset:0-63
+    #  #   fallback: |+
+    #  #     Active: fallback-test
+    #  #     AvailableResources:
+    #  #       cpu: cpuset:0-63
 
   networking:
     type: calico

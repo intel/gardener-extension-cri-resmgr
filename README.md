@@ -230,23 +230,6 @@ make build-images push-images
 
 by default ``localhost:5001`` registry is used (check 'Build and publish docker images' section for more info)
 
-<!-- 
-TO BE REMOVED when checked!
-TODO: NOT NEEDED ANYMORE because local registry (localhost:5001) is used.
-Deploy those images inside kind cluster (not needed if public registry is used):
-```bash
-kind load docker-image v2.isvimgreg.com/gardener-extension-cri-resmgr:latest --name gardener-local
-kind load docker-image v2.isvimgreg.com/gardener-extension-cri-resmgr-installation:latest --name gardener-local
-kind load docker-image v2.isvimgreg.com/gardener-extension-cri-resmgr-agent:latest --name gardener-local
-kind load docker-image ghcr.io/gardener/machine-controller-manager-provider-local/node:latest --name gardener-local
-``` 
-
-or just call
-```
-./hacks/kind-load-images.sh
-```
--->
-
 Create shoot:
 
 ```

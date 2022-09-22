@@ -27,23 +27,38 @@ metadata:
 type: helm
 providerConfig:
   chart: $chart
-  ## Example values for development/testing puropses
+
   values:
-    #replicaCount: 0            # for development purposes (if you want to start with "make start")
-    image:
-      repository: localhost:5001/gardener-extension-cri-resmgr
-      tag: pawelbranch
-      pullPolicy: Always
-    imageVectorOverwrite: |
-      images:
-      - name: gardener-extension-cri-resmgr-installation
-        tag: pawelbranch
-        repository: localhost:5001/gardener-extension-cri-resmgr-installation
-    configs:
-      foo2: |
-        foo-2-from-ctrldeploy
-      foo3: |
-        foo-3-from-ctrldeploy
+    ### For development purposes - set it to 0 (if you want to register extension but use local process with "make start").
+    replicaCount: 1            
+
+    ### For development purposes (tag) or for production use with internal registry (registry)
+    ### possible to overwrite default values from charts/images.yaml. Works best togehter with "make TAG=mydevbranch build-images push-images"
+    ### "image" overwrites extension (for seed) and "images" overwrite installation/agent (for shoot) images.
+    # image:
+    #   repository: localhost:5001/gardener-extension-cri-resmgr
+    #   tag: mydevbranch
+    #   pullPolicy: Always
+    # imageVectorOverwrite: |
+    #   images:
+    #   - name: gardener-extension-cri-resmgr-installation
+    #     tag: pawelbranch
+    #     repository: localhost:5001/gardener-extension-cri-resmgr-installation
+    #   - name: gardener-extension-cri-resmgr-agent
+    #     tag: pawelbranch
+    #     repository: localhost:5001/gardener-extension-cri-resmgr-agent
+    
+    ### For production or testing
+    ### Default values are taken from 
+    ### override defaults values from: charts/gardener-extensions-cri-resmgr/values.yaml and (internal) charts/gardener-extensions-cri-installation/values.yaml
+    ### name should be one of: fallback/default/node.NODE/group.GROUP/force 
+    # configs:
+    #   fallback: |
+    #     ... body ... - will be mounted to installation daemonset then copied to host and passed as --fallback-config to cri-resource-manager systemd unit
+    #   default: |
+    #     ... body ... - will be watched by node agent to push to all nodes (overwriting builtin and fallback)
+    #   force: |
+    #     ... body ... - will be mounted by installation daemonset then copied to host and passed as --force-config (overwriting builtin/fallback and config provided by agent)
 ---
 apiVersion: core.gardener.cloud/v1beta1
 kind: ControllerRegistration

@@ -69,7 +69,6 @@ data:
       echo Installing binaries from /opt/ to host /
       cp -r /cri-resmgr-installation/opt/ /var/host/
 
-
       echo Installing systemd unit
       cp -v /cri-resmgr-installation/etc/systemd/system/cri-resource-manager.service  /var/host/etc/systemd/system/cri-resource-manager.service
 
@@ -77,27 +76,27 @@ data:
       mkdir -p /var/host/etc/default/
       cp -v /cri-resmgr-installation/etc/default/cri-resource-manager /var/host/etc/default/
 
-      echo 'Installing mounted configuration file from /etc/cri-resmgr/fallback.cfg to host /etc/cri-resmgr'
-      # replaced by mouting default config file 
-      #cp -r /cri-resmgr-installation/etc/ /var/host/
-      #cp /var/host/etc/cri-resmgr/fallback.cfg.sample /var/host/etc/cri-resmgr/fallback.cfg
-      if [[ ! -f /etc/cri-resmgr/fallback.cfg ]]; then
-          echo "err: missing configuration file /var/host/etc/cri-resmgr/fallback.cfg"
-          exit 1
-      fi
+      echo 'Installing cri-resource-manager fallback.cfg (when mounted) otherwise copy sample included inside container image'
       mkdir -p /var/host/etc/cri-resmgr
-      cp -v /etc/cri-resmgr/fallback.cfg /var/host/etc/cri-resmgr/fallback.cfg
+      if [[ -f /etc/cri-resmgr/fallback.cfg ]]; then
+        echo 'Installing mounted configuration file from /etc/cri-resmgr/fallback.cfg to host /etc/cri-resmgr'
+        cp -v /etc/cri-resmgr/fallback.cfg /var/host/etc/cri-resmgr/fallback.cfg
+      else 
+        echo 'Installing fallback configuration file from container image (from release tgz).
+        cp -v /cri-resmgr-installation/etc/cri-resmgr/fallback.cfg.sample /var/host/etc/cri-resmgr/fallback.cfg
+      fi
 
-
+      # Handle force.cfg
       if [[ -f /configs/force.cfg ]]; then
-          echo 'Installing mounted configuration file from /configs/force.cfg to host /etc/cri-resmgr/'
-          cp -v /configs/force.cfg /var/host/etc/cri-resmgr/force.cfg
-          sed -i 's!fallback.cfg"!fallback.cfg --force-config /etc/cri-resmgr/force.cfg"!' /var/host/etc/default/cri-resource-manager
+        echo 'Installing mounted configuration file from /configs/force.cfg to host /etc/cri-resmgr/'
+        cp -v /configs/force.cfg /var/host/etc/cri-resmgr/force.cfg
+        sed -i 's!fallback.cfg"!fallback.cfg --force-config /etc/cri-resmgr/force.cfg"!' /var/host/etc/default/cri-resource-manager
       else 
         # check if force is used and remove if not mounted (from filesystem config systemd config
-        rm -v /var/host/etc/cri-resmgr/force.cfg
+        if [[ -f /var/host/etc/cri-resmgr/force.cfg ]]; then
+          rm -v /var/host/etc/cri-resmgr/force.cfg
+        fi
         sed -i 's!fallback.cfg --force-config /etc/cri-resmgr/force.cfg"!fallback.cfg"!' /var/host/etc/default/cri-resource-manager
-
       fi
 
       echo Enable and restart cri-resource-manager systemd unit.

@@ -5,24 +5,39 @@ metadata:
   name: cri-resmgr-extension
 type: helm
 providerConfig:
-  chart: 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
-  ## Example values for development/testing puropses
+  chart: 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
+
   values:
-    #replicaCount: 0            # for development purposes (if you want to start with "make start")
-    image:
-      repository: localhost:5001/gardener-extension-cri-resmgr
-      tag: pawelbranch
-      pullPolicy: Always
-    imageVectorOverwrite: |
-      images:
-      - name: gardener-extension-cri-resmgr-installation
-        tag: pawelbranch
-        repository: localhost:5001/gardener-extension-cri-resmgr-installation
-    configs:
-      foo2: |
-        foo-2-from-ctrldeploy
-      foo3: |
-        foo-3-from-ctrldeploy
+    ### For development purposes - set it to 0 (if you want to register extension but use local process with "make start").
+    replicaCount: 1            
+
+    ### For development purposes (tag) or for production use with internal registry (registry)
+    ### possible to overwrite default values from charts/images.yaml. Works best togehter with "make TAG=mydevbranch build-images push-images"
+    ### "image" overwrites extension (for seed) and "images" overwrite installation/agent (for shoot) images.
+    # image:
+    #   repository: localhost:5001/gardener-extension-cri-resmgr
+    #   tag: mydevbranch
+    #   pullPolicy: Always
+    # imageVectorOverwrite: |
+    #   images:
+    #   - name: gardener-extension-cri-resmgr-installation
+    #     tag: pawelbranch
+    #     repository: localhost:5001/gardener-extension-cri-resmgr-installation
+    #   - name: gardener-extension-cri-resmgr-agent
+    #     tag: pawelbranch
+    #     repository: localhost:5001/gardener-extension-cri-resmgr-agent
+    
+    ### For production or testing
+    ### Default values are taken from 
+    ### override defaults values from: charts/gardener-extensions-cri-resmgr/values.yaml and (internal) charts/gardener-extensions-cri-installation/values.yaml
+    ### name should be one of: fallback/default/node.NODE/group.GROUP/force 
+    # configs:
+    #   fallback: |
+    #     ... body ... - will be mounted to installation daemonset then copied to host and passed as --fallback-config to cri-resource-manager systemd unit
+    #   default: |
+    #     ... body ... - will be watched by node agent to push to all nodes (overwriting builtin and fallback)
+    #   force: |
+    #     ... body ... - will be mounted by installation daemonset then copied to host and passed as --force-config (overwriting builtin/fallback and config provided by agent)
 ---
 apiVersion: core.gardener.cloud/v1beta1
 kind: ControllerRegistration
