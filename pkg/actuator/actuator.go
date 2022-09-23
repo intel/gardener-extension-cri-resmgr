@@ -133,6 +133,8 @@ func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extens
 		return err
 	}
 
+	// Don't reconcile if already there ?! or we want to update with new configs/scripts?
+	// May cause distrubtions because each "installation" restart - restart kubelet
 	// mr := &resourcemanagerv1alpha1.ManagedResource{}
 	// if err := a.client.Get(ctx, kutil.Key(namespace, ManagedResourceName), mr); err != nil {
 	// 	// Continue only if not found.
