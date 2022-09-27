@@ -32,7 +32,7 @@ import (
 // ---------------------------------------------------------------------------------------
 
 func main() {
-	log.SetLogger(logger.ZapLogger(true)) // TODO: change to false on prod, development=true
+	log.SetLogger(logger.ZapLogger(false))
 
 	ctx := signals.SetupSignalHandler()
 
