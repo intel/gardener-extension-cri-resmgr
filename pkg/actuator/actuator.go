@@ -27,7 +27,7 @@ import (
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
 	"github.com/gardener/gardener/extensions/pkg/controller/extension"
 	"github.com/gardener/gardener/extensions/pkg/util"
-	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
+	extensions1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	managedresources "github.com/gardener/gardener/pkg/utils/managedresources"
 
 	// Other
@@ -60,11 +60,11 @@ type Actuator struct {
 	logger               logr.Logger
 }
 
-func (a *Actuator) GenerateSecretData(logger logr.Logger, ctx context.Context, ex *extensionsv1alpha1.Extension,
-	chartPath string, namespace string, k8sversion string, configs map[string]string) (map[string][]byte, error) {
+func (a *Actuator) GenerateSecretData(logger logr.Logger, ctx context.Context, ex *extensions1alpha1.Extension,
+	chartPath string, namespace string, k8sVersion string, configs map[string]string) (map[string][]byte, error) {
 	emptyMap := map[string][]byte{}
-	// Depending on shoot, chartredner will have different capabilities based on K8s version.
-	chartRenderer, err := a.ChartRendererFactory.NewChartRendererForShoot(k8sversion)
+	// Depending on shoot, chartRenderer will have different capabilities based on K8s version.
+	chartRenderer, err := a.ChartRendererFactory.NewChartRendererForShoot(k8sVersion)
 	if err != nil {
 		return emptyMap, err
 	}
@@ -76,6 +76,8 @@ func (a *Actuator) GenerateSecretData(logger logr.Logger, ctx context.Context, e
 		}
 	}
 
+	// TODO k8sVersion can be used to extend FindImage FindOptions(targetVersion)
+	// to choose different version of image depending of target shoot Kubernetes. Not needed for now.
 	installationImage, err := imageVector.FindImage(consts.InstallationImageName)
 	if err != nil {
 		return emptyMap, err
@@ -91,8 +93,9 @@ func (a *Actuator) GenerateSecretData(logger logr.Logger, ctx context.Context, e
 		},
 		"configs": configs,
 	}
+	// TODO: release, err := chartRenderer.RenderEmbeddedFS(chartPath, InstallationReleaseName, metav1.NamespaceSystem, chartValues)
+	// Instead of using external chart files, we can embed everything in golang binary.
 	release, err := chartRenderer.Render(chartPath, consts.InstallationReleaseName, metav1.NamespaceSystem, chartValues)
-	//release, err := chartRenderer.RenderEmbeddedFS(chartPath, InstallationReleaseName, metav1.NamespaceSystem, chartValues)
 
 	if err != nil {
 		return emptyMap, err
@@ -102,7 +105,7 @@ func (a *Actuator) GenerateSecretData(logger logr.Logger, ctx context.Context, e
 	return secretData, nil
 }
 
-func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extensionsv1alpha1.Extension) error {
+func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extensions1alpha1.Extension) error {
 	namespace := ex.GetNamespace()
 	a.logger.Info("Reconcile: checking extension...") // , "shoot", cluster.Shoot.Name, "namespace", cluster.Shoot.Namespace)
 
@@ -122,10 +125,10 @@ func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extens
 		// return err
 	}
 
+	// Generate secret data that will be used by reference by ManagedResource to deploy.
 	secretData, err := a.GenerateSecretData(logger, ctx, ex, consts.ChartPath, namespace, cluster.Shoot.Spec.Kubernetes.Version, configs)
 	if err != nil {
-		panic(err)
-		// return err
+		return err
 	}
 
 	// Reconcile managedresource and secret for shoot.
@@ -133,32 +136,15 @@ func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extens
 		return err
 	}
 
-	// Don't reconcile if already there ?! or we want to update with new configs/scripts?
-	// May cause distrubtions because each "installation" restart - restart kubelet
-	// mr := &resourcemanagerv1alpha1.ManagedResource{}
-	// if err := a.client.Get(ctx, kutil.Key(namespace, ManagedResourceName), mr); err != nil {
-	// 	// Continue only if not found.
-	// 	if !apierrors.IsNotFound(err) {
-	// 		return err
-	// 	}
-	// } else {
-	// 	a.logger.Info("Reconcile: extension is already installed. Ignoring.") //, "shoot", cluster.Shoot.Name, "namespace", cluster.Shoot.Namespace)
-	// }
-
 	return nil
 }
 
-func (a *Actuator) Delete(ctx context.Context, logger logr.Logger, ex *extensionsv1alpha1.Extension) error {
+func (a *Actuator) Delete(ctx context.Context, logger logr.Logger, ex *extensions1alpha1.Extension) error {
 	namespace := ex.GetNamespace()
 	cluster, err := extensionscontroller.GetCluster(ctx, a.client, namespace)
 	if err != nil {
 		return err
 	}
-
-	// if err := a.deployDaemonsetToUninstallCriResMgr(ctx, ex); err != nil {
-	// 	return err
-	// }
-
 	a.logger.Info("Delete: deleting extension managedresources in shoot", "shoot", cluster.Shoot.Name, "namespace", cluster.Shoot.Namespace)
 
 	twoMinutes := 1 * time.Minute
@@ -177,11 +163,11 @@ func (a *Actuator) Delete(ctx context.Context, logger logr.Logger, ex *extension
 	return nil
 }
 
-func (a *Actuator) Restore(ctx context.Context, logger logr.Logger, ex *extensionsv1alpha1.Extension) error {
+func (a *Actuator) Restore(ctx context.Context, logger logr.Logger, ex *extensions1alpha1.Extension) error {
 	return a.Reconcile(ctx, logger, ex)
 }
 
-func (a *Actuator) Migrate(ctx context.Context, logger logr.Logger, ex *extensionsv1alpha1.Extension) error {
+func (a *Actuator) Migrate(ctx context.Context, logger logr.Logger, ex *extensions1alpha1.Extension) error {
 	return a.Delete(ctx, logger, ex)
 }
 

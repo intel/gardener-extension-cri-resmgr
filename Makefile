@@ -33,7 +33,7 @@ build:
 	go test -c -v ./pkg/actuator -o ./gardener-extension-cri-resmgr.actuator.test
 
 test:
-	# Those tests (renders charts, uses env to read files) change CWD during execution, required becuse realy on charts and fixtures
+	# Those tests (renders charts, uses env to read files) change CWD during execution (required because rely on charts and fixtures).
 	ginkgo ./pkg/...
 
 clean:
@@ -71,7 +71,8 @@ _build-agent-image:
 	-mkdir tmpbuild
 	wget --directory-prefix=tmpbuild -nc $(CRI_RM_URL_SRC)
 	tar -C tmpbuild -xzvf tmpbuild/$(CRI_RM_SRC_ARCHIVE_NAME)
-	# use exiting Dockerfile from cri-resource-manager source code
+	# Use existing Dockerfile from cri-resource-manager source code.
+	# TODO: consider using provide image https://github.com/intel/gardener-extension-cri-resmgr/issues/41
 	docker build -t $(REGISTRY)$(AGENT_IMAGE_NAME):$(TAG) -f tmpbuild/cri-resource-manager-$(CRI_RM_VERSION)/cmd/cri-resmgr-agent/Dockerfile  tmpbuild/cri-resource-manager-$(CRI_RM_VERSION)
 	
 build-images: _build-agent-image

@@ -28,12 +28,12 @@ type: helm
 providerConfig:
   chart: $chart
 
-  values:
+  # values:
     ### For development purposes - set it to 0 (if you want to register extension but use local process with "make start").
-    replicaCount: 1            
+    # replicaCount: 1            
 
-    ### For development purposes (tag) or for production use with internal registry (registry)
-    ### possible to overwrite default values from charts/images.yaml. Works best togehter with "make TAG=mydevbranch build-images push-images"
+    ### Uncomment this is you want to overwrite extension image or internal installation and agent images.
+    ### Works best together with "make TAG=mydevbranch build-images push-images"
     ### "image" overwrites extension (for seed) and "images" overwrite installation/agent (for shoot) images.
     # image:
     #   repository: localhost:5001/gardener-extension-cri-resmgr

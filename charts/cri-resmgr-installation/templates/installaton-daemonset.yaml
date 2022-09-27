@@ -36,12 +36,6 @@ spec:
       - name: installation
         image: {{ index .Values.images "gardener-extension-cri-resmgr-installation" }}
         command: ["/scripts/install-cri-resmgr.sh"]
-        # DOESN't WORK BECAUSE kubelet is killed and strage things happens
-        #lifecycle:
-        #  preStop:
-        #    exec:
-        #      command: ["/scripts/uninstall-cri-resmgr.sh"]
-
         securityContext:
           privileged: true
         volumeMounts:

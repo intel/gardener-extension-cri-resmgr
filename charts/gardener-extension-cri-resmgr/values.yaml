@@ -14,16 +14,16 @@
 
 replicaCount: 1
 
+### This is default value for extension image to be tested with kind-based provided local with Gardener above 1.55.0
+### If you want to overwrite it, please provide values to ControllerDeployment providerConfig.values.
 image:
   repository: localhost:5001/gardener-extension-cri-resmgr
   tag: latest
   pullPolicy: Always
 
-### TODO:  REMOVE before merging to master
-### Just an example of how image and imageVectorOverwite can be provided for installation image
-### Default value is defined in charts.go package by embeding charts/images.yaml
-### Those values committed to repo will overwrite "one truth location" charts/images.yaml
-# Please do not uncomment those - are here only for testing/development purposes.
+### NOTE: The values provided here are only for development/testing purposes as an example.
+### Default values defined in charts.go package by embeding charts/images.yaml are the "source of truth".
+### Please do not uncomment those, unless you want to just try "helm template ." without extension.
 # imageVectorOverwrite: |
 #   images:
 #   - name: gardener-extension-cri-resmgr-installation
@@ -32,11 +32,6 @@ image:
 #   - name: gardener-extension-cri-resmgr-agent
 #     tag: latest
 #     repository: localhost:5001/gardener-extension-cri-resmgr-agent
-
-### TODO:  REMOVE before merging  to master
-# if we want to specify default values other that builtin or downloaded sample from release
-# TO BE USED TO CREATE CONFIGMAP for extension as default values
-# for config to bez used as a way to override config for all shoots
 # configs:
 #   foo1: |
 #     from extension chart values.yaml 

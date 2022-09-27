@@ -48,17 +48,10 @@ func NewExtensionControllerCommand(ctx context.Context) *cobra.Command {
 				return fmt.Errorf("error completing options: %s", err)
 			}
 
-			// TODO: Flags version to allow override leader and
-			// mgrOpts := options.managerOptions.Completed().Options()
-			// mgrOpts.MetricsBindAddress = "0"
 			mgrOpts := manager.Options{
 				LeaderElection:     false,
 				MetricsBindAddress: "0",
 			}
-
-			// mgrOpts.ClientDisableCacheFor = []client.Object{
-			// 	&corev1.Secret{},    // TODO: resolve race condition with small rsync time
-			// }
 
 			mgr, err := manager.New(options.restOptions.Completed().Config, mgrOpts)
 			if err != nil {
@@ -73,33 +66,33 @@ func NewExtensionControllerCommand(ctx context.Context) *cobra.Command {
 			}
 
 			// Enable healthcheck.
-			// "Registration" adds additionall controller that watches over Extension/Cluster.
+			// "Registration" adds additional controller that watches over Extension/Cluster.
 			if err := healthcheck.RegisterHealthChecks(mgr); err != nil {
 				return err
 			}
 
 			ignoreOperationAnnotation := options.reconcileOptions.Completed().IgnoreOperationAnnotation
 			// if true:
-			//		predicates: only observe "generation change" predciate (oldObject.generation != newObject.generation)
+			//		predicates: only observe "generation change" predicate (oldObject.generation != newObject.generation)
 			// 		watches:  watch Cluster (additionally and map to extensions) and Extension
 			//
 			// if false (default):
-			//      predicates: (defaultControllerPredicates) watches for "operation annotation" to be reconile/migrate/restore
-			//					or deletionTimestamp is set or lastOperation is not succesfull state (on Extension object)
+			//      predicates: (defaultControllerPredicates) watches for "operation annotation" to be reconcile/migrate/restore
+			//					or deletionTimestamp is set or lastOperation is not successful state (on Extension object)
 			// 		watches: only Extension
-			log.Log.Info("Reconciller options", "ignoreOperationAnnotation", ignoreOperationAnnotation)
+			log.Log.Info("Reconciler options", "ignoreOperationAnnotation", ignoreOperationAnnotation)
 
 			if err := extension.Add(mgr, extension.AddArgs{
 				Actuator:                  actuator.NewActuator(),
 				ControllerOptions:         options.controllerOptions.Completed().Options(),
 				Name:                      consts.ControllerName,
 				FinalizerSuffix:           consts.ExtensionType,
-				Resync:                    60 * time.Minute,     // was 60 // FIXME: with 1 second resync we have race condition during deletion
+				Resync:                    60 * time.Minute,
 				Type:                      consts.ExtensionType, // to be used for TypePredicate
 				Predicates:                extension.DefaultPredicates(ignoreOperationAnnotation),
 				IgnoreOperationAnnotation: ignoreOperationAnnotation,
 			}); err != nil {
-				return fmt.Errorf("error configuring actuator: %s", err)
+				return fmt.Errorf("error configuring controller with extensions actuator: %s", err)
 			}
 
 			if err := mgr.Start(ctx); err != nil {

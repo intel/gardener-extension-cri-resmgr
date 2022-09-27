@@ -1,3 +1,17 @@
+// Copyright 2022 Intel Corporation. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package configs
 
 import (
@@ -24,12 +38,14 @@ const (
 
 // CriResMgrConfig is a providerConfig specific type for CRI-res-mgr extension.
 type CriResMgrConfig struct {
-	// Just for test
-	Foo bool `json:"foo,omitempty"`
 	// Configs is a map of name of config file for cri-resource-manager and its contents.
 	Configs map[string]string `json:"configs,omitempty"`
 }
 
+// GetConfigs gets and merges configs values from Shoot.spec.extensions.providerConfig and
+// from files found in directory defined by ConfigsOverrideEnv.
+// Path defined by ConfigsOverrideEnv is first validated (is directory) then all files are read
+// and passed to helm installation charts to be rendered and additional configmaps for cri-resource-manager.
 func GetConfigs(logger logr.Logger, extensions []v1beta1.Extension) (map[string]string, error) {
 	configs := map[string]string{}
 
@@ -55,7 +71,7 @@ func GetConfigs(logger logr.Logger, extensions []v1beta1.Extension) (map[string]
 		for _, dirEntry := range dirInfo {
 			configName := dirEntry.Name()
 			fullPath := filepath.Join(path.Name(), dirEntry.Name())
-			// ignore entries starting with dot (hidden or directories create by kuberntes when mounting configMaps)
+			// ignore entries starting with dot (hidden or directories create by Kubernetes when mounting configMaps)
 			if strings.HasPrefix(configName, ".") || strings.HasPrefix(configName, "..") {
 				continue
 			}
@@ -68,7 +84,7 @@ func GetConfigs(logger logr.Logger, extensions []v1beta1.Extension) (map[string]
 		logger.Info("configs: from env provided directory", "configs", configs)
 	}
 
-	// II. Parse provideConfig from Cluster.Extension within Shoot defintion
+	// II. Parse provideConfig data from Cluster.Extension (it is a copy from within Shoot.spec.extensions.providerConfig).
 	var providerConfig *runtime.RawExtension
 	var criResMgrConfig *CriResMgrConfig
 
@@ -77,15 +93,11 @@ func GetConfigs(logger logr.Logger, extensions []v1beta1.Extension) (map[string]
 			providerConfig = extension.ProviderConfig
 		}
 	}
-
-	// Has to be empty to allow helm values to merge
+	// If providerConfig were specified in Shoot spec.extensions then merge it values with those found in filesystem
 	if providerConfig != nil {
 		if err := json.Unmarshal(providerConfig.Raw, &criResMgrConfig); err != nil {
-			// gardencorev1beta1helper "github.com/gardener/gardener/pkg/apis/core/v1beta1/helper"
-			// conditionValid = gardencorev1beta1helper.UpdatedCondition(conditionValid, gardencorev1beta1.ConditionFalse, "ChartInformationInvalid", fmt.Sprintf("CRI-ResMgr Extension (providerConfig) connfig cannot be unmarshalled: %+v", err))
-			panic(err)
-			// logger.Error(err, "error unmarhasling providerConfig", "providerConfig", string(providerConfig.Raw))
-			// return err
+			logger.Error(err, "error unmarshalling providerConfig", "providerConfig", string(providerConfig.Raw))
+			return nil, err
 		}
 		logger.Info("configs: from cluster.extensions.providerConfig", "criResMgrConfig", criResMgrConfig)
 		for configName, configContents := range criResMgrConfig.Configs {

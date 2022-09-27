@@ -17,8 +17,6 @@ kind: ConfigMap
 metadata:
   name: cri-resmgr-installation-script
   namespace: kube-system
-  #annotations:
-  #  resources.gardener.cloud/ignore: "true"
 data:
   install-cri-resmgr.sh: |-
     #!/bin/bash
@@ -102,11 +100,12 @@ data:
       # Remove files left after cri-resmgr
       echo 'Remove files left after cri-resmgr'
       rm -rf /var/host/opt/intel
-      # replaced by mouting default file
       rm -rf /var/host/etc/cri-resmgr
       rm -rf /var/host/etc/systemd/system/cri-resource-manager.service
+      rm -rf /var/host/etc/default/cri-resource-manager 
 
-      # Restart kubelet with new confugiration
+
+      # Restart kubelet with new configuration
       echo 'Restart kubelet with new configuration'
       chroot /var/host bash -c "systemctl daemon-reload"
       chroot /var/host bash -c "systemctl restart kubelet"
@@ -140,8 +139,6 @@ data:
     while true; do
       # put sleep in background and wait to allow bash to capture and handle signals
       # based on https://unix.stackexchange.com/questions/146756/forward-sigterm-to-child-in-bash
-      # consider using postHook handler
-      # https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/
       sleep 3600 &
       child=$!
       wait $child

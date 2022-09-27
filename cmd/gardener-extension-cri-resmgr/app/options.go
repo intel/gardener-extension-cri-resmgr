@@ -19,12 +19,10 @@ import (
 )
 
 type Options struct {
-	restOptions       *controllercmd.RESTOptions       // kubeconfig / masterurl
+	restOptions       *controllercmd.RESTOptions       // kubeconfig / MasterURL
 	controllerOptions *controllercmd.ControllerOptions // MaxConcurrentReconciles
-	reconcileOptions  *controllercmd.ReconcilerOptions // IgnoreOpreationAnnotatino
-	// managerOptions    *controllercmd.ManagerOptions    // LeaderElection options + Webhook options + Metrics + Health
-
-	optionAggregator controllercmd.OptionAggregator
+	reconcileOptions  *controllercmd.ReconcilerOptions // IgnoreOperationAnnotation
+	optionAggregator  controllercmd.OptionAggregator
 }
 
 func NewOptions() *Options {
@@ -35,12 +33,6 @@ func NewOptions() *Options {
 			MaxConcurrentReconciles: 1,
 		},
 		reconcileOptions: &controllercmd.ReconcilerOptions{},
-		// TODO: disabled until we validate/use HA/leaders
-		// managerOptions: &controllercmd.ManagerOptions{
-		// 	LeaderElection:          false,
-		// 	LeaderElectionID:        controllercmd.LeaderElectionNameID(ExtensionName),
-		// 	LeaderElectionNamespace: os.Getenv("LEADER_ELECTION_NAMESPACE"),
-		// },
 	}
 
 	options.optionAggregator = controllercmd.NewOptionAggregator(
