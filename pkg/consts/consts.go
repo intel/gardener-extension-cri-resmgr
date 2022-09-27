@@ -24,8 +24,7 @@ const (
 	ManagedResourceName = "extension-runtime-cri-resmgr"
 	ConfigKey           = "config.yaml"
 
-	ChartPath               = "charts/cri-resmgr-installation/"
-	ChartPathRemoval        = "charts/cri-resmgr-removal"
+	ChartPath               = "charts/internal/cri-resmgr-installation/"
 	InstallationImageName   = "gardener-extension-cri-resmgr-installation"
 	AgentImageName          = "gardener-extension-cri-resmgr-agent"
 	InstallationReleaseName = "cri-resmgr-installation"

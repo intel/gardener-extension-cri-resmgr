@@ -9,8 +9,8 @@
             "type": "go",
             "request": "launch",
             "mode": "test",
-            "program": "./pkg/actuator",
-            "cwd": "./pkg/actuator",
+            "program": "./pkg/controller/lifecycle",
+            // "cwd": "./pkg/controller/lifecycle",
             "showGlobalVariables": true,
             "args": []
         },

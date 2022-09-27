@@ -18,8 +18,8 @@ import (
 	"context"
 
 	// Local
-	"github.com/intel/gardener-extension-cri-resmgr/pkg/actuator"
 	"github.com/intel/gardener-extension-cri-resmgr/pkg/consts"
+	actuator "github.com/intel/gardener-extension-cri-resmgr/pkg/controller/lifecycle"
 
 	// Gardener
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
@@ -41,7 +41,7 @@ var _ = Describe("cri-resource-manager extension actuator tests", func() {
 			"nodeFoo": "THIS_WILL_CONFIG_BODY_OF_NODEFOO",
 		}
 		// TODO: consider using mock instead of real rendered - not enough logic inside golang code yet!
-		// unused but usefull for future
+		// unused but useful for future
 		// "github.com/golang/mock/gomock"
 		a := actuator.NewActuator().(*actuator.Actuator)
 		ctx := context.TODO()

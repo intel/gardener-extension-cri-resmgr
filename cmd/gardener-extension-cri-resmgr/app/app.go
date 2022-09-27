@@ -19,10 +19,10 @@ import (
 	"fmt"
 	"time"
 
-	// Locla
-	"github.com/intel/gardener-extension-cri-resmgr/pkg/actuator"
+	// Local
 	"github.com/intel/gardener-extension-cri-resmgr/pkg/consts"
-	"github.com/intel/gardener-extension-cri-resmgr/pkg/healthcheck"
+	"github.com/intel/gardener-extension-cri-resmgr/pkg/controller/healthcheck"
+	actuator "github.com/intel/gardener-extension-cri-resmgr/pkg/controller/lifecycle"
 
 	// Gardener
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"

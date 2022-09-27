@@ -27,8 +27,8 @@ func TestCharts(t *testing.T) {
 	// because we output very large charts
 	format.MaxLength = 0
 	RegisterFailHandler(Fail)
-	// Go up twice configs/pkg to project root directory
-	err := os.Chdir("../..")
+	// Go up three times pkg/controller/lifecycle to project root directory
+	err := os.Chdir("../../..")
 	if err != nil {
 		panic(err)
 	}

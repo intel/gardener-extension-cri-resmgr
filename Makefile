@@ -30,7 +30,8 @@ IGNORE_OPERATION_ANNOTATION := false
 build:
 	go build -v ./cmd/gardener-extension-cri-resmgr
 	go test -c -v  ./test/e2e/cri-resmgr-extension/. -o gardener-extension-cri-resmgr.e2e-tests
-	go test -c -v ./pkg/actuator -o ./gardener-extension-cri-resmgr.actuator.test
+	go test -c -v ./pkg/controller/lifecycle -o ./gardener-extension-cri-resmgr.actuator.test
+	go test -c -v ./pkg/configs -o ./gardener-extension-cri-resmgr.configs.test
 
 test:
 	# Those tests (renders charts, uses env to read files) change CWD during execution (required because rely on charts and fixtures).

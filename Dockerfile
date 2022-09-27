@@ -28,7 +28,7 @@ RUN go install ./cmd/gardener-extension-cri-resmgr/...
 ### extension
 FROM alpine:3.16.0 AS gardener-extension-cri-resmgr
 
-COPY charts /charts
+COPY charts/internal /charts/internal
 COPY --from=builder /go/bin/gardener-extension-cri-resmgr /gardener-extension-cri-resmgr
 ENTRYPOINT ["/gardener-extension-cri-resmgr"]
 
