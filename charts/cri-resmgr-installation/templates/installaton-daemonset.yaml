@@ -27,6 +27,7 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: cri-resmgr-installation
+        gardener.cloud/role: system-component
     spec:
       hostPID: true
       hostIPC: true
