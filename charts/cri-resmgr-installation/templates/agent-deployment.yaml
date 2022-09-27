@@ -67,6 +67,7 @@ spec:
     metadata:
       labels:
         app: cri-resmgr-agent
+        gardener.cloud/role: system-component
     spec:
       serviceAccount: cri-resmgr-agent
       containers:
