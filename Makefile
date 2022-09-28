@@ -13,19 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-.PHONY: build clean e2e-test test start _install-binaries _build-agent-image build-images push-images
+.PHONY: build clean e2e-test test start _install-binaries _build-agent-image build-images push-images _build-extension-image _build-installation-image
 
-REGISTRY                    := localhost:5001/
-EXTENSION_IMAGE_NAME        := gardener-extension-cri-resmgr
-INSTALLATION_IMAGE_NAME     := gardener-extension-cri-resmgr-installation
-AGENT_IMAGE_NAME            := gardener-extension-cri-resmgr-agent
-TAG                         := latest
-CRI_RM_VERSION              := 0.7.2
-CRI_RM_ARCHIVE_NAME         := cri-resource-manager-$(CRI_RM_VERSION).x86_64.tar.gz
-CRI_RM_URL_RELEASE          := https://github.com/intel/cri-resource-manager/releases/download/v$(CRI_RM_VERSION)/$(CRI_RM_ARCHIVE_NAME)
-CRI_RM_SRC_ARCHIVE_NAME     := vendored-cri-resource-manager-$(CRI_RM_VERSION).tar.gz
-CRI_RM_URL_SRC              := https://github.com/intel/cri-resource-manager/releases/download/v$(CRI_RM_VERSION)/$(CRI_RM_SRC_ARCHIVE_NAME)
-IGNORE_OPERATION_ANNOTATION := false
+REGISTRY                         := localhost:5001/
+EXTENSION_IMAGE_NAME             := gardener-extension-cri-resmgr
+INSTALLATION_IMAGE_NAME          := gardener-extension-cri-resmgr-installation
+TAG                              := latest
+
+# Please keep it up to date with agent image in charts/images.yaml
+CRI_RM_VERSION                   := 0.7.2
+CRI_RM_ARCHIVE_NAME              := cri-resource-manager-$(CRI_RM_VERSION).x86_64.tar.gz
+CRI_RM_URL_RELEASE               := https://github.com/intel/cri-resource-manager/releases/download/v$(CRI_RM_VERSION)/$(CRI_RM_ARCHIVE_NAME)
+
+
+# make start options
+IGNORE_OPERATION_ANNOTATION 	 := false
 
 build:
 	go build -v ./cmd/gardener-extension-cri-resmgr
@@ -68,6 +70,31 @@ _install-binaries:
 	tar -xvf /cri-resmgr-installation/$(CRI_RM_ARCHIVE_NAME) --directory /cri-resmgr-installation
 	rm /cri-resmgr-installation/$(CRI_RM_ARCHIVE_NAME)
 
+_build-extension-image:
+	docker build -t $(REGISTRY)$(EXTENSION_IMAGE_NAME):$(TAG) -f Dockerfile --target $(EXTENSION_IMAGE_NAME) .
+_build-installation-image:
+	docker build -t $(REGISTRY)$(INSTALLATION_IMAGE_NAME):$(TAG) -f Dockerfile --target $(INSTALLATION_IMAGE_NAME) .
+
+build-images: _build-extension-image _build-installation-image
+
+push-images:
+	docker push $(REGISTRY)$(EXTENSION_IMAGE_NAME):$(TAG)
+	docker push $(REGISTRY)$(INSTALLATION_IMAGE_NAME):$(TAG)
+
+
+UPSTREAM_AGENT_IMAGE_NAME 		 := intel/cri-resmgr-agent
+UPSTREAM_AGENT_IMAGE		     := docker.io/$(UPSTREAM_AGENT_IMAGE_NAME):v$(CRI_RM_VERSION)
+LOCAL_AGENT_IMAGE 				 := $(REGISTRY)$(UPSTREAM_AGENT_IMAGE_NAME):v$(CRI_RM_VERSION)
+cache-agent-image:
+	# download cri-resmgr agent image and push it to registry pointed by REGISTRY
+	docker pull $(UPSTREAM_AGENT_IMAGE)
+	docker tag $(UPSTREAM_AGENT_IMAGE) $(LOCAL_AGENT_IMAGE)
+	docker push $(LOCAL_AGENT_IMAGE)
+
+
+AGENT_IMAGE_NAME            := gardener-extension-cri-resmgr-agent
+CRI_RM_SRC_ARCHIVE_NAME     := vendored-cri-resource-manager-$(CRI_RM_VERSION).tar.gz
+CRI_RM_URL_SRC              := https://github.com/intel/cri-resource-manager/releases/download/v$(CRI_RM_VERSION)/$(CRI_RM_SRC_ARCHIVE_NAME)
 _build-agent-image:
 	-mkdir tmpbuild
 	wget --directory-prefix=tmpbuild -nc $(CRI_RM_URL_SRC)
@@ -75,12 +102,4 @@ _build-agent-image:
 	# Use existing Dockerfile from cri-resource-manager source code.
 	# TODO: consider using provide image https://github.com/intel/gardener-extension-cri-resmgr/issues/41
 	docker build -t $(REGISTRY)$(AGENT_IMAGE_NAME):$(TAG) -f tmpbuild/cri-resource-manager-$(CRI_RM_VERSION)/cmd/cri-resmgr-agent/Dockerfile  tmpbuild/cri-resource-manager-$(CRI_RM_VERSION)
-	
-build-images: _build-agent-image
-	docker build -t $(REGISTRY)$(EXTENSION_IMAGE_NAME):$(TAG) -f Dockerfile --target $(EXTENSION_IMAGE_NAME) .
-	docker build -t $(REGISTRY)$(INSTALLATION_IMAGE_NAME):$(TAG) -f Dockerfile --target $(INSTALLATION_IMAGE_NAME) .
-
-push-images:
-	docker push $(REGISTRY)$(EXTENSION_IMAGE_NAME):$(TAG)
-	docker push $(REGISTRY)$(INSTALLATION_IMAGE_NAME):$(TAG)
 	docker push $(REGISTRY)$(AGENT_IMAGE_NAME):$(TAG)
