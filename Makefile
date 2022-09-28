@@ -80,26 +80,3 @@ build-images: _build-extension-image _build-installation-image
 push-images:
 	docker push $(REGISTRY)$(EXTENSION_IMAGE_NAME):$(TAG)
 	docker push $(REGISTRY)$(INSTALLATION_IMAGE_NAME):$(TAG)
-
-
-UPSTREAM_AGENT_IMAGE_NAME 		 := intel/cri-resmgr-agent
-UPSTREAM_AGENT_IMAGE		     := docker.io/$(UPSTREAM_AGENT_IMAGE_NAME):v$(CRI_RM_VERSION)
-LOCAL_AGENT_IMAGE 				 := $(REGISTRY)$(UPSTREAM_AGENT_IMAGE_NAME):v$(CRI_RM_VERSION)
-cache-agent-image:
-	# download cri-resmgr agent image and push it to registry pointed by REGISTRY
-	docker pull $(UPSTREAM_AGENT_IMAGE)
-	docker tag $(UPSTREAM_AGENT_IMAGE) $(LOCAL_AGENT_IMAGE)
-	docker push $(LOCAL_AGENT_IMAGE)
-
-
-AGENT_IMAGE_NAME            := gardener-extension-cri-resmgr-agent
-CRI_RM_SRC_ARCHIVE_NAME     := vendored-cri-resource-manager-$(CRI_RM_VERSION).tar.gz
-CRI_RM_URL_SRC              := https://github.com/intel/cri-resource-manager/releases/download/v$(CRI_RM_VERSION)/$(CRI_RM_SRC_ARCHIVE_NAME)
-_build-agent-image:
-	-mkdir tmpbuild
-	wget --directory-prefix=tmpbuild -nc $(CRI_RM_URL_SRC)
-	tar -C tmpbuild -xzvf tmpbuild/$(CRI_RM_SRC_ARCHIVE_NAME)
-	# Use existing Dockerfile from cri-resource-manager source code.
-	# TODO: consider using provide image https://github.com/intel/gardener-extension-cri-resmgr/issues/41
-	docker build -t $(REGISTRY)$(AGENT_IMAGE_NAME):$(TAG) -f tmpbuild/cri-resource-manager-$(CRI_RM_VERSION)/cmd/cri-resmgr-agent/Dockerfile  tmpbuild/cri-resource-manager-$(CRI_RM_VERSION)
-	docker push $(REGISTRY)$(AGENT_IMAGE_NAME):$(TAG)
