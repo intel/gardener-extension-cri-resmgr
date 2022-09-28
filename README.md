@@ -392,7 +392,7 @@ Unit cri-resource-manager.service could not be found.
              --container-runtime-endpoint=unix:///run/containerd/containerd.sock  # <---
 ```
 
-### IV. Troubleshooting and debugging issues
+### III. Troubleshooting and debugging issues
 
 
 #### Deployment and propagation of changes
@@ -446,7 +446,7 @@ To debug issues you can consult use logs of following components (commands are f
    ```
 
 
-### III. Running e2e tests
+### IV. Running e2e tests
 
 Assuming having gardner cloned in ~/work/gardener
 
