@@ -58,6 +58,9 @@ providerConfig:
     #         CPU: 750m
     #     logger:
     #       Debug: resource-manager,cache,policy,resource-control
+    #       Klog:
+    #         # Enables nice logs with logger names that can be used in Debug
+    #         skip_headers: true
     #     dump:
     #       Config: off:.*,full:((Create)|(Remove)|(Run)|(Update)|(Start)|(Stop)).*
 ---

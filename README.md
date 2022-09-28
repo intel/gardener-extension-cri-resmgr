@@ -18,9 +18,9 @@ This Gardener extension will deploy and manage lifecycle of [CRI-Resource-Manage
     - `ControllerRegistration` is removed and there are already Shoots deployed with extension
 - **healthcheck** of cri-resource-manager which reports back to **ControllerInstallation** Healthy condition based on liveness probe that calls "`systemctl status cri-resource-manager`"
 - CRI-Resource-Manager **configuration overwriting && types** - user can provide "fallback", "default", "per node", "per group" or "force" configuration in `ControllerDeployment` which can be later overridden by Shoot "owner" with `providerConfig` - more information [here](#configuring-cri-resource-manager)
-- **dynamic configuration** - "default", "per node" or "per group" configuration are propagated from `ControllerDeployment` and `Shoot.Extension.ProviderConfig` to CRI-Resource-Manager through node-agent
+- **dynamic configuration** - "default", "per node" or "per group" configuration are propagated from `ControllerDeployment` and `Shoot.Extension.ProviderConfig` to CRI-Resource-Manager through cri-resmgr-agent
 - [**Adjustments**](https://intel.github.io/cri-resource-manager/stable/docs/setup.html#container-adjustments) CRI-Resource-Manager CRD to have more granular control
-- Access to **logs** of `installation DaemonSet`, CRI-Resource-Manager systemd service, node-agent and extension itself to troubleshoot and debug
+- Access to **logs** of `installation DaemonSet`, CRI-Resource-Manager systemd service, cri-resmgr-agent and extension itself to troubleshoot and debug
 
 Missing/TODO:
 - Ability to 'selectively' install cri-resource-manager on specific hosts or worker groups [issue here](https://github.com/intel/gardener-extension-cri-resmgr/issues/10),
@@ -84,16 +84,16 @@ Each key of `configs` will generate `ConfigMap` in the `kube-system` namespace w
 
 types `default` and `fallback` have special meaning:
 
-* **fallback** will be mounted inside installation DaemonSet and copied to /etc/cri-resmgr/fallback.cfg - this config is used before node-agent can push "dynamic" configuration (lowest priority)
-* **default** will used by node-agent to **override** **fallback** config on all the nodes,
-* **node.$NODE_NAME** will be used by node-agent and applied only to specified nodes with name NODE_NAME 
-* **group.$GROUP_NAME** will be used by node-agent and applied only to nodes with specific label "cri-resource-manager.intel.com/group=GROUP_NAME" - works best when worker groups has additional labels  in `shoot.spec.provider.workers.labels`
-* **force** will be used to override "configuration" pushed by node-agent (highest priority) (essentialy adds `--force-config` to cri-resource-manager process in systemd unit definition so CRI-Resource-Manager ignores configuration from node-agent) 
+* **fallback** will be mounted inside installation DaemonSet and copied to /etc/cri-resmgr/fallback.cfg - this config is used before cri-resmgr-agent can push "dynamic" configuration (lowest priority)
+* **default** will used by cri-resmgr-agent to **override** **fallback** config on all the nodes,
+* **node.$NODE_NAME** will be used by cri-resmgr-agent and applied only to specified nodes with name NODE_NAME 
+* **group.$GROUP_NAME** will be used by cri-resmgr-agent and applied only to nodes with specific label "cri-resource-manager.intel.com/group=GROUP_NAME" - works best when worker groups has additional labels  in `shoot.spec.provider.workers.labels`
+* **force** will be used to override "configuration" pushed by cri-resmgr-agent (highest priority) (essentialy adds `--force-config` to cri-resource-manager process in systemd unit definition so CRI-Resource-Manager ignores configuration from cri-resmgr-agent) 
 
 
 More about priorities and type of config can be found here:
 
-* https://intel.github.io/cri-resource-manager/stable/docs/node-agent.html
+* https://intel.github.io/cri-resource-manager/stable/docs/cri-resmgr-agent.html
 * https://intel.github.io/cri-resource-manager/stable/docs/setup.html#using-cri-resource-manager-agent-and-a-configmap
 
 ## Getting started
@@ -102,7 +102,7 @@ More about priorities and type of config can be found here:
 
 #### 1. Prepare images.
 
-Build and publish docker images for extension, installation and node-agent with your own registry.
+Build and publish docker images for extension, installation and cri-resmgr-agent with your own registry.
 
 For example lets assume that we want to use `v2.isvimgreg.com` as registry with specific tag called `mybranch`:
 
@@ -110,7 +110,7 @@ For example lets assume that we want to use `v2.isvimgreg.com` as registry with 
 make REGISTRY=v2.isvimgreg.com/ TAG=mybranch build-images push-images
 ```
 
-Then overwrite images in **ControllerDeployment** and provider "fallback" config to be used before CRI-resource-manager syncs with node-agent:
+Then overwrite images in **ControllerDeployment** and provider "fallback" config to be used before CRI-resource-manager syncs with cri-resmgr-agent:
 
 ```yaml
 apiVersion: core.gardener.cloud/v1beta1
@@ -173,7 +173,7 @@ This is based on https://github.com/gardener/gardener/blob/master/docs/deploymen
 - *kubectl* 1.20+
 - working dir for `mkdir ~/work`
 - *gardener-extension-cri-resmgr* is cloned to ~/work path like this:
-    ```
+    ```sh
     git clone https://github.com/intel/gardener-extension-cri-resmgr ~/work/gardener-extension-cri-resmgr
     ```
 
@@ -181,7 +181,7 @@ This is based on https://github.com/gardener/gardener/blob/master/docs/deploymen
 
 ##### 1. Clone the gardener
 
-```bash
+```sh
 mkdir -p ~/work/
 git clone https://github.com/gardener/gardener ~/work/gardener
 cd ~/work/gardener
@@ -191,7 +191,7 @@ cd -
 
 ##### 2. Prepare kind cluster 
 
-```bash
+```sh
 make -C ~/work/gardener kind-up
 
 kubectl cluster-info --context kind-gardener-local --kubeconfig ~/work/gardener/example/gardener-local/kind/kubeconfig
@@ -201,19 +201,19 @@ cp ~/work/gardener/example/gardener-local/kind/kubeconfig ~/.kube/config
 
 Check that kind cluster is ready:
 
-```bash
+```sh
 kubectl get nodes
 ```
 
 #####  3. Deploy local gardener
 
-```bash
+```sh
 make -C ~/work/gardener/ gardener-up
 ```
 
 Check that three gardener charts are installed:
 
-```bash
+```sh
 helm list -n garden -a
 ```
 
@@ -221,13 +221,13 @@ helm list -n garden -a
 
 ##### 1. (Optional) Regenerate ctrldeploy-ctrlreg.yaml file:
 
-```bash
+```sh
 ./hacks/generate-controller-registration.sh
 ```
 
 ##### 2. Deploy cri-resmgr-extension as Gardener extension using ControllerRegistration/ControllerDeployment
 
-```bash
+```sh
 kubectl apply -f ./examples/ctrldeploy-ctrlreg.yaml
 ```
 
@@ -235,7 +235,7 @@ By default generated "ControllerRegistration" is not enabled globally, so you ne
 
 Checkout installed objects:
 
-```bash
+```sh
 kubectl get controllerregistrations.core.gardener.cloud cri-resmgr-extension
 kubectl get controllerdeployments.core.gardener.cloud cri-resmgr-extension
 ```
@@ -244,7 +244,7 @@ There should be 'cri-resmgr-extension   Extension/cri-resmgr-extension' resource
 
 Remember that "controller installation" should not be yet available - there is not shoot cluster deployed yet and extension is disabled by default.
 
-```bash
+```sh
 kubectl get controllerinstallation.core.gardener.cloud 
 ```
 
@@ -254,7 +254,7 @@ should no return "cri-resmgr extension" installation.
 
 Build an image with extension and upload to local kind cluster
 
-```bash
+```sh
 make build-images push-images
 ```
 
@@ -262,25 +262,25 @@ by default ``localhost:5001`` registry is used (check 'Build and publish docker 
 
 Create shoot:
 
-```
+```sh
 kubectl apply -f examples/shoot.yaml
 ```
 
 Check that shoot cluster is ready:
 
-```
+```sh
 kubectl get shoots -n garden-local --watch -o wide
 ```
 
 In our shoot example, the extensions is also disabled by default and need to be enabled after shoot is created with following command:
 
-```
+```sh
 kubectl patch shoot local -n garden-local -p '{"spec":{"extensions": [ {"type": "cri-resmgr-extension", "disabled": false} ] } }'
 ```
 
 ##### 4. Verify that ManagedResources are properly installed in shoot 'garden' (seed class) and  'shoot--local--local' namespace
 
-```
+```sh
 kubectl get managedresource -n garden | grep cri-resmgr-extension
 kubectl get managedresource -n shoot--local--local | grep extension-runtime-cri-resmgr
 ```
@@ -289,20 +289,20 @@ kubectl get managedresource -n shoot--local--local | grep extension-runtime-cri-
 
 First get credentials to access shoot cluster:
 
-``` 
+```sh 
 kubectl -n garden-local get secret local.kubeconfig -o jsonpath={.data.kubeconfig} | base64 -d > /tmp/kubeconfig-shoot-local.yaml
 ```
 
 ... and check status of the node/pods:
 
-```
+```sh
 kubectl --kubeconfig=/tmp/kubeconfig-shoot-local.yaml get nodes
 kubectl --kubeconfig=/tmp/kubeconfig-shoot-local.yaml get pods -A
 ```
 
 ##### 6. Check CRI-resource-manager is installed properly as proxy
 
-```
+```sh
 kubectl exec -n shoot--local--local `kubectl get pod -n shoot--local--local --no-headers G machine-shoot | awk '{print $1}'` -- systemctl status cri-resource-manager kubelet -n 0
 ```
 
@@ -348,13 +348,13 @@ We should observe that:
 
 You can disable "cri-resmgr extension" in existing shoot to uninstall cri-resource-manager from shoot worker node like this:
 
-```
+```sh
 kubectl patch shoot local -n garden-local -p '{"spec":{"extensions": [ {"type": "cri-resmgr-extension", "disabled": true} ] } }'
 ```
 
 now after executing this:
 
-```
+```sh
 kubectl exec -n shoot--local--local `kubectl get pod -n shoot--local--local --no-headers G machine-shoot | awk '{print $1}'` -- systemctl status cri-resource-manager kubelet -n 0
 ```
 
@@ -385,6 +385,51 @@ Unit cri-resource-manager.service could not be found.
              --v=2 
              --container-runtime-endpoint=unix:///run/containerd/containerd.sock  # <---
 ```
+
+### IV. Troubleshooting and debugging issues
+
+
+#### Deployment and propagation of changes
+
+In garden virtual and seed clusters you should monitoring and watch over following process:
+
+1. `ControllerRegistration/cri-resmgr-extension` results in `ControllerInstallation/cri-resmgr-extension` (reconciled by **gardener-controller-manager**),
+1. `ControllerInstallation/cri-resmgr-extension` Valid/Installed/Healthy conditions are true - those conditions are based on `ManagedResource/cri-resmgr-extension-*` (synced by **gardenlet/controllerinstallation_care controller**)
+1. `ManagedResource/cri-resmgr-extension-*` of type=seed results in deploying `Pod/cri-resmgr-extension` in seed cluster (**reconciled by gardener-resource-manager**)
+1. (Optionally) if configs are defined, the additional `ConfigMap/gardener-extension-cri-resmgr-configs` should created in `extension-cri-resmgr-extension-XXXX` namespace with keys representing different kind of configs (e.g. fallback/default)
+1. At the end of Shoot reconciliation process **gardenlet** creates `Extension/cri-resource-manager` watched by `Pod/cri-resmgr-extension` which initiates deployment of CRI-resource-manager to Shoot worker nodes
+1. CRI-Resource-Manager deployment is implemented by creating `ManagedResource/extension-runtime-cri-resmgr` for shoot that consists installation chart (agent and installation DaemonSets and optional `ConfigMap/cri-resmgr-config.TYPE` configs)
+1. After **gardener-resource-manager** reconciles `ManagedResources/extension-runtime-cri-resmgr` for shoot - conditions of those newly created resources (2 x DaemonsSets with liveness probes) are monitored by `Pod/cri-resmgr-extension` and reported in `Extension/cri-resmgr-extension` status( `SystemComponentsHealthy` condition)
+1. Condition of `Extensions/cri-resmgr-extension` is monitored by **gardenlet/shoot_care** controller and affects Shoot.status.
+
+In a shoot, we expect two DaemonSets to be deployed:
+- cri-resmgr-agent
+- cri-resmgr-installation - which copies binaries, configures CRI-resource-manager and then reconfigures and restarts kubelet and then goes to sleep
+
+To debug issues you can consult use logs of following components (commands are for local kind-based Gardener deployment):
+
+1. Seed context: `Pod/cri-resmgr-extension` - can be accessed by: 
+   ```sh
+   kubectl logs -n extension-cri-resmgr-extension-XXXXX deploy/gardener-extension-cri-resmgr
+   ```
+1. Shoot context: `DaemonSet/installation `:
+   ```sh
+   kubectl logs -n kube-system ds/cri-resmgr-installation
+   ```
+1. Shoot context: `Pod/cri-resmgr-agent`: 
+   ```sh
+   kubectl logs -n kube-system ds/cri-resmgr-agent
+   ```
+3. Seed context: `cri-resource-manager` systemd unit:
+   ```sh
+   # Enable port-forward to shoot's loki: 
+   kubectl port-forward -n shoot--local--local service/loki 3100:3100 &
+
+   # Then query for metrics from loki
+   logcli query --org-id="operator" '{job="systemd-combine-journal"} | unpack | unit="cri-resource-manager.service"'
+   ```
+   Loki client `logcli` can be found [here](https://grafana.com/docs/loki/latest/tools/logcli/).
+   Note you can specify additional label `nodename="machine-shoot--local--local-local-XXXXX-XXXXX"` to get logs from specific node.
 
 
 ### III. Running e2e tests
