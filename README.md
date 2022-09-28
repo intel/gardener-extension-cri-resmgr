@@ -31,7 +31,7 @@ This Gardener extension will deploy and manage lifecycle of [CRI-Resource-Manage
 Missing/TODO:
 - Ability to 'selectively' install cri-resource-manager on specific hosts or worker groups [issue here](https://github.com/intel/gardener-extension-cri-resmgr/issues/10),
 - Allow changing policy (requires implementing policy switching [this procedure](https://intel.github.io/cri-resource-manager/stable/docs/setup.html#changing-the-active-policy) - more information in the [issue](https://github.com/intel/gardener-extension-cri-resmgr/issues/29),
-- HighAvailability + horizontal/vertical autoscaling with VPA/HPA/HVPA + leader election #6
+- HighAvailability + horizontal/vertical autoscaling with VPA/HPA/HVPA + leader election [#6](https://github.com/intel/gardener-extension-cri-resmgr/issues/6)
 - Configuring images with ImageVector based on Kubernetes version is not supported 
 
 ### How CRI-Resource-Manager is deployed
