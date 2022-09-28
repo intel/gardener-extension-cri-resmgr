@@ -442,7 +442,7 @@ To debug issues you can consult use logs of following components (commands are f
    # For kubelet
    logcli query --org-id="operator" '{unit="kubelet.service"}'
    # For containerd
-   logcli query --org-id="operator" '{unit="kubelet.service"}'
+   logcli query --org-id="operator" '{unit="containerd.service"}'
    ```
 
 
