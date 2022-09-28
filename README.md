@@ -9,6 +9,12 @@
 
 This Gardener extension will deploy and manage lifecycle of [CRI-Resource-Manager](https://github.com/intel/cri-resource-manager) in "shoot" clusters worker nodes deployed by Gardener. **CRI-Resource-Manager** is a proxy between kubectl and containerd to allow more sophisticated node resource management.
 
+### Requirments
+
+- containerruntime of shoot nodes must be configured to **containerd** 
+- for production usage: **docker image registry** where installation and extension images can be pushed (unitl #47 is resolved)
+- for local development: Gardener v1.56.0
+
 ### Features
 
 - Automatic **installation** of CRI-Resource-Manager as systemd unit - using installation `DaemonSet`,
@@ -394,17 +400,17 @@ Unit cri-resource-manager.service could not be found.
 In garden virtual and seed clusters you should monitoring and watch over following process:
 
 1. `ControllerRegistration/cri-resmgr-extension` results in `ControllerInstallation/cri-resmgr-extension` (reconciled by **gardener-controller-manager**),
-1. `ControllerInstallation/cri-resmgr-extension` Valid/Installed/Healthy conditions are true - those conditions are based on `ManagedResource/cri-resmgr-extension-*` (synced by **gardenlet/controllerinstallation_care controller**)
-1. `ManagedResource/cri-resmgr-extension-*` of type=seed results in deploying `Pod/cri-resmgr-extension` in seed cluster (**reconciled by gardener-resource-manager**)
-1. (Optionally) if configs are defined, the additional `ConfigMap/gardener-extension-cri-resmgr-configs` should be created in `extension-cri-resmgr-extension-XXXX` namespace with keys representing different kind of configs (e.g. fallback/default)
-1. At the end of Shoot reconciliation process **gardenlet** creates `Extension/cri-resource-manager` watched by `Pod/cri-resmgr-extension` which initiates deployment of CRI-resource-manager to Shoot worker nodes
-1. CRI-Resource-Manager deployment is implemented by creating `ManagedResource/extension-runtime-cri-resmgr` for shoot that consists installation chart (agent and installation DaemonSets and optional `ConfigMap/cri-resmgr-config.TYPE` configs)
-1. After **gardener-resource-manager** reconciles `ManagedResources/extension-runtime-cri-resmgr` for shoot - conditions of those newly created resources (2 x DaemonsSets with liveness probes) are monitored by `Pod/cri-resmgr-extension` and reported in `Extension/cri-resmgr-extension` status( `SystemComponentsHealthy` condition)
-1. Condition of `Extensions/cri-resmgr-extension` is monitored by **gardenlet/shoot_care** controller and affects Shoot.status.
+1. `ControllerInstallation/cri-resmgr-extension` Valid/Installed/Healthy conditions are true - those conditions are based on `ManagedResource/cri-resmgr-extension-*` (synced by **gardenlet/controllerinstallation_care controller**),
+1. `ManagedResource/cri-resmgr-extension-*` of `type=seed` results in deploying `Pod/cri-resmgr-extension` in seed cluster (**reconciled by gardener-resource-manager**),
+1. (Optionally) if configs are defined, the additional `ConfigMap/gardener-extension-cri-resmgr-configs` should be created in `extension-cri-resmgr-extension-XXXX` namespace with keys representing different kind of configs (e.g. fallback/default),
+1. At the end of shoot reconciliation process, **gardenlet** creates `Extension/cri-resource-manager` watched by `Pod/cri-resmgr-extension` which initiates deployment of CRI-resource-manager to shoot worker nodes,
+1. CRI-Resource-Manager deployment is implemented by creating `ManagedResource/extension-runtime-cri-resmgr` for shoot that consists installation chart (agent and installation DaemonSets and optional `ConfigMap/cri-resmgr-config.TYPE` configs),
+1. After **gardener-resource-manager** reconciles `ManagedResources/extension-runtime-cri-resmgr` for shoot - conditions of those newly created resources (2 x DaemonsSets with liveness probes) are monitored by `Pod/cri-resmgr-extension` and reported in `Extension/cri-resmgr-extension` status( `SystemComponentsHealthy` condition),
+1. Condition of `Extensions/cri-resmgr-extension` is monitored by **gardenlet/shoot_care** controller and affects finally `Shoot.status.conditions`
 
 In a shoot, we expect two DaemonSets to be deployed:
-- cri-resmgr-agent
-- cri-resmgr-installation - which copies binaries, configures CRI-resource-manager and then reconfigures and restarts kubelet and then goes to sleep
+- **cri-resmgr-agent** - that Ready status is based on probl that tries to connect to local CRI-Resource-Manager process,
+- **cri-resmgr-installation** - which copies binaries, configures CRI-resource-manager and then reconfigures and restarts kubelet and then goes to sleep - its Ready status is based on probe that checks "systemctl status cri-resource-manager"
 
 To debug issues you can consult use logs of following components (commands are for local kind-based Gardener deployment):
 
@@ -420,7 +426,7 @@ To debug issues you can consult use logs of following components (commands are f
    ```sh
    kubectl logs -n kube-system ds/cri-resmgr-agent
    ```
-3. Seed context: `cri-resource-manager` systemd unit:
+1. Seed context: `cri-resource-manager` systemd unit:
    ```sh
    # Enable port-forward to shoot's loki: 
    kubectl port-forward -n shoot--local--local service/loki 3100:3100 &
@@ -430,6 +436,14 @@ To debug issues you can consult use logs of following components (commands are f
    ```
    Loki client `logcli` can be found [here](https://grafana.com/docs/loki/latest/tools/logcli/).
    Note you can specify additional label `nodename="machine-shoot--local--local-local-XXXXX-XXXXX"` to get logs from specific node.
+
+   In case of issues it is worth to consult: **kubelet** and **containerd** systemd services logs following commands:
+   ```
+   # For kubelet
+   logcli query --org-id="operator" '{unit="kubelet.service"}'
+   # For containerd
+   logcli query --org-id="operator" '{unit="kubelet.service"}'
+   ```
 
 
 ### III. Running e2e tests
