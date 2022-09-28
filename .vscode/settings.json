@@ -35,6 +35,7 @@
         "HVPA",
         "IAAAAAAAA",
         "imagevector",
+        "isvimgreg",
         "kubecfg",
         "kubeconfig",
         "kubelet",
