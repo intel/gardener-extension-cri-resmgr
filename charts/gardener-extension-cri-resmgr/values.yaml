@@ -12,7 +12,52 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+replicaCount: 1
+
+### This is default value for extension image to be tested with kind-based provided local with Gardener above 1.55.0
+### If you want to overwrite it, please provide values to ControllerDeployment providerConfig.values.
 image:
-  repository: v2.isvimgreg.com/gardener-extension-cri-resmgr
+  repository: localhost:5001/gardener-extension-cri-resmgr
   tag: latest
   pullPolicy: Always
+
+### NOTE: The values provided here are only for development/testing purposes as an example.
+### Default values defined in charts.go package by embeding charts/images.yaml are the "source of truth".
+### Please do not uncomment those, unless you want to just try "helm template ." without extension.
+# imageVectorOverwrite: |
+#   images:
+#   - name: gardener-extension-cri-resmgr-installation
+#     tag: latest
+#     repository: localhost:5001/gardener-extension-cri-resmgr-installation
+#   - name: gardener-extension-cri-resmgr-agent
+#     tag: latest
+#     repository: localhost:5001/gardener-extension-cri-resmgr-agent
+# configs:
+#   foo1: |
+#     from extension chart values.yaml 
+#     first line 
+#     second line
+#
+#     some space
+#
+#   foo2: |
+#     from extension chart values.yaml 
+#     but what if have multiline
+#     not spaces
+#
+#   foo3: |
+#     comment: "from extension chart values.yaml"
+#     config:
+#       name: "this is proper"
+#       foo: bar
+#
+#   foo4: |
+#     ### This is OVERRIDE default policy from cri-resmgr-installation chart/values.yaml
+#     policy:
+#       Active: topology-aware
+#       ReservedResources:
+#         CPU: 750m
+#     logger:
+#       Debug: resource-manager,cache,policy,resource-control
+#     dump:
+#       Config: off:.*,full:((Create)|(Remove)|(Run)|(Update)|(Start)|(Stop)).*

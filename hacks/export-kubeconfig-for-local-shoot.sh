@@ -1,4 +1,3 @@
-#
 # Copyright 2022 Intel Corporation. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,11 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-{{-  define "image" -}}
-  {{- if hasPrefix "sha256:" .Values.image.tag }}
-  {{- printf "%s@%s" .Values.image.repository .Values.image.tag }}
-  {{- else }}
-  {{- printf "%s:%s" .Values.image.repository .Values.image.tag }}
-  {{- end }}
-{{- end }}
+
+# Usage: source ./hacks/export-kubeconfig-for-local-shoot.sh
+KUBECONFIG=~/.kube/config kubectl -n garden-local get secret local.kubeconfig -o jsonpath={.data.kubeconfig} | base64 -d > /tmp/kubeconfig-shoot-local.yaml
+export KUBECONFIG=/tmp/kubeconfig-shoot-local.yaml
+echo KUBECONFIG set to local shoot by /tmp/kubeconfig-shoot-local.yaml

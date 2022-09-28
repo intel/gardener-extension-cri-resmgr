@@ -1,0 +1,10 @@
+{
+    "recommendations": [
+        "yzhang.markdown-all-in-one",
+        "streetsidesoftware.code-spell-checker",
+        "peterschmalfeldt.explorer-exclude",
+        "golang.go",
+        "766b.go-outliner",
+        "redhat.vscode-yaml"
+    ]
+}

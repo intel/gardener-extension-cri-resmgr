@@ -1,4 +1,9 @@
 cri-resource-manager-0.6.0.x86_64.tar.gz
+/tmpbuild
 /cri-resmgr-extension.test
 /gardener-extension-cri-resmgr
 /test/e2e/cri-resmgr-extension/cri-resmgr-extension.test
+/gardener-extension-cri-resmgr.e2e-tests
+/gardener-extension-cri-resmgr.test
+/gardener-extension-cri-resmgr.actuator.test
+/gardener-extension-cri-resmgr.configs.test

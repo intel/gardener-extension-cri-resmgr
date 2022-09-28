@@ -13,10 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{-  define "image" -}}
-  {{- if hasPrefix "sha256:" .Values.image.tag }}
-  {{- printf "%s@%s" .Values.image.repository .Values.image.tag }}
-  {{- else }}
-  {{- printf "%s:%s" .Values.image.repository .Values.image.tag }}
-  {{- end }}
+{{- if .Values.imageVectorOverwrite }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gardener-extension-cri-resmgr-imagevector-overwrite
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: gardener-extension-cri-resmgr
+data:
+  images_overwrite.yaml: |
+{{ .Values.imageVectorOverwrite | indent 4 }}
 {{- end }}

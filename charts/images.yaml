@@ -1,3 +1,4 @@
+#
 # Copyright 2022 Intel Corporation. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,9 +12,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-apiVersion: v1
-name: cri-resmgr-removal
-type: application
-version: 0.2.0
-appVersion: "latest"
+#
+# Default values for image location internal installation and agent. Use localhost:5001 (local provider registry) until images will be published.
+images:
+- name: gardener-extension-cri-resmgr-installation
+  sourceRepository: https://github.com/intel/gardener-extension-cri-resmgr
+  repository: localhost:5001/gardener-extension-cri-resmgr-installation
+  tag: latest
+- name: gardener-extension-cri-resmgr-agent
+  sourceRepository: https://github.com/intel/gardener-extension-cri-resmgr
+  repository: localhost:5001/gardener-extension-cri-resmgr-agent
+  tag: latest

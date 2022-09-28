@@ -12,26 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package cri_resmgr_extension_test
+package consts
 
-import (
-	"flag"
-	"os"
-	"testing"
+const (
+	ExtensionName = "cri-resmgr"
+	ExtensionType = "cri-resmgr-extension"
 
-	"github.com/gardener/gardener/test/framework"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	ControllerName = "cri-resmgr-controller"
+	ActuatorName   = "cri-resmgr-actuator"
+
+	ManagedResourceName = "extension-runtime-cri-resmgr"
+	ConfigKey           = "config.yaml"
+
+	ChartPath               = "charts/internal/cri-resmgr-installation/"
+	InstallationImageName   = "gardener-extension-cri-resmgr-installation"
+	AgentImageName          = "gardener-extension-cri-resmgr-agent"
+	InstallationReleaseName = "cri-resmgr-installation"
+	InstallationSecretKey   = "installation_chart"
 )
-
-func TestMain(m *testing.M) {
-	// Flags to be used against existing shoot in our dedicated infrastructure.
-	framework.RegisterGardenerFrameworkFlags()
-	flag.Parse()
-	os.Exit(m.Run())
-}
-
-func TestE2E(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "E2E Suite")
-}

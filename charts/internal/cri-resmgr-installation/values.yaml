@@ -1,0 +1,35 @@
+# Copyright 2022 Intel Corporation. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+### TODO: remove merging to master - values from chart/images.{go,yaml} should be enough 
+### and only one source of truth.
+# Default value for installation image, can be overwritten with imageVectorOverwrite in ControllerDeployment
+# with name="gardener-extension-cri-resmgr-{installation,agent}"
+#images: 
+#  gardener-extension-cri-resmgr-installation: localhost:5001/gardener-extension-cri-resmgr-installation:latest
+#  gardener-extension-cri-resmgr-agent: localhost:5001/gardener-extension-cri-resmgr-agent:latest
+
+### TODO decide do we want to use this as default (uncomment) or the builtin or the one provided as sample 
+#configs:
+#  fallback: |
+#    ### This is default policy from cri-resmgr-installation chart/values.yaml
+#    ### based on file 
+#    policy:
+#      Active: topology-aware
+#      ReservedResources:
+#        CPU: 750m
+#    logger:
+#      Debug: resource-manager,cache,policy,resource-control
+#    dump:
+#      Config: off:.*,full:((Create)|(Remove)|(Run)|(Update)|(Start)|(Stop)).*
