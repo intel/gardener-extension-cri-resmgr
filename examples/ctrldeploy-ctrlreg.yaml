@@ -6,9 +6,9 @@ metadata:
   name: cri-resmgr-extension
 type: helm
 providerConfig:
-  chart: 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
+  chart: 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
 
-  # values:
+  values:
     ### For development purposes - set it to 0 (if you want to register extension but use local process with "make start").
     # replicaCount: 1            
 
@@ -28,17 +28,20 @@ providerConfig:
     #    tag: mybranch
     #    repository: v2.isvimgreg.com/gardener-extension-cri-resmgr-agent
     ### Uncomment to provide own "fallback" configuration for CRI-Resource-Manager
-    # configs:
-    #   fallback: |
-    #     ### This is default policy from CRI-resource-manage fallback.cfg.sample
-    #     policy:
-    #       Active: topology-aware
-    #       ReservedResources:
-    #         CPU: 750m
-    #     logger:
-    #       Debug: resource-manager,cache,policy,resource-control
-    #     dump:
-    #       Config: off:.*,full:((Create)|(Remove)|(Run)|(Update)|(Start)|(Stop)).*
+    configs:
+      fallback: |
+        ### This is default policy from CRI-resource-manage fallback.cfg.sample
+        policy:
+          Active: topology-aware
+          ReservedResources:
+            CPU: 750m
+        logger:
+          Debug: *
+          Klog:
+            # Enables nice logs with logger names that can be used in Debug
+            skip_headers: true
+        dump:
+          Config: off:.*,full:((Create)|(Remove)|(Run)|(Update)|(Start)|(Stop)).*
 ---
 apiVersion: core.gardener.cloud/v1beta1
 kind: ControllerRegistration
