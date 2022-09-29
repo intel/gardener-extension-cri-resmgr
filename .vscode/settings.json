@@ -48,10 +48,12 @@
         "NODEFOO",
         "onsi",
         "resmgr",
+        "resmgrsockets",
         "resourcemanagerv",
         "sapcloud",
         "testbroken",
         "unmarshalled",
         "unmarshalling"
-    ]
+    ],
+    "cSpell.enabled": true
 }

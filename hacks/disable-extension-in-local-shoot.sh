@@ -11,5 +11,5 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-kubectl -n garden-local annotate shoot local "confirmation.gardener.cloud/deletion=true" --overwrite
-kubectl -n garden-local delete shoot local --wait=false
+set -x
+kubectl patch shoot local -n garden-local -p '{"spec":{"extensions": [ {"type": "cri-resmgr-extension", "disabled": true} ] } }'
