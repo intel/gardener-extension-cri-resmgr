@@ -121,8 +121,7 @@ func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extens
 	// Get configs either from providerConfig and merged it with provided files
 	configs, err := configs.GetConfigs(a.logger, cluster.Shoot.Spec.Extensions)
 	if err != nil {
-		panic(err)
-		// return err
+		return err
 	}
 
 	// Generate secret data that will be used by reference by ManagedResource to deploy.
