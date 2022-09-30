@@ -34,7 +34,6 @@ import (
 
 const (
 	ConfigsOverrideEnv = "CONFIGS_OVERWRITE"
-	MaxNumberOfConfigs = 100
 )
 
 // CriResMgrConfig is a providerConfig specific type for CRI-res-mgr extension.
@@ -68,9 +67,6 @@ func GetConfigs(logger logr.Logger, extensions []v1beta1.Extension) (map[string]
 		dirInfo, err := path.ReadDir(-1)
 		if err != nil {
 			return nil, fmt.Errorf("cannot ReadDir %w", err)
-		}
-		if len(dirInfo) > MaxNumberOfConfigs {
-			return fmt.Errorf("Directory with cri-resmgr configs contains too many files.")
 		}
 		for _, dirEntry := range dirInfo {
 			configName := dirEntry.Name()
