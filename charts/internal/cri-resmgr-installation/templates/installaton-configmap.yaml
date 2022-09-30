@@ -59,6 +59,11 @@ data:
         sed -i 's!fallback.cfg --force-config /etc/cri-resmgr/force.cfg"!fallback.cfg"!' /var/host/etc/default/cri-resource-manager
       fi
 
+      # Warning if previous state exists
+      if [[ -d /var/host/var/lib/cri-resmgr ]]; then
+        echo 'WARNING! previous state of cri-resmgr still exists in hosts /var/lib/cri-resmgr!'
+      fi
+
       echo Enable and restart cri-resource-manager systemd unit.
       chroot /var/host bash -c "systemctl enable cri-resource-manager"
       chroot /var/host bash -c "systemctl restart cri-resource-manager"
@@ -118,6 +123,9 @@ data:
               break
           fi
       done
+
+      # Remove cache and state directory of cri-resmgr
+      rm -rf /var/lib/cri-resmgr
 
       # Sleep after successful removal 
       echo 'Uninstallation successful.'
