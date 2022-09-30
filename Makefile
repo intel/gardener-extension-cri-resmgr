@@ -37,7 +37,7 @@ build:
 
 test:
 	# Those tests (renders charts, uses env to read files) change CWD during execution (required because rely on charts and fixtures).
-	ginkgo ./pkg/...
+	go test  -v ./pkg/...
 
 clean:
 	go clean -cache -modcache -testcache
