@@ -29,7 +29,7 @@ type: helm
 providerConfig:
   chart: $chart
 
-  # values:
+  values:
     ### For development purposes - set it to 0 (if you want to register extension but use local process with "make start").
     # replicaCount: 1            
 
@@ -49,7 +49,37 @@ providerConfig:
     #    tag: mybranch
     #    repository: v2.isvimgreg.com/gardener-extension-cri-resmgr-agent
     ### Uncomment to provide own "fallback" configuration for CRI-Resource-Manager
-    # configs:
+    ### Use ballons policy as an example:
+    # based on: https://github.com/intel/cri-resource-manager/blob/master/sample-configs/balloons-policy.cfg
+    configs:
+      fallback: |
+        policy:
+          Active: balloons
+      default: |
+        policy:
+          Active: balloons
+          AvailableResources:
+            CPU: cpuset:1-15
+          ReservedResources:
+            CPU: cpuset:15
+          balloons:
+            PinCPU: true
+            PinMemory: true
+            IdleCPUClass: idle
+            BalloonTypes:
+              - Name: "full-core-turbo"
+                MinCPUs: 2
+                CPUClass: "turbo"
+                MinBalloons: 2
+        logger:
+          Debug: resource-manager,cache,policy,resource-control
+          Klog:
+            # Enables nice logs with logger names that can be used in Debug
+            skip_headers: true
+        dump:
+          Config: off:.*,full:((Create)|(Remove)|(Run)|(Update)|(Start)|(Stop)).*
+
+    ### Example of how to use default
     #   fallback: |
     #     ### This is default policy from CRI-resource-manage fallback.cfg.sample
     #     policy:
