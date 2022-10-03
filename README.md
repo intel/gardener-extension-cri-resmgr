@@ -344,3 +344,48 @@ access to e2e shoot with k9s example:
 ```
 k9s --kubeconfig <(kubectl view-secret -n garden-local e2e-default.kubeconfig kubeconfig)
 ```
+
+### III. Troubleshooting
+
+#### Logging
+
+Logs could be watched from containers, but easily it is from one point - Grafana. Logs for exentsion are avialable in grafana. Logs for cri-resmeg-installation, cri-resmeg-agent and cri-resource-manager in grafana seed.
+
+##### cri-extension
+You can check the logs in Grafana - svc/grafana namespace garden.
+
+{container_name="gardener-extension-cri-resmgr"}
+
+![image info](./doc/cri-resmeg-extension.png)
+
+##### cri-rm-installation and agent
+You can check the logs in Grafana - svc/grafana-operators in seed namespace.
+
+{pod_name="cri-resmgr-installation-XXXXX"} 
+
+{pod_name="cri-resmgr-agent-XXXXX"} 
+
+installation
+![install-full](./doc/cri-resmeg-installation-full.png)
+![install-logs](./doc/cri-resmeg-installation-logs.png)
+
+Agent
+![agent-full](./doc/cri-resmeg-agent-full.png)
+![agent-logs](./doc/cri-resmeg-agent-logs.png)
+
+##### cri-resource-manager 
+You can check the logs in Grafana - svc/grafana-operators in seed namespace.
+
+{node="machine-shoot-xxx",origin="systemd-journal",job="systemd-combine-journal"} |= "cri-resource-manager"
+
+![image info](./doc/cri-resmeg.png)
+
+
+#### Bug in kind local gardener Grafana operator Loki configuration
+
+Login and password are default - admin/admin
+
+And there is a missing configuration in the HTTP header:
+> X-Scope-OrgID:operator
+
+![image info](./doc/fix_grafana_loki.png)
