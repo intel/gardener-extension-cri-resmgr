@@ -1,4 +1,3 @@
-#
 # Copyright 2022 Intel Corporation. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,11 +11,5 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-{{-  define "image" -}}
-  {{- if hasPrefix "sha256:" .Values.image.tag }}
-  {{- printf "%s@%s" .Values.image.repository .Values.image.tag }}
-  {{- else }}
-  {{- printf "%s:%s" .Values.image.repository .Values.image.tag }}
-  {{- end }}
-{{- end }}
+set -x
+kubectl patch shoot local -n garden-local -p '{"spec":{"extensions": [ {"type": "cri-resmgr-extension", "disabled": true} ] } }'

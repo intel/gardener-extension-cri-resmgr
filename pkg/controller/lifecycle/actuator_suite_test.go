@@ -12,26 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package cri_resmgr_extension_test
+package actuator_test
 
 import (
-	"flag"
 	"os"
 	"testing"
 
-	"github.com/gardener/gardener/test/framework"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/format"
 )
 
-func TestMain(m *testing.M) {
-	// Flags to be used against existing shoot in our dedicated infrastructure.
-	framework.RegisterGardenerFrameworkFlags()
-	flag.Parse()
-	os.Exit(m.Run())
-}
-
-func TestE2E(t *testing.T) {
+func TestCharts(t *testing.T) {
+	// because we output very large charts
+	format.MaxLength = 0
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "E2E Suite")
+	// Go up three times pkg/controller/lifecycle to project root directory
+	err := os.Chdir("../../..")
+	if err != nil {
+		panic(err)
+	}
+	RunSpecs(t, "CRI-resource-manager extension test suite")
 }

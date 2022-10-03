@@ -31,10 +31,11 @@ spec:
     spec:
       hostPID: true
       hostIPC: true
+      # give a minute to uninstall cri-rm
+      terminationGracePeriodSeconds: 60
       containers:
-      - name: container-runtime-cri-resmgr
-        # TODO: support for imagevector
-        image: v2.isvimgreg.com/gardener-extension-cri-resmgr-installation:latest
+      - name: installation
+        image: {{ index .Values.images "gardener-extension-cri-resmgr-installation" }}
         command: ["/scripts/install-cri-resmgr.sh"]
         securityContext:
           privileged: true
@@ -43,6 +44,14 @@ spec:
           mountPath: /var/host
         - name: cri-resmgr-installation-script
           mountPath: /scripts
+        {{ if .Values.configs.fallback }}
+        - name: config-volume-fallback
+          mountPath: /etc/cri-resmgr/
+        {{ end }}
+        {{ if .Values.configs.force }}
+        - name: config-volume-force
+          mountPath: /configs
+        {{ end }}
         livenessProbe:
           exec:
             command: ["chroot", "/var/host", "bash", "-c", "systemctl status cri-resource-manager"]
@@ -56,3 +65,19 @@ spec:
         configMap:
           name: cri-resmgr-installation-script
           defaultMode: 0744
+      {{ if .Values.configs.fallback }}
+      - name: config-volume-fallback
+        configMap:
+          name: cri-resmgr-config.fallback
+          items:
+          - key: policy
+            path: fallback.cfg
+      {{ end }}
+      {{ if .Values.configs.force }}
+      - name: config-volume-force
+        configMap:
+          name: cri-resmgr-config.force
+          items:
+          - key: policy
+            path: force.cfg
+      {{ end }}

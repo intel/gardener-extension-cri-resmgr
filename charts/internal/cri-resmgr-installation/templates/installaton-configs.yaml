@@ -13,10 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{-  define "image" -}}
-  {{- if hasPrefix "sha256:" .Values.image.tag }}
-  {{- printf "%s@%s" .Values.image.repository .Values.image.tag }}
-  {{- else }}
-  {{- printf "%s:%s" .Values.image.repository .Values.image.tag }}
-  {{- end }}
-{{- end }}
+{{ range $config_name, $config_contents := .Values.configs }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: kube-system
+  name: "cri-resmgr-config.{{ $config_name }}"
+data:
+  policy: {{- $config_contents | toYaml | indent 2 }}
+ 
+{{ end }}

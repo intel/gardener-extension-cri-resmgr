@@ -12,26 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package cri_resmgr_extension_test
+package imagevector
 
 import (
-	"flag"
-	"os"
-	"testing"
+	"strings"
 
-	"github.com/gardener/gardener/test/framework"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"github.com/gardener/gardener/pkg/utils/imagevector"
+	"github.com/intel/gardener-extension-cri-resmgr/charts"
 )
 
-func TestMain(m *testing.M) {
-	// Flags to be used against existing shoot in our dedicated infrastructure.
-	framework.RegisterGardenerFrameworkFlags()
-	flag.Parse()
-	os.Exit(m.Run())
+var imageVector imagevector.ImageVector
+
+func init() {
+	var err error
+	imageVector, err = imagevector.Read(strings.NewReader(charts.ImagesYAML))
+	if err != nil {
+		return
+	}
+
+	imageVector, err = imagevector.WithEnvOverride(imageVector)
+	if err != nil {
+		return
+	}
 }
 
-func TestE2E(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "E2E Suite")
+// ImageVector contains all images from charts/images.yaml
+func ImageVector() imagevector.ImageVector {
+	return imageVector
 }

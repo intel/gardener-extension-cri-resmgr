@@ -1,0 +1,148 @@
+# Copyright 2022 Intel Corporation. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cri-resmgr-installation-script
+  namespace: kube-system
+data:
+  install-cri-resmgr.sh: |-
+    #!/bin/bash
+    # check if kubelet service file is a symlink
+    if [[ -L "/var/host/etc/systemd/system/kubelet.service" ]]; then
+      echo "err: kubelet.service file is a symlink"
+      exit 1
+    fi
+    function install() {
+      echo Installing binaries from /opt/ to host /
+      cp -v -r /cri-resmgr-installation/opt/ /var/host/
+
+      echo Installing systemd unit
+      cp -v /cri-resmgr-installation/etc/systemd/system/cri-resource-manager.service  /var/host/etc/systemd/system/cri-resource-manager.service
+
+      echo 'Installing systemd unit config file (contains POLICY_OPTIONS and CONFIG_OPTIONS variables - pointing to fallback.cfg)'
+      mkdir -p /var/host/etc/default/
+      cp -v /cri-resmgr-installation/etc/default/cri-resource-manager /var/host/etc/default/
+
+      echo 'Installing cri-resource-manager fallback.cfg (when mounted) otherwise copy sample included inside container image'
+      mkdir -p /var/host/etc/cri-resmgr
+      if [[ -f /etc/cri-resmgr/fallback.cfg ]]; then
+        echo 'Installing mounted configuration file from /etc/cri-resmgr/fallback.cfg to host /etc/cri-resmgr'
+        cp -v /etc/cri-resmgr/fallback.cfg /var/host/etc/cri-resmgr/fallback.cfg
+      else 
+        echo 'Installing fallback configuration file from container image (from release tgz).'
+        cp -v /cri-resmgr-installation/etc/cri-resmgr/fallback.cfg.sample /var/host/etc/cri-resmgr/fallback.cfg
+      fi
+
+      # Handle force.cfg
+      if [[ -f /configs/force.cfg ]]; then
+        echo 'Installing mounted configuration file from /configs/force.cfg to host /etc/cri-resmgr/'
+        cp -v /configs/force.cfg /var/host/etc/cri-resmgr/force.cfg
+        sed -i 's!fallback.cfg"!fallback.cfg --force-config /etc/cri-resmgr/force.cfg"!' /var/host/etc/default/cri-resource-manager
+      else 
+        # check if force is used and remove if not mounted (from filesystem config systemd config
+        if [[ -f /var/host/etc/cri-resmgr/force.cfg ]]; then
+          rm -v /var/host/etc/cri-resmgr/force.cfg
+        fi
+        sed -i 's!fallback.cfg --force-config /etc/cri-resmgr/force.cfg"!fallback.cfg"!' /var/host/etc/default/cri-resource-manager
+      fi
+
+      echo Enable and restart cri-resource-manager systemd unit.
+      chroot /var/host bash -c "systemctl enable cri-resource-manager"
+      chroot /var/host bash -c "systemctl restart cri-resource-manager"
+
+      echo Reconfigure kubelet.service to use connect to cri-resmgr.sock as container-runtime
+      sed -i  '/containerd/d' /var/host/etc/systemd/system/kubelet.service
+      if ! grep -q container-runtime-endpoint  "/var/host/etc/systemd/system/kubelet.service"; then
+        # matches GardenLinux kubelet config
+        sed '/KUBELET_EXTRA_ARGS \\/ s!$!\n    --container-runtime-endpoint=/var/run/cri-resmgr/cri-resmgr.sock\\!' -i /var/host/etc/systemd/system/kubelet.service
+        # matches kind-node kubelet config
+        sed '/KUBELET_EXTRA_ARGS$/ s!$! \\\n    --container-runtime-endpoint=/var/run/cri-resmgr/cri-resmgr.sock\\!' -i /var/host/etc/systemd/system/kubelet.service
+      fi
+      echo Wait for cri-resource-manager, container and kubelet services to be active
+      # Check if cri-resource-manager, containerd and kubelet is active
+      while true; do
+          criIsActive=$(chroot /var/host bash -c "systemctl is-active cri-resource-manager")
+          containerdIsActive=$(chroot /var/host bash -c "systemctl is-active containerd")
+          kubeletIsActive=$(chroot /var/host bash -c "systemctl is-active kubelet")
+          if [ "$criIsActive" == "active" ] && [ "$containerdIsActive" == "active" ] && [ "$kubeletIsActive" == "active" ];then
+              break
+          fi
+      done
+      echo Restart kubelet
+      chroot /var/host bash -c "systemctl daemon-reload"
+      chroot /var/host bash -c "systemctl restart kubelet"
+    }
+
+    function uninstall() {
+      # Remove cri-resmgr from kubelet configuration
+      echo "Remove cri-resmgr from kubelet configuration"
+      sed -i '/\[Unit\]/aAfter=containerd.service' /var/host/etc/systemd/system/kubelet.service
+      sed -i 's/\/var\/run\/cri-resmgr\/cri-resmgr.sock/unix:\/\/\/run\/containerd\/containerd.sock/g' /var/host/etc/systemd/system/kubelet.service
+
+      # Stop and disable cri-resource-manager
+      echo 'Stop and disable cri-resource-manager'
+      chroot /var/host bash -c "systemctl disable cri-resource-manager"
+      chroot /var/host bash -c "systemctl stop cri-resource-manager"
+
+      # Remove files left after cri-resmgr
+      echo 'Remove files left after cri-resmgr'
+      rm -rf /var/host/opt/intel
+      rm -rf /var/host/etc/cri-resmgr
+      rm -rf /var/host/etc/systemd/system/cri-resource-manager.service
+      rm -rf /var/host/etc/default/cri-resource-manager 
+
+
+      # Restart kubelet with new configuration
+      echo 'Restart kubelet with new configuration'
+      chroot /var/host bash -c "systemctl daemon-reload"
+      chroot /var/host bash -c "systemctl restart kubelet"
+
+      # Check if kubelet is active
+      echo 'Check if kubelet is active'
+      while true; do
+          kubeletIsActive=$(chroot /var/host bash -c "systemctl is-active kubelet")
+          if [ "$kubeletIsActive" == "active" ];then
+              break
+          fi
+      done
+
+      # Sleep after successful removal 
+      echo 'Uninstallation successful.'
+      echo "cri-resource-manager successfully removed. Try to kill pid $child myself..."
+      kill -KILL "$child" 2>/dev/null
+      # give 10 sec see logs 
+      sleep 5
+      exit 0
+    }
+
+    # Install cri-rm
+    install
+
+    #echo "Setup termination handler."
+    trap uninstall SIGTERM SIGINT
+
+    # Sleep after installation the task
+    echo "cri-resource-manager installed. Sleeping..."
+    while true; do
+      # put sleep in background and wait to allow bash to capture and handle signals
+      # based on https://unix.stackexchange.com/questions/146756/forward-sigterm-to-child-in-bash
+      sleep 3600 &
+      child=$!
+      wait $child
+      echo "Still sleeping...";
+    done
+
+
