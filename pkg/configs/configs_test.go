@@ -17,7 +17,6 @@ package configs_test
 import (
 
 	// Local
-	"os"
 
 	"github.com/go-logr/logr"
 	"github.com/intel/gardener-extension-cri-resmgr/pkg/configs"
@@ -36,20 +35,21 @@ import (
 var _ = Describe("cri-resource-manager extension configs reading", func() {
 
 	var (
-		extensions []v1beta1.Extension
-		log        logr.Logger
+		extensions  []v1beta1.Extension
+		baseConfigs map[string]string
+		log         logr.Logger
 	)
 	BeforeEach(func() {
 		log = logger.ZapLogger(true)
 	})
 	It("installation chart with zero configs provided", func() {
 		extensions := []v1beta1.Extension{}
-		configs, err := configs.GetConfigs(log, extensions)
+		configs, err := configs.MergeConfigs(log, map[string]string{}, extensions)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(configs).Should(Equal(map[string]string{}))
 	})
 
-	Describe("with not empty extensions but empty config", func() {
+	Describe("with empty extensions and empty baseConfigs", func() {
 		BeforeEach(func() {
 
 			extensions = []v1beta1.Extension{
@@ -60,15 +60,17 @@ var _ = Describe("cri-resource-manager extension configs reading", func() {
 					},
 				},
 			}
+
+			baseConfigs = map[string]string{}
 		})
 		It("installation chart with just configs provided from shoot", func() {
-			configs, err := configs.GetConfigs(log, extensions)
+			configs, err := configs.MergeConfigs(log, baseConfigs, extensions)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(configs).Should(Equal(map[string]string{}))
 		})
 	})
 
-	Describe("with not empty extensions and some foo config", func() {
+	Describe("with not empty extensions", func() {
 		BeforeEach(func() {
 			extensions = []v1beta1.Extension{
 				{
@@ -78,20 +80,25 @@ var _ = Describe("cri-resource-manager extension configs reading", func() {
 					},
 				},
 			}
+			baseConfigs = map[string]string{}
 		})
 		It("installation chart with just configs provided from shoot", func() {
-			configs, err := configs.GetConfigs(log, extensions)
+			configs, err := configs.MergeConfigs(log, baseConfigs, extensions)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(configs).Should(Equal(map[string]string{"foo": "bar"}))
 		})
-		Describe("with some configs provided by env", func() {
-			BeforeEach(func() {
-				os.Setenv(configs.ConfigsOverrideEnv, "pkg/configs/configs-fixtures")
-			})
+		Describe("with some baseConfigs, merge but do not override", func() {
 			It("installation chart with just configs provided from shoot", func() {
-				configs, err := configs.GetConfigs(log, extensions)
+				configs, err := configs.MergeConfigs(log, map[string]string{"bar": "baz\n"}, extensions)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(configs).Should(Equal(map[string]string{"foo": "bar", "bar": "baz\n"}))
+			})
+		})
+		Describe("with some baseConfigs, merge and override", func() {
+			It("installation chart with just configs provided from shoot", func() {
+				configs, err := configs.MergeConfigs(log, map[string]string{"foo": "old"}, extensions)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(configs).Should(Equal(map[string]string{"foo": "bar"}))
 			})
 		})
 	})

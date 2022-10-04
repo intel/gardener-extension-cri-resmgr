@@ -17,6 +17,7 @@ package lifecycle
 import (
 	"context"
 	"fmt"
+	"os"
 	"time"
 
 	// Local
@@ -33,6 +34,7 @@ import (
 	// Other
 	"github.com/go-logr/logr"
 	"github.com/intel/gardener-extension-cri-resmgr/pkg/imagevector"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
@@ -118,8 +120,21 @@ func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extens
 		return err
 	}
 
-	// Get configs either from providerConfig and merged it with provided files
-	configs, err := configs.GetConfigs(a.logger, cluster.Shoot.Spec.Extensions)
+	// Get base configs from ControllerDeployment deployed ConfigMap (base for all Shoot clusters)
+	baseConfigs := map[string]string{}
+	extensionConfigMapNamespace := os.Getenv(consts.ConfigMapNamespaceEnvKey)
+	if extensionConfigMapNamespace != "" {
+		configMap := &corev1.ConfigMap{}
+		err = a.client.Get(ctx, client.ObjectKey{Namespace: extensionConfigMapNamespace, Name: consts.ConfigMapName}, configMap)
+		if err != nil {
+			return fmt.Errorf("cannot read base configs: %s (%s/%s)", err, namespace, consts.ConfigMapName)
+		}
+		baseConfigs = configMap.Data
+		a.logger.Info("baseConfigs loaded from configMap", "configMaps.Data", configMap.Data)
+	}
+
+	// Get configs either from configMap (initial) and override with values from Shot.Spec.Extensions.providerConfig
+	configs, err := configs.MergeConfigs(a.logger, baseConfigs, cluster.Shoot.Spec.Extensions)
 	if err != nil {
 		panic(err)
 		// return err

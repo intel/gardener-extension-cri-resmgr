@@ -15,22 +15,71 @@
 package lifecycle
 
 import (
+	"context"
 	"time"
 
 	// Local
-
+	"github.com/go-logr/logr"
 	"github.com/intel/gardener-extension-cri-resmgr/pkg/consts"
 	"github.com/intel/gardener-extension-cri-resmgr/pkg/options"
 
 	// Gardener
-
 	"github.com/gardener/gardener/extensions/pkg/controller/extension"
+	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
+	"github.com/gardener/gardener/pkg/controllerutils/mapper"
 
 	// Other
-
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
+// configMapToAllExtensionsMapper maps creates reconciliation requests for extensions based on dedicate configMap of cri-resmgr extension.
+func configMapToAllExtensionMapper(ctx context.Context, log logr.Logger, reader client.Reader, obj client.Object) []reconcile.Request {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	configMap, ok := obj.(*corev1.ConfigMap)
+	if !ok {
+		return nil
+	}
+
+	extensionList := &extensionsv1alpha1.ExtensionList{}
+	// , client.MatchingLabels{"somelabel": "someval"} - extensions have not labels! we must filter them later by Type
+	if err := reader.List(ctx, extensionList); err != nil {
+		return nil
+	}
+
+	var requests []reconcile.Request
+	for _, extension := range extensionList.Items {
+		if extension.Spec.Type == consts.ExtensionType {
+			isOk := false
+			// Assume, there is only one condition and it is is Ok "True", then add this extension to requests for reconcilation
+			for _, condition := range extension.Status.Conditions {
+				isOk = (condition.Status == "True")
+				break
+			}
+			if isOk {
+				requests = append(requests, reconcile.Request{
+					NamespacedName: types.NamespacedName{
+						Namespace: extension.Namespace,
+						Name:      extension.Name,
+					},
+				})
+			}
+		}
+	}
+	log.Info("Found change in configMap ignite reconciliation of all Extensions", "configMap", configMap, "extensionList", extensionList)
+	return requests
+}
+
+// AddToManager creates controller that watches Extension object and deploys necessary objects to Shoot cluster.
 func AddToManager(mgr manager.Manager, options *options.Options, ignoreOperationAnnotation bool) error {
 
 	return extension.Add(mgr, extension.AddArgs{
@@ -43,4 +92,50 @@ func AddToManager(mgr manager.Manager, options *options.Options, ignoreOperation
 		Predicates:                extension.DefaultPredicates(ignoreOperationAnnotation),
 		IgnoreOperationAnnotation: ignoreOperationAnnotation,
 	})
+}
+
+// AddConfigMapWatchingControllerToManager creates controller that watches cri-resmgr-extension ConfigMap object and reconciles everything on Shoot clusters.
+func AddConfigMapWatchingControllerToManager(mgr manager.Manager, options *options.Options) error {
+
+	// Create another instance of options - this time for "configMap2Extensions reconciler"
+	controllerOptions := options.ControllerOptions.Completed().Options()
+	configReconcilerArgs := extension.AddArgs{
+		Actuator:        NewActuator(),
+		Resync:          60 * time.Minute,
+		FinalizerSuffix: consts.ExtensionType + "-configs",
+	}
+	controllerOptions.Reconciler = extension.NewReconciler(configReconcilerArgs)
+	controllerOptions.RecoverPanic = true
+
+	controllerName := consts.ControllerName + "-configs"
+	ctrl, err := controller.New(controllerName, mgr, controllerOptions)
+	if err != nil {
+		return err
+	}
+
+	// only Watch for configMaps with properName and where its resourceVersionChanges
+	matchingLabelSelectorPredicate, err := predicate.LabelSelectorPredicate(
+		metav1.LabelSelector{
+			MatchLabels: map[string]string{
+				"app.kubernetes.io/name":              "gardener-extension-cri-resmgr",
+				"resources.gardener.cloud/managed-by": "gardener",
+			},
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	// Predicates to watch over my configMap
+	predicates := []predicate.Predicate{matchingLabelSelectorPredicate, predicate.ResourceVersionChangedPredicate{}}
+
+	return ctrl.Watch(
+		&source.Kind{Type: &corev1.ConfigMap{}},
+		mapper.EnqueueRequestsFrom(
+			mapper.MapFunc(configMapToAllExtensionMapper),
+			mapper.UpdateWithNew,
+			mgr.GetLogger().WithName(controllerName),
+		),
+		predicates...,
+	)
 }

@@ -64,8 +64,13 @@ func NewExtensionControllerCommand(ctx context.Context) *cobra.Command {
 				return err
 			}
 
+			// mgrOpts.ClientDisableCacheFor = []client.Object{
+			// 	&corev1.ConfigMap{}, // applied for ManagedResources
+			// }
+
 			// Enable healthcheck.
 			// "Registration" adds additional controller that watches over Extension/Cluster.
+			// TODO: ENABLE before merging!!!
 			if err := healthcheck.RegisterHealthChecks(mgr); err != nil {
 				return err
 			}
@@ -81,8 +86,14 @@ func NewExtensionControllerCommand(ctx context.Context) *cobra.Command {
 			// 		watches: only Extension
 			log.Log.Info("Reconciler options", "ignoreOperationAnnotation", ignoreOperationAnnotation)
 
+			// I. This is the primary controller that watches over Extension (and possible Cluster based on ignoreOperationAnnotation)
 			if err := lifecycle.AddToManager(mgr, options, ignoreOperationAnnotation); err != nil {
 				return fmt.Errorf("error configuring controller with extensions actuator: %s", err)
+			}
+			// II. Create another controller for watching over specific configMap and
+			// reconciling all Extensions that all only in Succeeded state to prevent race over Extension reconciliation
+			if err := lifecycle.AddConfigMapWatchingControllerToManager(mgr, options); err != nil {
+				return fmt.Errorf("error configuring configMap controller with extensions actuator: %s", err)
 			}
 
 			if err := mgr.Start(ctx); err != nil {

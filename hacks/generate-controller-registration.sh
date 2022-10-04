@@ -72,7 +72,7 @@ providerConfig:
                 CPUClass: "turbo"
                 MinBalloons: 2
         logger:
-          Debug: resource-manager,cache,policy,resource-control
+          Debug: resource-manager,cache,policy,resource-control,config-server
           Klog:
             # Enables nice logs with logger names that can be used in Debug
             skip_headers: true

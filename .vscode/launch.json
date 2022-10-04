@@ -32,6 +32,18 @@
             "program": "./cmd/gardener-extension-cri-resmgr",
             "cwd": "${workspaceFolder}",
             "hideSystemGoroutines": true,
+            "env":{
+                "EXTENSION_CONFIGMAP_NAMESPACE": "extension-cri-resmgr-extension-98p4t",
+            },
+            "console": "internalConsole",
+            // https://github.com/golang/vscode-go/blob/master/docs/debugging.md#configuration
+            // "console": "integratedTerminal", // CHANGES DEBUGCONCSOLE->TERMIANL
+            // "console": "externalTerminal", // FAILS - TIMEOUT
+            "dlvFlags": ["-r", "stdout:stdput.log", "-r", "stderr:stderr.log"], // IGNORED
+            // "debugAdapter": "legacy", // ERROR
+            //"dlvFlags": ["-r", "stderr:output.log"], // IGNORED - work from command live dlv debug -r but not for dlv dap
+            // "logDest": "/home/root/gardener-extension-cri-resmgr/output.log", // ERROR
+
         }
     ]
 }

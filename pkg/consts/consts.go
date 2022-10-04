@@ -21,8 +21,10 @@ const (
 	ControllerName = "cri-resmgr-controller"
 	ActuatorName   = "cri-resmgr-actuator"
 
-	ManagedResourceName = "extension-runtime-cri-resmgr"
-	ConfigKey           = "config.yaml"
+	ManagedResourceName      = "extension-runtime-cri-resmgr"
+	ConfigMapName            = "gardener-extension-cri-resmgr-configs"
+	ConfigMapNamespaceEnvKey = "EXTENSION_CONFIGMAP_NAMESPACE"
+	ConfigKey                = "config.yaml"
 
 	ChartPath               = "charts/internal/cri-resmgr-installation/"
 	InstallationImageName   = "gardener-extension-cri-resmgr-installation"

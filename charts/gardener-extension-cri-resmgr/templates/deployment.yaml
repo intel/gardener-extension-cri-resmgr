@@ -41,6 +41,10 @@ spec:
         image: {{ include "image" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         env:
+        - name: EXTENSION_CONFIGMAP_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
         {{- if .Values.imageVectorOverwrite }}
         - name: IMAGEVECTOR_OVERWRITE
           value: /charts_overwrite/images_overwrite.yaml
