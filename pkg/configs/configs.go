@@ -28,58 +28,17 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-const (
-	ConfigsOverrideEnv = "CONFIGS_OVERWRITE"
-)
-
 // CriResMgrConfig is a providerConfig specific type for CRI-res-mgr extension.
 type CriResMgrConfig struct {
 	// Configs is a map of name of config file for cri-resource-manager and its contents.
 	Configs map[string]string `json:"configs,omitempty"`
 }
 
-// MergeConfigs gets and merges configs values from Shoot.spec.extensions.providerConfig and
-// from files found in directory defined by ConfigsOverrideEnv.
-// Path defined by ConfigsOverrideEnv is first validated (is directory) then all files are read
-// and passed to helm installation charts to be rendered and additional configmaps for cri-resource-manager.
+// MergeConfigs merges base configs and values from Shoot.spec.extensions.providerConfig.
+// Result is then used for helm installation charts to be rendered and additional configmaps for cri-resource-manager.
 func MergeConfigs(logger logr.Logger, configs map[string]string, extensions []v1beta1.Extension) (map[string]string, error) {
 
-	// I. Configs are read from directory provided by ConfigsOverrideEnv
-	// configsOverwritePath := os.Getenv(ConfigsOverrideEnv)
-	// if len(configsOverwritePath) > 0 {
-	// 	path, err := os.Open(configsOverwritePath)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// 	defer path.Close()
-	// 	fileStat, err := path.Stat()
-	// 	if err != nil {
-	// 		return nil, fmt.Errorf("cannot stat path provided by ConfigsOverrideEnv")
-	// 	}
-	// 	if !fileStat.IsDir() {
-	// 		return nil, fmt.Errorf("provided %s from is not a directory", ConfigsOverrideEnv)
-	// 	}
-	// 	dirInfo, err := path.ReadDir(-1)
-	// 	if err != nil {
-	// 		return nil, fmt.Errorf("cannot ReadDir %w", err)
-	// 	}
-	// 	for _, dirEntry := range dirInfo {
-	// 		configName := dirEntry.Name()
-	// 		fullPath := filepath.Join(path.Name(), dirEntry.Name())
-	// 		// ignore entries starting with dot (hidden or directories create by Kubernetes when mounting configMaps)
-	// 		if strings.HasPrefix(configName, ".") || strings.HasPrefix(configName, "..") {
-	// 			continue
-	// 		}
-	// 		configContents, err := os.ReadFile(fullPath)
-	// 		if err != nil {
-	// 			return nil, fmt.Errorf("cannot read file of config file: %w", err)
-	// 		}
-	// 		configs[configName] = string(configContents)
-	// 	}
-	// 	logger.Info("configs: from env provided directory", "configs", configs)
-	// }
-
-	// II. Parse provideConfig data from Cluster.Extension (it is a copy from within Shoot.spec.extensions.providerConfig).
+	// Get and parse provideConfig data from Cluster.Extension (it is a copy from within Shoot.spec.extensions.providerConfig).
 	var providerConfig *runtime.RawExtension
 	var criResMgrConfig *CriResMgrConfig
 
@@ -88,7 +47,7 @@ func MergeConfigs(logger logr.Logger, configs map[string]string, extensions []v1
 			providerConfig = extension.ProviderConfig
 		}
 	}
-	// If providerConfig were specified in Shoot spec.extensions then merge it values with those found in filesystem
+	// If providerConfig were specified in Shoot spec.extensions then merge it with configs.
 	if providerConfig != nil {
 		if err := json.Unmarshal(providerConfig.Raw, &criResMgrConfig); err != nil {
 			logger.Error(err, "error unmarshalling providerConfig", "providerConfig", string(providerConfig.Raw))

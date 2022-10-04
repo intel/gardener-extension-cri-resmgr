@@ -51,7 +51,6 @@ func configMapToAllExtensionMapper(ctx context.Context, log logr.Logger, reader 
 	}
 
 	extensionList := &extensionsv1alpha1.ExtensionList{}
-	// , client.MatchingLabels{"somelabel": "someval"} - extensions have not labels! we must filter them later by Type
 	if err := reader.List(ctx, extensionList); err != nil {
 		return nil
 	}
@@ -60,7 +59,7 @@ func configMapToAllExtensionMapper(ctx context.Context, log logr.Logger, reader 
 	for _, extension := range extensionList.Items {
 		if extension.Spec.Type == consts.ExtensionType {
 			isOk := false
-			// Assume, there is only one condition and it is is Ok "True", then add this extension to requests for reconcilation
+			// Assume, there is only one condition and it is is Ok "True", then add this extension to requests for reconciliation
 			for _, condition := range extension.Status.Conditions {
 				isOk = (condition.Status == "True")
 				break
