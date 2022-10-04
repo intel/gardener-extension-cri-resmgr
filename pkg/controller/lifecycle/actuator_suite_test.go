@@ -15,6 +15,7 @@
 package actuator_test
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -30,7 +31,7 @@ func TestCharts(t *testing.T) {
 	// Go up three times pkg/controller/lifecycle to project root directory
 	err := os.Chdir("../../..")
 	if err != nil {
-		fmt.Errorf("Cannot access requested directory: %w", err)
+		fmt.Errorf("Cannot access requested directory: %s", err)
 		return
 	}
 	RunSpecs(t, "CRI-resource-manager extension test suite")

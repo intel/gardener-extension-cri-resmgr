@@ -15,6 +15,7 @@
 package imagevector
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/gardener/gardener/pkg/utils/imagevector"
@@ -27,13 +28,13 @@ func init() {
 	var err error
 	imageVector, err = imagevector.Read(strings.NewReader(charts.ImagesYAML))
 	if err != nil {
-		fmt.Errorf("Cannot read images.yaml: %w", err)
+		fmt.Errorf("Cannot read images.yaml: %s", err)
 		return
 	}
 
 	imageVector, err = imagevector.WithEnvOverride(imageVector)
 	if err != nil {
-		fmt.Errorf("Could not override or read environment variable: %w", err)
+		fmt.Errorf("Could not override or read environment variable: %s", err)
 		return
 	}
 }
