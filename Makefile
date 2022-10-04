@@ -28,6 +28,8 @@ CRI_RM_URL_RELEASE               := https://github.com/intel/cri-resource-manage
 
 # make start options
 IGNORE_OPERATION_ANNOTATION 	 := false
+# overwrite it if you want "make start" read ConfigMap from kubernetes with configs.
+EXTENSION_CONFIGMAP_NAMESPACE    := ""
 
 build:
 	go build -v ./cmd/gardener-extension-cri-resmgr
