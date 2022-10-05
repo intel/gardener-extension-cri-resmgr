@@ -455,9 +455,8 @@ Loki expression
 > {container_name="gardener-extension-cri-resmgr"}
 
 Dashboard grafana
-![screenshot](./doc/cri-resmeg-extension.png = 250x250)
 <a href="./doc/cri-resmeg-extension.png">
-<img src="./doc/cri-resmeg-extension.png" width="50%" height="50%">
+<img src="./doc/cri-resmeg-extension.png" width="80%" height="80%">
 </a>
 
 ##### cri-rm-installation and cri-rm-agent
@@ -468,12 +467,20 @@ Loki expression
 >{pod_name="cri-resmgr-agent-XXXXX"} 
 
 Installation dashboard grafana
-![screenshot](./doc/cri-resmeg-installation-full.png)
-![screenshot](./doc/cri-resmeg-installation-logs.png)
+<a href="./doc/cri-resmeg-installation-full.png">
+<img src="./doc/cri-resmeg-installation-full.png" width="80%" height="80%">
+</a>
+<a href="./doc/cri-resmeg-installation-logs.png">
+<img src="./doc/cri-resmeg-installation-logs.png" width="80%" height="80%">
+</a>
 
 Agent dashboard grafana
-![screenshot](./doc/cri-resmeg-agent-full.png)
-![screenshot](./doc/cri-resmeg-agent-logs.png)
+<a href="./doc/cri-resmeg-agent-full.png">
+<img src="./doc/cri-resmeg-agent-full.png" width="80%" height="80%">
+</a>
+<a href="./doc/cri-resmeg-agent-logs.png">
+<img src="./doc/cri-resmeg-agent-logs.png" width="80%" height="80%">
+</a>
 
 ##### cri-resource-manager 
 You can check the logs in Grafana - svc/grafana-operators in seed namespace.
@@ -482,7 +489,9 @@ Loki expression
 {node="machine-shoot-xxx",origin="systemd-journal",job="systemd-combine-journal"} |= "cri-resource-manager"
 
 Dashboard grafana
-![screenshot](./doc/cri-resmeg.png)
+<a href="./doc/cri-resmeg.png">
+<img src="./doc/cri-resmeg.png" width="80%" height="80%">
+</a>
 
 #### Bug in kind local gardener Grafana operator Loki configuration
 
@@ -491,7 +500,9 @@ Login and password are default - admin/admin
 And there is a missing configuration in the HTTP header:
 > X-Scope-OrgID:operator
 
-![screenshot](./doc/fix_grafana_loki.png)
+<a href="./doc/fix_grafana_loki.png">
+<img src="./doc/fix_grafana_loki.png" width="80%" height="80%">
+</a>
 
 ### Running e2e tests.
 
