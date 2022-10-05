@@ -31,8 +31,18 @@ IGNORE_OPERATION_ANNOTATION 	 := false
 # overwrite it if you want "make start" read ConfigMap from kubernetes with configs.
 EXTENSION_CONFIGMAP_NAMESPACE    := ""
 
+VERSION 						 := devel
+
+
+update-version:
+	# TODO-replace with latest tago
+	# e.g. git describe --tags 
+	echo -n 'devel' >pkg/consts/VERSION
+	echo -n `git rev-parse HEAD` >pkg/consts/COMMIT
+
 build:
-	go build -v ./cmd/gardener-extension-cri-resmgr
+	go build -ldflags="-X github.com/intel/gardener-extension-cri-resmgr/pkg/consts.Commit=`git rev-parse HEAD` -X github.com/intel/gardener-extension-cri-resmgr/pkg/consts.Version=$(VERSION)" -v ./cmd/gardener-extension-cri-resmgr
+
 	go test -c -v  ./test/e2e/cri-resmgr-extension/. -o gardener-extension-cri-resmgr.e2e-tests
 	go test -c -v ./pkg/controller/lifecycle -o ./gardener-extension-cri-resmgr.actuator.test
 	go test -c -v ./pkg/configs -o ./gardener-extension-cri-resmgr.configs.test
