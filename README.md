@@ -455,6 +455,7 @@ Loki expression
 > {container_name="gardener-extension-cri-resmgr"}
 
 Dashboard grafana
+
 <a href="./doc/cri-resmeg-extension.png">
 <img src="./doc/cri-resmeg-extension.png" width="80%" height="80%">
 </a>
@@ -467,6 +468,7 @@ Loki expression
 >{pod_name="cri-resmgr-agent-XXXXX"} 
 
 Installation dashboard grafana
+
 <a href="./doc/cri-resmeg-installation-full.png">
 <img src="./doc/cri-resmeg-installation-full.png" width="80%" height="80%">
 </a>
@@ -475,6 +477,7 @@ Installation dashboard grafana
 </a>
 
 Agent dashboard grafana
+
 <a href="./doc/cri-resmeg-agent-full.png">
 <img src="./doc/cri-resmeg-agent-full.png" width="80%" height="80%">
 </a>
@@ -489,6 +492,7 @@ Loki expression
 {node="machine-shoot-xxx",origin="systemd-journal",job="systemd-combine-journal"} |= "cri-resource-manager"
 
 Dashboard grafana
+
 <a href="./doc/cri-resmeg.png">
 <img src="./doc/cri-resmeg.png" width="80%" height="80%">
 </a>
