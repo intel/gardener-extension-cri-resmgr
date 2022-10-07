@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-# Usage: source ./hacks/export-kubeconfig-for-local-shoot.sh
-KUBECONFIG=~/.kube/config kubectl -n garden-local get secret local.kubeconfig -o jsonpath={.data.kubeconfig} | base64 -d > /tmp/kubeconfig-shoot-local.yaml
-export KUBECONFIG=/tmp/kubeconfig-shoot-local.yaml
-echo KUBECONFIG set to local shoot by /tmp/kubeconfig-shoot-local.yaml
+echo "Usage: SHOOT=local2 . ./hacks/export-kubeconfig-for-local-shoot.sh"
+SHOOT=${SHOOT:-local}
+KUBECONFIG=~/.kube/config kubectl -n garden-local get secret ${SHOOT}.kubeconfig -o jsonpath={.data.kubeconfig} | base64 -d > /tmp/kubeconfig-shoot-${SHOOT}.yaml
+export KUBECONFIG=/tmp/kubeconfig-shoot-${SHOOT}.yaml
+echo KUBECONFIG set to ${SHOOT} shoot by /tmp/kubeconfig-shoot-${SHOOT}.yaml

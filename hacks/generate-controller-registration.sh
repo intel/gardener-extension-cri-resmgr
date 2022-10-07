@@ -78,7 +78,8 @@ providerConfig:
             skip_headers: true
         dump:
           Config: off:.*,full:((Create)|(Remove)|(Run)|(Update)|(Start)|(Stop)).*
-
+        instrumentation:
+          PrometheusExport: true
     ### Example of how to use default
     #   fallback: |
     #     ### This is default policy from CRI-resource-manage fallback.cfg.sample

@@ -12,4 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 set -x
-kubectl patch shoot local -n garden-local -p '{"spec":{"extensions": [ {"type": "cri-resmgr-extension", "disabled": true} ] } }'
+echo "Usage example: SHOOT=local2 hacks/disable-extension-in-local-shoot.sh"
+SHOOT=${SHOOT:-local}
+kubectl patch shoot ${SHOOT} -n garden-local -p '{"spec":{"extensions": [ {"type": "cri-resmgr-extension", "disabled": true} ] } }'
