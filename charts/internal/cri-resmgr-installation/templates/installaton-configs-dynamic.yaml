@@ -1,0 +1,16 @@
+{{/* dynamic configuration have different form than static configs - are read by cri-agent */}}
+{{- range $configName, $configContent := (.Values.configs | default dict).dynamic }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: kube-system
+  name: "cri-resmgr-config.{{ $configName}}"
+data:
+{{- $configObject := fromYaml $configContent }}
+{{- range $configKey, $configValue := $configObject }}
+  {{ $configKey }}: |
+    {{- $configValue | toYaml | nindent 4 }}
+{{- end }}
+---
+
+{{- end }}

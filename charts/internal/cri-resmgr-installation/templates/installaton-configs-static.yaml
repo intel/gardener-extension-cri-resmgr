@@ -1,0 +1,13 @@
+{{- if (.Values.configs | default dict).static }}
+{{/* static configuration is just one ConfigMap  with keys like falllback/force */}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: kube-system
+  name: "cri-resmgr-static-configs"
+data:
+{{- range $configName, $configContent := .Values.configs.static }}
+- {{ $configName }}.cfg: |+
+  {{- $configContent | nindent 4 }}
+{{- end}}
+{{- end}}

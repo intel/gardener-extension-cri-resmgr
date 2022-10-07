@@ -34,7 +34,7 @@
             "hideSystemGoroutines": true,
             "env":{
                 // Comment/Uncomment if configMap cannot be read.
-                "EXTENSION_CONFIGMAP_NAMESPACE": "extension-cri-resmgr-extension-98p4t",
+                "EXTENSION_CONFIGMAP_NAMESPACE": "extension-cri-resmgr-extension-xffwm",
             },
             "console": "internalConsole",
             // https://github.com/golang/vscode-go/blob/master/docs/debugging.md#configuration

@@ -32,13 +32,19 @@ import (
 
 var _ = Describe("cri-resource-manager extension actuator tests", func() {
 	It("rendering charts installation chart without configs", func() {
-		configs := map[string]string{
-			// this should generate
-			// ConfigMap with name "cri-resmgr-config.default"
-			// with data.policy "THIS_WILL_CONFIG_BODY_OF_DEFAULT"
-			"default": "THIS_WILL_CONFIG_BODY_OF_DEFAULT",
-			// nodeFoo -> "THIS_WILL_CONFIG_BODY_OF_NODEFOO"
-			"nodeFoo": "THIS_WILL_CONFIG_BODY_OF_NODEFOO",
+		configs := map[string]map[string]string{
+			// this should generate one ConfigMap with two keys
+			"static": {
+				"fallback": "FALLBACK_BODY",
+				"force":    "FORCE_BODY",
+			},
+			"dynamic": {
+				// this should generate
+				// ConfigMap with name "cri-resmgr-config.default"
+				"default": "CONFIG_BODY_OF_DEFAULT",
+				// ConfigMap with name "cri-resmgr-config.nodeFoo"
+				"nodeFoo": "CONFIG_BODY_OF_NODEFOO",
+			},
 		}
 		// TODO: consider using mock instead of real rendered - not enough logic inside golang code yet!
 		// unused but useful for future

@@ -63,7 +63,7 @@ type Actuator struct {
 }
 
 func (a *Actuator) GenerateSecretData(logger logr.Logger, ctx context.Context, ex *extensions1alpha1.Extension,
-	chartPath string, namespace string, k8sVersion string, configs map[string]string) (map[string][]byte, error) {
+	chartPath string, namespace string, k8sVersion string, configs map[string]map[string]string) (map[string][]byte, error) {
 	emptyMap := map[string][]byte{}
 	// Depending on shoot, chartRenderer will have different capabilities based on K8s version.
 	chartRenderer, err := a.ChartRendererFactory.NewChartRendererForShoot(k8sVersion)
@@ -136,12 +136,27 @@ func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extens
 	// Get configs either from configMap (initial) and override with values from Shot.Spec.Extensions.providerConfig
 	configs, err := configs.MergeConfigs(a.logger, baseConfigs, cluster.Shoot.Spec.Extensions)
 	if err != nil {
-		panic(err)
-		// return err
+		// panic(err)
+		return err
+	}
+
+	configTypes := map[string]map[string]string{
+		"static":  {},
+		"dynamic": {},
+	}
+	configTypes["static"] = map[string]string{}
+	for configName, configContent := range configs {
+		if configName == "fallback" || configName == "force" {
+			// static configs
+			configTypes["static"][configName] = configContent
+		} else {
+			// dynamic configs
+			configTypes["dynamic"][configName] = configContent
+		}
 	}
 
 	// Generate secret data that will be used by reference by ManagedResource to deploy.
-	secretData, err := a.GenerateSecretData(logger, ctx, ex, consts.ChartPath, namespace, cluster.Shoot.Spec.Kubernetes.Version, configs)
+	secretData, err := a.GenerateSecretData(logger, ctx, ex, consts.ChartPath, namespace, cluster.Shoot.Spec.Kubernetes.Version, configTypes)
 	if err != nil {
 		return err
 	}
