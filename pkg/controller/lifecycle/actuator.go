@@ -136,7 +136,6 @@ func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extens
 	// Get configs either from configMap (initial) and override with values from Shot.Spec.Extensions.providerConfig
 	configs, err := configs.MergeConfigs(a.logger, baseConfigs, cluster.Shoot.Spec.Extensions)
 	if err != nil {
-		// panic(err)
 		return err
 	}
 
