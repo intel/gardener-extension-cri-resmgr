@@ -31,8 +31,8 @@ func TestCharts(t *testing.T) {
 	// Go up three times pkg/controller/lifecycle to project root directory
 	err := os.Chdir("../../..")
 	if err != nil {
-		fmt.Errorf("Cannot access requested directory: %s", err)
-		return
+		fmt.Printf("ERROR: Cannot access requested directory: %s", err)
+		os.Exit(1)
 	}
 	RunSpecs(t, "CRI-resource-manager extension test suite")
 }
