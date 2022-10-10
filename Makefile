@@ -47,9 +47,14 @@ build:
 	go test -c -v ./pkg/controller/lifecycle -o ./gardener-extension-cri-resmgr.actuator.test
 	go test -c -v ./pkg/configs -o ./gardener-extension-cri-resmgr.configs.test
 
-test:
+test: test-charts
 	# Those tests (renders charts, uses env to read files) change CWD during execution (required because rely on charts and fixtures).
 	go test  -v ./pkg/...
+
+test-charts:
+	helm template charts/internal/cri-resmgr-installation --values charts/internal/cri-resmgr-installation/values_test.yaml --validate >/dev/null
+	helm template charts/gardener-extension-cri-resmgr/ --values charts/gardener-extension-cri-resmgr/values_test.yaml --validate >/dev/null
+
 
 clean:
 	go clean -cache -modcache -testcache

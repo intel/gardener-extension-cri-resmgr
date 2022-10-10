@@ -35,15 +35,15 @@ var _ = Describe("cri-resource-manager extension actuator tests", func() {
 		configs := map[string]map[string]string{
 			// this should generate one ConfigMap with two keys
 			"static": {
-				"fallback": "FALLBACK_BODY",
-				"force":    "FORCE_BODY",
+				"fallback": "FALLBACK_BODY:1",
+				"force":    "FORCE_BODY:1",
 			},
 			"dynamic": {
 				// this should generate
 				// ConfigMap with name "cri-resmgr-config.default"
-				"default": "CONFIG_BODY_OF_DEFAULT",
+				"default": "CONFIG_BODY_OF_DEFAULT: 1",
 				// ConfigMap with name "cri-resmgr-config.nodeFoo"
-				"nodeFoo": "CONFIG_BODY_OF_NODEFOO",
+				"nodeFoo": "CONFIG_BODY_OF_NODEFOO: 1",
 			},
 		}
 		// TODO: consider using mock instead of real rendered - not enough logic inside golang code yet!
@@ -59,9 +59,15 @@ var _ = Describe("cri-resource-manager extension actuator tests", func() {
 
 		Expect(secret).Should(HaveKey(consts.InstallationSecretKey))
 
+		// check static
+		Expect(string(secret[consts.InstallationSecretKey])).Should(ContainSubstring(`name: "cri-resmgr-static-configs"`))
+		Expect(string(secret[consts.InstallationSecretKey])).Should(ContainSubstring("FALLBACK_BODY:1")) // notice no space between is passed as is
+		Expect(string(secret[consts.InstallationSecretKey])).Should(ContainSubstring("FORCE_BODY:1"))
+
+		// check dynamic (first level is unpacked) and rest becomes multi string
 		Expect(string(secret[consts.InstallationSecretKey])).Should(ContainSubstring(`name: "cri-resmgr-config.default"`))
-		Expect(string(secret[consts.InstallationSecretKey])).Should(ContainSubstring("policy:  THIS_WILL_CONFIG_BODY_OF_DEFAULT"))
+		Expect(string(secret[consts.InstallationSecretKey])).Should(ContainSubstring("CONFIG_BODY_OF_DEFAULT: |"))
 		Expect(string(secret[consts.InstallationSecretKey])).Should(ContainSubstring(`name: "cri-resmgr-config.nodeFoo"`))
-		Expect(string(secret[consts.InstallationSecretKey])).Should(ContainSubstring("policy:  THIS_WILL_CONFIG_BODY_OF_NODEFOO"))
+		Expect(string(secret[consts.InstallationSecretKey])).Should(ContainSubstring("CONFIG_BODY_OF_NODEFOO: |"))
 	})
 })
