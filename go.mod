@@ -23,7 +23,7 @@ require (
 	github.com/gardener/gardener v1.56.0
 	github.com/go-logr/logr v1.2.3
 	github.com/onsi/ginkgo/v2 v2.1.6
-	github.com/onsi/gomega v1.20.2
+	github.com/onsi/gomega v1.21.1
 	github.com/spf13/cobra v1.4.0
 	k8s.io/apimachinery v0.25.0
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
