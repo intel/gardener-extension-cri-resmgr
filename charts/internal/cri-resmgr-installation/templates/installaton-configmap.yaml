@@ -47,9 +47,9 @@ data:
       fi
 
       # Handle force.cfg
-      if [[ -f /configs/force.cfg ]]; then
-        echo 'Installing mounted configuration file from /configs/force.cfg to host /etc/cri-resmgr/'
-        cp -v /configs/force.cfg /var/host/etc/cri-resmgr/force.cfg
+      if [[ -f /etc/cri-resmgr/force.cfg ]]; then
+        echo 'Installing mounted configuration file from /etc/cri-resmgr/force.cfg to host /etc/cri-resmgr/'
+        cp -v /etc/cri-resmgr/force.cfg /var/host/etc/cri-resmgr/force.cfg
         sed -i 's!fallback.cfg"!fallback.cfg --force-config /etc/cri-resmgr/force.cfg"!' /var/host/etc/default/cri-resource-manager
       else 
         # check if force is used and remove if not mounted (from filesystem config systemd config
@@ -57,6 +57,23 @@ data:
           rm -v /var/host/etc/cri-resmgr/force.cfg
         fi
         sed -i 's!fallback.cfg --force-config /etc/cri-resmgr/force.cfg"!fallback.cfg"!' /var/host/etc/default/cri-resource-manager
+      fi
+
+      # Handle EXTRA_OPTIONS
+      if [[ -f /etc/cri-resmgr/EXTRA_OPTIONS.cfg ]]; then
+        echo 'Installing EXTRA_OPTIONS configuration file from /etc/cri-resmgr/EXTRA_OPTIONS to host /etc/cri-resmgr/'
+        cp -v /etc/cri-resmgr/EXTRA_OPTIONS.cfg /var/host/etc/cri-resmgr/EXTRA_OPTIONS.cfg
+        echo 'Modify cri-resource-manager.service to include EXTRA_OPTIONS when starting cri-resmgr binary!'
+        sed -i 's!\$POLICY_OPTIONS$!\$POLICY_OPTIONS \$EXTRA_OPTIONS!' /var/host/etc/systemd/system/cri-resource-manager.service
+        sed -z -i 's!EnvironmentFile=/etc/default/cri-resource-manager\nExecStart!EnvironmentFile=/etc/default/cri-resource-manager\nEnvironmentFile=/etc/cri-resmgr/EXTRA_OPTIONS.cfg\nExecStart!' /var/host/etc/systemd/system/cri-resource-manager.service
+      else 
+        if [[ -f /var/host/etc/cri-resmgr/EXTRA_OPTIONS ]]; then
+          echo 'Remove EXTRA_OPTIONS.cfg file from host'
+          rm -v /var/host/etc/cri-resmgr/EXTRA_OPTIONS.cfg
+        fi
+        echo 'Modify cri-resource-manager.service to remove EXTRA_OPTIONS when starting cri-resmgr binary!'
+        sed -z -i 's!EnvironmentFile=/etc/default/cri-resource-manager\nEnvironmentFile=/etc/cri-resmgr/EXTRA_OPTIONS.cfg\n!EnvironmentFile=/etc/default/cri-resource-manager\n!' /var/host/etc/systemd/system/cri-resource-manager.service
+        sed -i 's!\$POLICY_OPTIONS \$EXTRA_OPTIONS$!\$POLICY_OPTIONS!' /var/host/etc/systemd/system/cri-resource-manager.service
       fi
 
       # Warning if previous state exists

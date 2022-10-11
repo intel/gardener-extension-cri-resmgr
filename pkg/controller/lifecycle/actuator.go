@@ -145,7 +145,7 @@ func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extens
 	}
 	configTypes["static"] = map[string]string{}
 	for configName, configContent := range configs {
-		if configName == "fallback" || configName == "force" {
+		if configName == "fallback" || configName == "force" || configName == "EXTRA_OPTIONS" {
 			// static configs
 			configTypes["static"][configName] = configContent
 		} else {

@@ -22,6 +22,7 @@ This Gardener extension will deploy and manage lifecycle of [CRI-Resource-Manage
     - when extension is enabled globally but later disabled by shoot 
     - disabled globally but later enabled and disabled for shoot 
     - `ControllerRegistration` is removed and there are already Shoots deployed with extension
+  **WARNING** although extension supports removal of CRI-resource-manager, state of system (container configuraiton) depends on if and how policy implements cleaning the state!
 - **healthcheck** of cri-resource-manager which reports back to **ControllerInstallation** Healthy condition based on liveness probe that calls "`systemctl status cri-resource-manager`"
 - CRI-Resource-Manager **configuration overwriting && types** - user can provide "fallback", "default", "per node", "per group" or "force" configuration in `ControllerDeployment` which can be later overridden by Shoot "owner" with `providerConfig` - more information [here](#configuring-cri-resource-manager)
 - **dynamic configuration** - "default", "per node" or "per group" configuration are propagated from `ControllerDeployment` and `Shoot.Extension.ProviderConfig` to CRI-Resource-Manager through cri-resmgr-agent
@@ -96,6 +97,7 @@ types `default` and `fallback` have special meaning:
 * **group.$GROUP_NAME** will be used by cri-resmgr-agent and applied only to nodes with specific label "cri-resource-manager.intel.com/group=GROUP_NAME" - works best when worker groups has additional labels  in `shoot.spec.provider.workers.labels`
 * **force** will be used to override "configuration" pushed by cri-resmgr-agent (highest priority) (essentially adds `--force-config` to cri-resource-manager process in systemd unit definition so CRI-Resource-Manager ignores configuration from cri-resmgr-agent) 
 
+* **EXTRA_OPTIONS** will become file systemd EnvironmentFile that should contain single line **EXTRA_OPTIONS** that will be appended to `cri-resmgr` command 
 
 More about priorities and type of config can be found here:
 
@@ -140,6 +142,9 @@ providerConfig:
        tag: mybranch
        repository: v2.isvimgreg.com/gardener-extension-cri-resmgr-agent
     configs:
+      # systemd EnvironmentFile body
+      EXTRA_OPTIONS: |
+        EXTRA_OPTIONS="--metrics-interval=10s"
       fallback: |
         ### This is default policy from CRI-resource-manage fallback.cfg.sample
         policy:
@@ -225,13 +230,19 @@ helm list -n garden -a
 
 #### Deploy cri-resmgr extension
 
+##### 1. Prepare images 
+
+```
+make build-images push-images
+```
+
 ##### 1. (Optional) Regenerate ctrldeploy-ctrlreg.yaml file:
 
 ```sh
 ./hacks/generate-controller-registration.sh
 ```
 
-##### 2. Deploy cri-resmgr-extension as Gardener extension using ControllerRegistration/ControllerDeployment
+##### 1. Deploy cri-resmgr-extension as Gardener extension using ControllerRegistration/ControllerDeployment
 
 ```sh
 kubectl apply -f ./examples/ctrldeploy-ctrlreg.yaml
@@ -256,7 +267,7 @@ kubectl get controllerinstallation.core.gardener.cloud
 
 should no return "cri-resmgr extension" installation.
 
-##### 3. Deploy shoot "local" cluster.
+##### 1. Deploy shoot "local" cluster.
 
 Build an image with extension and upload to local kind cluster
 
