@@ -31,36 +31,35 @@ spec:
   - type: cri-resmgr-extension
     disabled: false
     providerConfig:
-      configs-static:
-        force:
-          logger:
-            Debug: '*'
+      configs:
+        ### Those options are passed directly to cri-resmgr binary.
+        EXTRA_OPTIONS: | 
+          EXTRA_OPTIONS="--metrics-interval 15s" 
+        ### This is *static* initial configuraiton file that will be passed do systemd unit
+        fallback: |
           policy:
-            Active: fallback-test
-            AvailableResources:
-              cpu: cpuset:0-63
-        fallback:
+            Active: balloons
           logger:
-            Debug: '*'
+            Debug: resource-manager,cache,policy,resource-control,config-server
+            Klog:
+              skip_headers: true
+        ### This is *dynamic* config that will be applied by cri-resmgr-agent
+        default: |
           policy:
-            Active: fallback-test
+            Active: balloons
             AvailableResources:
-              cpu: cpuset:0-63
-      configs-dynamic:
-        node120:
-          logger:
-            Debug: '*'
-          policy:
-            Active: fallback-test
-            AvailableResources:
-              cpu: cpuset:0-63
-        default:
-          logger:
-            Debug: '*'
-          policy:
-            Active: default-test
-            AvailableResources:
-              cpu: cpuset:0-63
+              CPU: cpuset:1-15
+            ReservedResources:
+              CPU: cpuset:15
+            balloons:
+              BalloonTypes:
+                - Name: "mediumBalloon"
+                  MinCPUs: 3
+                  MaxCPUs: 3
+                  MinBalloons: 2
+          instrumentation:
+            HTTPEndpoint: :8891
+            PrometheusExport: true
 
   networking:
     type: calico
