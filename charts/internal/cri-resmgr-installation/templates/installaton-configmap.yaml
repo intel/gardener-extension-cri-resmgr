@@ -110,6 +110,7 @@ data:
       sleep 2
       chroot /var/host bash -c "systemctl daemon-reload"
       chroot /var/host bash -c "systemctl restart kubelet"
+      # Don't wait for activation - we will run check at the of the script
     }
 
     function uninstall() {
@@ -172,16 +173,14 @@ data:
 
     # Sleep after installation the task
     echo "cri-resource-manager installed. Run checks in a loop..."
-    # Just five seconds  before first check
+    # Just five seconds  before first check to allow kubelet/cri to go from activating to active state
     sleep 5
     while true; do
-
-
       # Run checks and uninstall if there is any issues with kubelet or cri-rm or containerd
       criIsActive=$(chroot /var/host bash -c "systemctl is-active cri-resource-manager")
       kubeletIsActive=$(chroot /var/host bash -c "systemctl is-active kubelet")
       containerdIsActive=$(chroot /var/host bash -c "systemctl is-active containerd")
-      if [ "$criIsActive" != "active" ] || [ "$containerdIsActive" != "active" ] || [ "$kubeletIsActive" != "active" ];then
+      if [ "$criIsActive" == "failed" ] || [ "$containerdIsActive" == "failed" ] || [ "$kubeletIsActive" == "failed" ];then
         echo "*** [$(date --rfc-3339=seconds)] Checks FAILED (cri-resource-manager=${criIsActive} kubelet=${kubeletIsActive} containerd=${containerdIsActive})"
 
         echo "*** Going into RECOVERY mode (stay alive but not ready) "

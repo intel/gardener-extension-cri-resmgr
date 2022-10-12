@@ -69,7 +69,7 @@ providerConfig:
         policy:
           Active: balloons
           AvailableResources:
-            CPU: cpuset:1-15
+            CPU: cpuset:1-1000
           ReservedResources:
             CPU: cpuset:15
           balloons:
@@ -84,20 +84,6 @@ providerConfig:
         # For furhter debugging
         # dump:
         #   Config: off:.*,full:((Create)|(Remove)|(Run)|(Update)|(Start)|(Stop)).*
-    ### Example of how to use default
-    #   fallback: |
-    #     ### This is default policy from CRI-resource-manage fallback.cfg.sample
-    #     policy:
-    #       Active: topology-aware
-    #       ReservedResources:
-    #         CPU: 750m
-    #     logger:
-    #       Debug: resource-manager,cache,policy,resource-control
-    #       Klog:
-    #         # Enables nice logs with logger names that can be used in Debug
-    #         skip_headers: true
-    #     dump:
-    #       Config: off:.*,full:((Create)|(Remove)|(Run)|(Update)|(Start)|(Stop)).*
 ---
 apiVersion: core.gardener.cloud/v1beta1
 kind: ControllerRegistration
@@ -113,7 +99,8 @@ spec:
   - kind: Extension
     type: cri-resmgr-extension
     globallyEnabled: false
-    reconcileTimeout: "60s"
+    # we need to wait for kubelet readines and almost whole shoot ready - give it a pleanty of time 5 minutes
+    reconcileTimeout: "300s"
 EOT
 
 echo "Successfully generated ControllerRegistration and ControllerDeployment example to $OUT"

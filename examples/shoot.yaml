@@ -24,22 +24,12 @@ spec:
   cloudProfileName: local
   secretBindingName: local
   region: local
+  ### In shoot local extension is disabled by default and will use configuration from ControllerDeployment
   ## Mark as required extension or use globallyEnabled: true
-  ## It is disabled by default
-  ## Enable it by changing disabled to false
+  ## Enable it by changing disabled to false ./hacks/enable-extension-in-local-shoot.sh
   extensions:
   - type: cri-resmgr-extension
     disabled: true
-    #providerConfig:
-    #  # configs:
-    #  #   default: |+
-    #  #     Active: default-test
-    #  #     AvailableResources:
-    #  #       cpu: cpuset:0-63
-    #  #   fallback: |+
-    #  #     Active: fallback-test
-    #  #     AvailableResources:
-    #  #       cpu: cpuset:0-63
 
   networking:
     type: calico
