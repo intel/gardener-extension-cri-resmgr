@@ -216,7 +216,7 @@ Check that kind cluster is ready:
 kubectl get nodes
 ```
 
-#####  3. Deploy local gardener
+##### 3. Deploy local gardener
 
 ```sh
 make -C ~/work/gardener/ gardener-up
@@ -236,13 +236,13 @@ helm list -n garden -a
 make build-images push-images
 ```
 
-##### 1. (Optional) Regenerate ctrldeploy-ctrlreg.yaml file:
+##### 2. (Optional) Regenerate ctrldeploy-ctrlreg.yaml file:
 
 ```sh
 ./hacks/generate-controller-registration.sh
 ```
 
-##### 1. Deploy cri-resmgr-extension as Gardener extension using ControllerRegistration/ControllerDeployment
+##### 3. Deploy cri-resmgr-extension as Gardener extension using ControllerRegistration/ControllerDeployment
 
 ```sh
 kubectl apply -f ./examples/ctrldeploy-ctrlreg.yaml
@@ -267,7 +267,7 @@ kubectl get controllerinstallation.core.gardener.cloud
 
 should no return "cri-resmgr extension" installation.
 
-##### 1. Deploy shoot "local" cluster.
+##### 4. Deploy shoot "local" cluster.
 
 Build an image with extension and upload to local kind cluster
 
@@ -295,14 +295,14 @@ In our shoot example, the extensions is also disabled by default and need to be 
 kubectl patch shoot local -n garden-local -p '{"spec":{"extensions": [ {"type": "cri-resmgr-extension", "disabled": false} ] } }'
 ```
 
-##### 4. Verify that ManagedResources are properly installed in shoot 'garden' (seed class) and  'shoot--local--local' namespace
+##### 5. Verify that ManagedResources are properly installed in shoot 'garden' (seed class) and  'shoot--local--local' namespace
 
 ```sh
 kubectl get managedresource -n garden | grep cri-resmgr-extension
 kubectl get managedresource -n shoot--local--local | grep extension-runtime-cri-resmgr
 ```
 
-##### 5. Check shoot cluster node is ready
+##### 6. Check shoot cluster node is ready
 
 First get credentials to access shoot cluster:
 
@@ -317,7 +317,7 @@ kubectl --kubeconfig=/tmp/kubeconfig-shoot-local.yaml get nodes
 kubectl --kubeconfig=/tmp/kubeconfig-shoot-local.yaml get pods -A
 ```
 
-##### 6. Check CRI-resource-manager is installed properly as proxy
+##### 7. Check CRI-resource-manager is installed properly as proxy
 
 ```sh
 kubectl exec -n shoot--local--local `kubectl get pod -n shoot--local--local --no-headers G machine-shoot | awk '{print $1}'` -- systemctl status cri-resource-manager kubelet -n 0
@@ -361,7 +361,7 @@ We should observe that:
              --container-runtime-endpoint=/var/run/cri-resmgr/cri-resmgr.sock # <---
 ```
 
-##### 7. Uninstalling (disabling) cri-resource-manager extension
+##### 8. Uninstalling (disabling) cri-resource-manager extension
 
 You can disable "cri-resmgr extension" in existing shoot to uninstall cri-resource-manager from shoot worker node like this:
 
@@ -422,7 +422,7 @@ In a shoot, we expect two DaemonSets to be deployed:
 - **cri-resmgr-agent** - that Ready status is based on probe that tries to connect to local CRI-Resource-Manager process,
 - **cri-resmgr-installation** - which copies binaries, configures CRI-resource-manager and then reconfigures and restarts kubelet and then goes to sleep - its Ready status is based on probe that checks "systemctl status cri-resource-manager"
 
-#### Logging in terminal
+### Logging in terminal
 To debug issues you can consult logs of following components (commands are for local kind-based Gardener deployment):
 
 1. Seed context: `Pod/cri-resmgr-extension` - can be accessed by: 
@@ -455,9 +455,9 @@ To debug issues you can consult logs of following components (commands are for l
    # For containerd
    logcli query --org-id="operator" '{unit="containerd.service"}'
    ```
-#### Logging in Grafana
+### Logging in Grafana
 
-Logs could be watched from containers, but easily it is from one point - Grafana. Logs for exentsion are avialable in grafana in namespace garden. Logs for cri-resmeg-installation, cri-resmeg-agent and cri-resource-manager in seed grafana.
+Logs for extension are available in Grafana in namespace garden. Logs for cri-resmgr-installation, cri-resmgr-agent and cri-resource-manager in seed grafana.
 
 ##### cri-extension
 You can check the logs in Grafana - svc/grafana namespace garden.
@@ -508,12 +508,14 @@ Dashboard grafana
 <img src="./doc/cri-resmeg.png" width="80%" height="80%">
 </a>
 
-#### Bug in kind local gardener Grafana operator Loki configuration
+##### Bug in kind local gardener Grafana operator Loki configuration
 
-Login and password are default - admin/admin
+For local kind-based setup, default login/password are admin/admin
 
-And there is a missing configuration in the HTTP header:
+But there is a missing configuration in the HTTP header:
 > X-Scope-OrgID:operator
+
+To fix it do the following:
 
 <a href="./doc/fix_grafana_loki.png">
 <img src="./doc/fix_grafana_loki.png" width="80%" height="80%">
