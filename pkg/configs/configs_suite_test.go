@@ -15,7 +15,6 @@
 package configs_test
 
 import (
-	"os"
 	"testing"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -24,10 +23,5 @@ import (
 
 func TestCharts(t *testing.T) {
 	RegisterFailHandler(Fail)
-	// Go up twice configs/pkg to project root directory
-	err := os.Chdir("../..")
-	if err != nil {
-		panic(err)
-	}
 	RunSpecs(t, "CRI-resource-manager extension test suite")
 }

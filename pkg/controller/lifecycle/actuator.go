@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package actuator
+package lifecycle
 
 import (
 	"context"
@@ -45,10 +45,17 @@ import (
 // -                                        Actuator                                     -
 // ---------------------------------------------------------------------------------------
 
-func NewActuator() extension.Actuator {
+func NewActuator(name string) extension.Actuator {
 	return &Actuator{
 		ChartRendererFactory: extensionscontroller.ChartRendererFactoryFunc(util.NewChartRendererForShoot),
-		logger:               log.Log.WithName(consts.ActuatorName),
+		logger:               log.Log.WithName(name),
+	}
+}
+
+func NewActuatorWithSuffix(nameSuffix string) extension.Actuator {
+	return &Actuator{
+		ChartRendererFactory: extensionscontroller.ChartRendererFactoryFunc(util.NewChartRendererForShoot),
+		logger:               log.Log.WithName(consts.ActuatorName + nameSuffix),
 	}
 }
 
@@ -61,7 +68,7 @@ type Actuator struct {
 }
 
 func (a *Actuator) GenerateSecretData(logger logr.Logger, ctx context.Context, ex *extensions1alpha1.Extension,
-	chartPath string, namespace string, k8sVersion string, configs map[string]string) (map[string][]byte, error) {
+	chartPath string, namespace string, k8sVersion string, configs map[string]map[string]string) (map[string][]byte, error) {
 	emptyMap := map[string][]byte{}
 	// Depending on shoot, chartRenderer will have different capabilities based on K8s version.
 	chartRenderer, err := a.ChartRendererFactory.NewChartRendererForShoot(k8sVersion)
@@ -70,9 +77,8 @@ func (a *Actuator) GenerateSecretData(logger logr.Logger, ctx context.Context, e
 	}
 	imageVector := imagevector.ImageVector()
 	if len(imageVector) > 0 {
-		for i, imageSource := range imageVector {
-
-			logger.Info(fmt.Sprintf("imageVector[%d].imageSource", i), "imageSource", *imageSource)
+		for _, imageSource := range imageVector {
+			logger.Info(fmt.Sprintf("images: found imageVector[name=%s]", imageSource.Name), "imageSource", (*imageSource.ToImage(&k8sVersion)).String())
 		}
 	}
 
@@ -107,7 +113,6 @@ func (a *Actuator) GenerateSecretData(logger logr.Logger, ctx context.Context, e
 
 func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extensions1alpha1.Extension) error {
 	namespace := ex.GetNamespace()
-	a.logger.Info("Reconcile: checking extension...") // , "shoot", cluster.Shoot.Name, "namespace", cluster.Shoot.Namespace)
 
 	// Find what shoot cluster we dealing with.
 	// to find k8s version for chart renderer
@@ -118,14 +123,20 @@ func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extens
 		return err
 	}
 
-	// Get configs either from providerConfig and merged it with provided files
-	configs, err := configs.GetConfigs(a.logger, cluster.Shoot.Spec.Extensions)
+	// Get the baseConfigs from extension ConfigMap.
+	baseConfigs, err := configs.GetBaseConfigsFromConfigMap(ctx, a.logger, a.client)
+	if err != nil {
+		return err
+	}
+
+	// Merge baseConfigs and providerConfig.configs from Shoot.Spec and split into types "static","dynamic".
+	configTypes, err := configs.PrepareConfigTypes(a.logger, baseConfigs, cluster.Shoot.Spec.Extensions)
 	if err != nil {
 		return err
 	}
 
 	// Generate secret data that will be used by reference by ManagedResource to deploy.
-	secretData, err := a.GenerateSecretData(logger, ctx, ex, consts.ChartPath, namespace, cluster.Shoot.Spec.Kubernetes.Version, configs)
+	secretData, err := a.GenerateSecretData(a.logger, ctx, ex, consts.ChartPath, namespace, cluster.Shoot.Spec.Kubernetes.Version, configTypes)
 	if err != nil {
 		return err
 	}
