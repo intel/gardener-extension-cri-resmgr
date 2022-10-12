@@ -22,7 +22,7 @@ image:
   pullPolicy: Always
 
 ### NOTE: The values provided here are only for development/testing purposes as an example.
-### Default values defined in charts.go package by embedding charts/images.yaml are the "source of truth".
+### Default values, defined in charts.go package by embedding charts/images.yaml, are the "source of truth".
 ### Please do not uncomment those, unless you want to just try "helm template ." without extension.
 # imageVectorOverwrite: |
 #   images:

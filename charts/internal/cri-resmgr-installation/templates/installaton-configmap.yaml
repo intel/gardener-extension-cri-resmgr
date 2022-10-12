@@ -79,6 +79,8 @@ data:
       # Warning if previous state exists
       if [[ -d /var/host/var/lib/cri-resmgr ]]; then
         echo 'WARNING! previous state of cri-resmgr still exists in hosts /var/lib/cri-resmgr!'
+        echo '         cri-resource-manager was not properly uninstalled, cached config will be used instead of fallback.cfg'
+        echo '         To fix just restart this pod or manually remove /var/lib/cri-resmgr on host.'
       fi
 
       echo Enable and restart cri-resource-manager systemd unit.

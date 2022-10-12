@@ -47,11 +47,13 @@ func configMapToAllExtensionMapper(ctx context.Context, log logr.Logger, reader 
 
 	configMap, ok := obj.(*corev1.ConfigMap)
 	if !ok {
+		log.Info("Warning: expected to get ConfigMap but got something different in configMapMapper to Extension!")
 		return nil
 	}
 
 	extensionList := &extensionsv1alpha1.ExtensionList{}
 	if err := reader.List(ctx, extensionList); err != nil {
+		log.Info("Warning: can not read list of Extension from Kubernetes", "error", err)
 		return nil
 	}
 
@@ -74,7 +76,7 @@ func configMapToAllExtensionMapper(ctx context.Context, log logr.Logger, reader 
 			}
 		}
 	}
-	log.Info("Found change in configMap ignite reconciliation of all Extensions", "configMap", configMap, "extensionList", extensionList)
+	log.Info("Found change in configMap so start reconciliation of all Extensions", "configMap", configMap, "extensionList", extensionList)
 	return requests
 }
 

@@ -13,28 +13,27 @@
 # limitations under the License.
 
 ### Only uncomment for testing with "helm template "
-### Comment before merging to master - values from chart/images.{go,yaml} should be enough 
-### and only one source of truth.
+### Comment before merging to master - values from chart/images.{go,yaml} should be enough and only one source of truth.
 ### images, can be overwritten with imageVectorOverwrite in ControllerDeployment
 ### with name="gardener-extension-cri-resmgr-{installation,agent}"
-images: 
-  gardener-extension-cri-resmgr-installation: localhost:5001/gardener-extension-cri-resmgr-installation:latest
-  gardener-extension-cri-resmgr-agent: localhost:5001/gardener-extension-cri-resmgr-agent:latest
+# images: 
+#   gardener-extension-cri-resmgr-installation: localhost:5001/gardener-extension-cri-resmgr-installation:latest
+#   gardener-extension-cri-resmgr-agent: localhost:5001/gardener-extension-cri-resmgr-agent:latest
 
-### Vales for configs will be provided 
+### Below values  will be provided from configMap or Shoot.Spec.Extensions.providerConfig
 ### Note: Comment before committing to repo. Only for testing with 'helm template'
-#configs:
-#  static:
-#    force: |
-#      policy:
-#        Active: "force"
-#    fallback: |
-#      policy:
-#        Active: "fallback"
-#  dynamic:
-#    default: |
-#      policy:
-#        Active: "default"
-#    nodeFoo: |
-#      policy:
-#        Active: "nodeFoo"
+# configs:
+#   static:
+#     force: |
+#       policy:
+#         Active: "force"
+#     fallback: |
+#       policy:
+#         Active: "fallback"
+#   dynamic:
+#     default: |
+#       policy:
+#         Active: "default"
+#     nodeFoo: |
+#       policy:
+#         Active: "nodeFoo"

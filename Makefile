@@ -28,14 +28,14 @@ CRI_RM_URL_RELEASE               := https://github.com/intel/cri-resource-manage
 
 # make start options
 IGNORE_OPERATION_ANNOTATION 	 := false
-# overwrite it if you want "make start" read ConfigMap from kubernetes with configs.
+# overwrite it if you want "make start" to read "configs" ConfigMap from Kubernetes
 EXTENSION_CONFIGMAP_NAMESPACE    := ""
 
 VERSION 						 := devel
 
 
 update-version:
-	# TODO-replace with latest tago
+	# TODO-replace with latest tag
 	# e.g. git describe --tags 
 	echo -n 'devel' >pkg/consts/VERSION
 	echo -n `git rev-parse HEAD` >pkg/consts/COMMIT
@@ -47,14 +47,9 @@ build:
 	go test -c -v ./pkg/controller/lifecycle -o ./gardener-extension-cri-resmgr.actuator.test
 	go test -c -v ./pkg/configs -o ./gardener-extension-cri-resmgr.configs.test
 
-test: test-charts
+test:
 	# Those tests (renders charts, uses env to read files) change CWD during execution (required because rely on charts and fixtures).
 	go test  -v ./pkg/...
-
-test-charts:
-	helm template charts/internal/cri-resmgr-installation --values charts/internal/cri-resmgr-installation/values_test.yaml --validate >/dev/null
-	helm template charts/gardener-extension-cri-resmgr/ --values charts/gardener-extension-cri-resmgr/values_test.yaml --validate >/dev/null
-
 
 clean:
 	go clean -cache -modcache -testcache
