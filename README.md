@@ -411,6 +411,7 @@ In a shoot, we expect two DaemonSets to be deployed:
 - **cri-resmgr-agent** - that Ready status is based on probe that tries to connect to local CRI-Resource-Manager process,
 - **cri-resmgr-installation** - which copies binaries, configures CRI-resource-manager and then reconfigures and restarts kubelet and then goes to sleep - its Ready status is based on probe that checks "systemctl status cri-resource-manager"
 
+#### Logging in terminal
 To debug issues you can consult logs of following components (commands are for local kind-based Gardener deployment):
 
 1. Seed context: `Pod/cri-resmgr-extension` - can be accessed by: 
@@ -443,7 +444,69 @@ To debug issues you can consult logs of following components (commands are for l
    # For containerd
    logcli query --org-id="operator" '{unit="containerd.service"}'
    ```
+#### Logging in Grafana
 
+Logs could be watched from containers, but easily it is from one point - Grafana. Logs for exentsion are avialable in grafana in namespace garden. Logs for cri-resmeg-installation, cri-resmeg-agent and cri-resource-manager in seed grafana.
+
+##### cri-extension
+You can check the logs in Grafana - svc/grafana namespace garden.
+
+Loki expression 
+> {container_name="gardener-extension-cri-resmgr"}
+
+Dashboard grafana
+
+<a href="./doc/cri-resmeg-extension.png">
+<img src="./doc/cri-resmeg-extension.png" width="80%" height="80%">
+</a>
+
+##### cri-rm-installation and cri-rm-agent
+You can check the logs in Grafana - svc/grafana-operators in seed namespace.
+
+Loki expression
+>{pod_name="cri-resmgr-installation-XXXXX"} 
+>{pod_name="cri-resmgr-agent-XXXXX"} 
+
+Installation dashboard grafana
+
+<a href="./doc/cri-resmeg-installation-full.png">
+<img src="./doc/cri-resmeg-installation-full.png" width="80%" height="80%">
+</a>
+<a href="./doc/cri-resmeg-installation-logs.png">
+<img src="./doc/cri-resmeg-installation-logs.png" width="80%" height="80%">
+</a>
+
+Agent dashboard grafana
+
+<a href="./doc/cri-resmeg-agent-full.png">
+<img src="./doc/cri-resmeg-agent-full.png" width="80%" height="80%">
+</a>
+<a href="./doc/cri-resmeg-agent-logs.png">
+<img src="./doc/cri-resmeg-agent-logs.png" width="80%" height="80%">
+</a>
+
+##### cri-resource-manager 
+You can check the logs in Grafana - svc/grafana-operators in seed namespace.
+
+Loki expression 
+{node="machine-shoot-xxx",origin="systemd-journal",job="systemd-combine-journal"} |= "cri-resource-manager"
+
+Dashboard grafana
+
+<a href="./doc/cri-resmeg.png">
+<img src="./doc/cri-resmeg.png" width="80%" height="80%">
+</a>
+
+#### Bug in kind local gardener Grafana operator Loki configuration
+
+Login and password are default - admin/admin
+
+And there is a missing configuration in the HTTP header:
+> X-Scope-OrgID:operator
+
+<a href="./doc/fix_grafana_loki.png">
+<img src="./doc/fix_grafana_loki.png" width="80%" height="80%">
+</a>
 
 ### Running e2e tests.
 
@@ -490,4 +553,5 @@ access to e2e shoot with k9s example:
 
 ```
 k9s --kubeconfig <(kubectl view-secret -n garden-local e2e-default.kubeconfig kubeconfig)
+
 ```
