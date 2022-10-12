@@ -50,13 +50,13 @@ data:
       if [[ -f /etc/cri-resmgr/force.cfg ]]; then
         echo 'Installing mounted configuration file from /etc/cri-resmgr/force.cfg to host /etc/cri-resmgr/'
         cp -v /etc/cri-resmgr/force.cfg /var/host/etc/cri-resmgr/force.cfg
-        sed -i 's!fallback.cfg"!fallback.cfg --force-config /etc/cri-resmgr/force.cfg"!' /var/host/etc/default/cri-resource-manager
+        sed -i 's!fallback!force!g' /var/host/etc/default/cri-resource-manager
       else 
         # check if force is used and remove if not mounted (from filesystem config systemd config
         if [[ -f /var/host/etc/cri-resmgr/force.cfg ]]; then
           rm -v /var/host/etc/cri-resmgr/force.cfg
         fi
-        sed -i 's!fallback.cfg --force-config /etc/cri-resmgr/force.cfg"!fallback.cfg"!' /var/host/etc/default/cri-resource-manager
+        sed -i 's!force!fallback!g' /var/host/etc/default/cri-resource-manager
       fi
 
       # Handle EXTRA_OPTIONS
