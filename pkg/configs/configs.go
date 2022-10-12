@@ -84,7 +84,7 @@ func GetBaseConfigsFromConfigMap(ctx context.Context, logger logr.Logger, k8sCli
 
 		// Just for logging to not print all the contents
 		baseConfigsKeys := []string{}
-		for key, _ := range configMap.Data {
+		for key := range configMap.Data {
 			baseConfigsKeys = append(baseConfigsKeys, key)
 		}
 		logger.Info("configs: from configMap use as baseConfigs", "types", baseConfigsKeys)
