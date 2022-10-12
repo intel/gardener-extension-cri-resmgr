@@ -107,7 +107,7 @@ func AddConfigMapWatchingControllerToManager(mgr manager.Manager, options *optio
 	configReconcilerArgs := extension.AddArgs{
 		Actuator:        NewActuator(consts.ActuatorName + consts.ConfigsSuffix),
 		Resync:          60 * time.Minute,
-		FinalizerSuffix: consts.ExtensionType + consts.ConfigsSuffix,
+		FinalizerSuffix: consts.ExtensionType, // on purpuse we're using the same finalizer as original controller to "delete" only once without need for waiting for another "configs" controller
 	}
 	controllerOptions.Reconciler = extension.NewReconciler(configReconcilerArgs)
 	controllerOptions.RecoverPanic = true

@@ -31,8 +31,8 @@ spec:
     spec:
       hostPID: true
       hostIPC: true
-      # give a minute to uninstall cri-rm
-      terminationGracePeriodSeconds: 60
+      # give a 30 seconds to uninstall cri-rm
+      terminationGracePeriodSeconds: 30
       containers:
       - name: installation
         image: {{ index .Values.images "gardener-extension-cri-resmgr-installation" }}
@@ -50,14 +50,9 @@ spec:
         - name: static-configs
           mountPath: /etc/cri-resmgr/
         {{- end }}
-        livenessProbe:
-          exec:
-            command: ["chroot", "/var/host", "bash", "-c", "systemctl status cri-resource-manager"]
-          failureThreshold: 1
-          initialDelaySeconds: 10
         readinessProbe:
           exec:
-            command: ["chroot", "/var/host", "bash", "-c", "grep cri-resmgr.sock  /etc/systemd/system/kubelet.service"]
+            command: ["chroot", "/var/host", "bash", "-c", "systemctl status cri-resource-manager"]
           failureThreshold: 1
           initialDelaySeconds: 10
       volumes:

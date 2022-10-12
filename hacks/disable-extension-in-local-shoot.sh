@@ -14,4 +14,4 @@
 set -x
 echo "Usage example: SHOOT=local2 hacks/disable-extension-in-local-shoot.sh"
 SHOOT=${SHOOT:-local}
-kubectl patch shoot ${SHOOT} -n garden-local -p '{"spec":{"extensions": [ {"type": "cri-resmgr-extension", "disabled": true} ] } }'
+kubectl patch --context kind-gardener-local shoot ${SHOOT} -n garden-local -p '{"spec":{"extensions": [ {"type": "cri-resmgr-extension", "disabled": true} ] } }'
