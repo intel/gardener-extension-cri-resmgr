@@ -106,7 +106,8 @@ data:
           fi
           sleep 1
       done
-      echo Restart kubelet
+      echo "*** Restart kubelet with new configuration"
+      sleep 2
       chroot /var/host bash -c "systemctl daemon-reload"
       chroot /var/host bash -c "systemctl restart kubelet"
     }
@@ -123,15 +124,14 @@ data:
       chroot /var/host bash -c "systemctl stop cri-resource-manager"
 
       # Remove files left after cri-resmgr
-      echo 'Remove files left after cri-resmgr'
+      echo "Remove files left after cri-resmgr"
       rm -rf /var/host/opt/intel
       rm -rf /var/host/etc/cri-resmgr
       rm -rf /var/host/etc/systemd/system/cri-resource-manager.service
       rm -rf /var/host/etc/default/cri-resource-manager 
 
-
-      # Restart kubelet with new configuration
-      echo 'Restart kubelet with new configuration'
+      echo "*** Restart kubelet with original configuration"
+      sleep 2
       chroot /var/host bash -c "systemctl daemon-reload"
       chroot /var/host bash -c "systemctl restart kubelet"
 
@@ -148,23 +148,90 @@ data:
       rm -rf /var/lib/cri-resmgr
 
       # Sleep after successful removal 
-      echo 'Uninstallation successful.'
-      echo "cri-resource-manager successfully removed. Try to kill pid $child myself..."
+      echo '*** Uninstallation successful.'
+    }
+
+    function quit() {
+      echo "Try to kill pid $child myself..."
       kill -KILL "$child" 2>/dev/null
-      # give 10 sec see logs 
+      # give 5 sec see logs 
       sleep 5
       exit 0
+    }
+
+    function uninstall_and_quit() {
+      uninstall
+      quit
     }
 
     # Install cri-rm
     install
 
     #echo "Setup termination handler."
-    trap uninstall SIGTERM SIGINT
+    trap uninstall_and_quit SIGTERM SIGINT
 
     # Sleep after installation the task
     echo "cri-resource-manager installed. Run checks in a loop..."
+    # Just five seconds  before first check
+    sleep 5
     while true; do
+
+
+      # Run checks and uninstall if there is any issues with kubelet or cri-rm or containerd
+      criIsActive=$(chroot /var/host bash -c "systemctl is-active cri-resource-manager")
+      kubeletIsActive=$(chroot /var/host bash -c "systemctl is-active kubelet")
+      containerdIsActive=$(chroot /var/host bash -c "systemctl is-active containerd")
+      if [ "$criIsActive" != "active" ] || [ "$containerdIsActive" != "active" ] || [ "$kubeletIsActive" != "active" ];then
+        echo "*** [$(date --rfc-3339=seconds)] Checks FAILED (cri-resource-manager=${criIsActive} kubelet=${kubeletIsActive} containerd=${containerdIsActive})"
+
+        echo "*** Going into RECOVERY mode (stay alive but not ready) "
+        echo
+        echo "=========================== I. Dump broken state ============================================"
+        echo "--------------------- CRI-resource-manager systemd config -----------------------------------"
+        cat /var/host/etc/default/cri-resource-manager
+        echo "---------------------------------------------------------------------------------------------"
+        echo
+        echo "--------------------- Dump configuration files and difference: Pod VS Host ---------------------------"
+        echo "--- note those files are synced during pod startup only (empty section is fine) -------------"
+        if [[ -f /etc/cri-resmgr/force.cfg ]]; then
+          echo
+          echo --- Host/force.cfg 
+          cat /var/host/etc/cri-resmgr/force.cfg
+          echo --- comparing Pod/force.cfg Host/force.cfg
+          diff /etc/cri-resmgr/force.cfg /var/host/etc/cri-resmgr/force.cfg
+        fi
+        if [[ -f /etc/cri-resmgr/fallback.cfg ]]; then
+          echo
+          echo --- Host/fallback.cfg:
+          cat /var/host/etc/cri-resmgr/fallback.cfg
+          echo --- comparing Pod/fallback.cfg Host/fallback.cfg
+          diff /etc/cri-resmgr/fallback.cfg /var/host/etc/cri-resmgr/fallback.cfg
+        fi
+        if [[ -f /var/host/etc/cri-resmgr/EXTRA_OPTIONS.cfg ]]; then
+          echo
+          echo --- Host/EXTRA_OPTIONS.cfg:
+          cat /var/host/etc/cri-resmgr/EXTRA_OPTIONS.cfg
+          echo
+          echo --- comparing Pod/EXTRA_OPTIONS.cfg Host/EXTRA_OPTIONS.cfg:
+          diff /etc/cri-resmgr/EXTRA_OPTIONS.cfg /var/host/etc/cri-resmgr/EXTRA_OPTIONS.cfg
+          echo
+        fi
+        echo "---------------------------------------------------------------------------------------------"
+        echo
+        echo "--------------------- CRI-resource-manager last 50 lines of logs ----------------------------"
+        chroot /var/host journalctl -u cri-resource-manager -n 50 -o cat
+        echo "---------------------------------------------------------------------------------------------"
+        echo
+        echo "=========================== II. Uninstall cri-resource-manager =============================="
+        echo "Uninstall cri-resource-manager "
+        uninstall
+        echo
+        echo "=========================== III. Sleep forever... =============================="
+        echo "Note: sleep to give "human" a chance to fix config/state (then please restart this pod)..."
+        sleep inf
+      else
+        echo "*** [$(date --rfc-3339=seconds)] Checks OK (cri-resource-manager=${criIsActive} kubelet=${kubeletIsActive} containerd=${containerdIsActive})"
+      fi
 
       # Put sleep in background and wait to allow bash to capture and handle signals
       # based on https://unix.stackexchange.com/questions/146756/forward-sigterm-to-child-in-bash
@@ -172,17 +239,6 @@ data:
       child=$!
       wait $child
 
-      # Run checks and uninstall if there is any issues with kubelet or cri-rm or containerd
-      criIsActive=$(chroot /var/host bash -c "systemctl is-active cri-resource-manager")
-      kubeletIsActive=$(chroot /var/host bash -c "systemctl is-active kubelet")
-      containerdIsActive=$(chroot /var/host bash -c "systemctl is-active containerd")
-      if [ "$criIsActive" != "active" ] || [ "$containerdIsActive" != "active" ] || [ "$kubeletIsActive" != "active" ];then
-        echo "Checks FAILED (cri-resource-manager=${criIsActive} kubelet=${kubeletIsActive} containerd=${containerdIsActive})"
-        echo "Uninstall cri-resource-manager to give "human" a chance to fix config/state..."
-        uninstall
-      else
-        echo "Checks OK (cri-resource-manager=${criIsActive} kubelet=${kubeletIsActive} containerd=${containerdIsActive})"
-      fi
     done
 
 

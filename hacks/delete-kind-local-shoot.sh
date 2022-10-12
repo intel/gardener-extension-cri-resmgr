@@ -13,5 +13,5 @@
 # limitations under the License.
 set -x
 SHOOT=${SHOOT:-local}
-kubectl -n garden-local annotate shoot ${SHOOT} "confirmation.gardener.cloud/deletion=true" --overwrite
-kubectl -n garden-local delete shoot ${SHOOT} --wait=false
+kubectl --context kind-gardener-local -n garden-local annotate shoot ${SHOOT} "confirmation.gardener.cloud/deletion=true" --overwrite
+kubectl --context kind-gardener-local -n garden-local delete shoot ${SHOOT} --wait=false

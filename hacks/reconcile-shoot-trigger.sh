@@ -15,4 +15,4 @@ echo "Usage example: SHOOT=local2 OPERATION=retry hacks/reconcile-extension-trig
 set -x
 OPERATION=${OPERATION:-reconcile}
 SHOOT=${SHOOT:-local}
-kubectl -n garden-local annotate shoot ${SHOOT} "gardener.cloud/operation=${OPERATION}" --overwrite
+kubectl --context kind-gardener-local -n garden-local annotate shoot ${SHOOT} "gardener.cloud/operation=${OPERATION}" --overwrite

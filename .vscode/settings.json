@@ -40,6 +40,7 @@
         "IAAAAAAAA",
         "imagevector",
         "isvimgreg",
+        "journalctl",
         "kubecfg",
         "kubeconfig",
         "kubelet",
