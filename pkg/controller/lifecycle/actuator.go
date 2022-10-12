@@ -17,7 +17,6 @@ package lifecycle
 import (
 	"context"
 	"fmt"
-	"os"
 	"time"
 
 	// Local
@@ -34,7 +33,6 @@ import (
 	// Other
 	"github.com/go-logr/logr"
 	"github.com/intel/gardener-extension-cri-resmgr/pkg/imagevector"
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
@@ -72,9 +70,8 @@ func (a *Actuator) GenerateSecretData(logger logr.Logger, ctx context.Context, e
 	}
 	imageVector := imagevector.ImageVector()
 	if len(imageVector) > 0 {
-		for i, imageSource := range imageVector {
-
-			logger.Info(fmt.Sprintf("imageVector[%d].imageSource", i), "imageSource", *imageSource)
+		for _, imageSource := range imageVector {
+			logger.Info(fmt.Sprintf("images: found imageVector[name=%s]", imageSource.Name), "imageSource", (*imageSource.ToImage(&k8sVersion)).String())
 		}
 	}
 
@@ -109,7 +106,6 @@ func (a *Actuator) GenerateSecretData(logger logr.Logger, ctx context.Context, e
 
 func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extensions1alpha1.Extension) error {
 	namespace := ex.GetNamespace()
-	a.logger.Info("Reconcile: checking extension...") // , "shoot", cluster.Shoot.Name, "namespace", cluster.Shoot.Namespace)
 
 	// Find what shoot cluster we dealing with.
 	// to find k8s version for chart renderer
@@ -120,42 +116,20 @@ func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extens
 		return err
 	}
 
-	// Get base configs from ControllerDeployment deployed ConfigMap (base for all Shoot clusters)
-	baseConfigs := map[string]string{}
-	extensionConfigMapNamespace := os.Getenv(consts.ConfigMapNamespaceEnvKey)
-	if extensionConfigMapNamespace != "" {
-		configMap := &corev1.ConfigMap{}
-		err = a.client.Get(ctx, client.ObjectKey{Namespace: extensionConfigMapNamespace, Name: consts.ConfigMapName}, configMap)
-		if err != nil {
-			return fmt.Errorf("cannot read base configs: %s (%s/%s)", err, namespace, consts.ConfigMapName)
-		}
-		baseConfigs = configMap.Data
-		a.logger.Info("baseConfigs loaded from configMap", "configMaps.Data", configMap.Data)
-	}
-
-	// Get configs either from configMap (initial) and override with values from Shot.Spec.Extensions.providerConfig
-	configs, err := configs.MergeConfigs(a.logger, baseConfigs, cluster.Shoot.Spec.Extensions)
+	// Get the baseConfigs from extension ConfigMap.
+	baseConfigs, err := configs.GetBaseConfigsFromConfigMap(ctx, a.logger, a.client)
 	if err != nil {
 		return err
 	}
 
-	configTypes := map[string]map[string]string{
-		"static":  {},
-		"dynamic": {},
-	}
-	configTypes["static"] = map[string]string{}
-	for configName, configContent := range configs {
-		if configName == "fallback" || configName == "force" || configName == "EXTRA_OPTIONS" {
-			// static configs
-			configTypes["static"][configName] = configContent
-		} else {
-			// dynamic configs
-			configTypes["dynamic"][configName] = configContent
-		}
+	// Merge baseConfigs and providerConfig.configs from Shoot.Spec and split into types "static","dynamic".
+	configTypes, err := configs.PrepareConfigTypes(a.logger, baseConfigs, cluster.Shoot.Spec.Extensions)
+	if err != nil {
+		return err
 	}
 
 	// Generate secret data that will be used by reference by ManagedResource to deploy.
-	secretData, err := a.GenerateSecretData(logger, ctx, ex, consts.ChartPath, namespace, cluster.Shoot.Spec.Kubernetes.Version, configTypes)
+	secretData, err := a.GenerateSecretData(a.logger, ctx, ex, consts.ChartPath, namespace, cluster.Shoot.Spec.Kubernetes.Version, configTypes)
 	if err != nil {
 		return err
 	}

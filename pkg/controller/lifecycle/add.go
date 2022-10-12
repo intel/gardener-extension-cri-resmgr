@@ -16,6 +16,7 @@ package lifecycle
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	// Local
@@ -42,22 +43,23 @@ import (
 
 // configMapToAllExtensionsMapper maps creates reconciliation requests for extensions based on dedicate configMap of cri-resmgr extension.
 func configMapToAllExtensionMapper(ctx context.Context, log logr.Logger, reader client.Reader, obj client.Object) []reconcile.Request {
-	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
 	configMap, ok := obj.(*corev1.ConfigMap)
 	if !ok {
-		log.Info("Warning: expected to get ConfigMap but got something different in configMapMapper to Extension!")
+		log.Info("WARNING: expected to get ConfigMap but got something different in configMapMapper to Extension!", "module", "configs")
 		return nil
 	}
 
 	extensionList := &extensionsv1alpha1.ExtensionList{}
 	if err := reader.List(ctx, extensionList); err != nil {
-		log.Info("Warning: can not read list of Extension from Kubernetes", "error", err)
+		log.Info("WARNING: can not read list of Extension from Kubernetes", "error", err, "module", "configs")
 		return nil
 	}
 
 	var requests []reconcile.Request
+	extensionsFound := []string{}
 	for _, extension := range extensionList.Items {
 		if extension.Spec.Type == consts.ExtensionType {
 			isOk := false
@@ -73,10 +75,12 @@ func configMapToAllExtensionMapper(ctx context.Context, log logr.Logger, reader 
 						Name:      extension.Name,
 					},
 				})
+				extensionsFound = append(extensionsFound, fmt.Sprintf("%s/%s", extension.Namespace, extension.Name))
 			}
 		}
 	}
-	log.Info("Found change in configMap so start reconciliation of all Extensions", "configMap", configMap, "extensionList", extensionList)
+
+	log.Info("found configMap so start reconciliation of all healthy extensions", "module", "configs", "configMap", configMap, "extensions", extensionsFound)
 	return requests
 }
 
