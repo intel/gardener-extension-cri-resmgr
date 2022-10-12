@@ -59,6 +59,10 @@ providerConfig:
       fallback: |
         policy:
           Active: balloons
+          AvailableResources:
+            CPU: cpuset:1-1000
+          ReservedResources:
+            CPU: 1
         logger:
           Debug: resource-manager,cache,policy,resource-control,config-server
           Klog:
@@ -69,7 +73,7 @@ providerConfig:
         policy:
           Active: balloons
           AvailableResources:
-            CPU: cpuset:1-1000
+            CPU: cpuset:1-15
           ReservedResources:
             CPU: cpuset:15
           balloons:
