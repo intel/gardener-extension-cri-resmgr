@@ -37,6 +37,10 @@ spec:
         fallback: |
           policy:
             Active: balloons
+            AvailableResources:
+              CPU: cpuset:1-10000
+            ReservedResources:
+              CPU: 1
           logger:
             Debug: resource-manager,cache,policy,resource-control,config-server
             Klog:
@@ -79,7 +83,6 @@ spec:
       maximum: 2
       maxSurge: 1
       maxUnavailable: 0
-    workers:
     - name: local2
       machine:
         type: local

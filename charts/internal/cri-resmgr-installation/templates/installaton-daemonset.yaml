@@ -33,6 +33,9 @@ spec:
       hostIPC: true
       # give a 30 seconds to uninstall cri-rm
       terminationGracePeriodSeconds: 30
+      # only install to nodes with containerd
+      nodeSelector:
+        worker.gardener.cloud/cri-name: containerd
       containers:
       - name: installation
         image: {{ index .Values.images "gardener-extension-cri-resmgr-installation" }}

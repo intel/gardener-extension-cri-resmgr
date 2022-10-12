@@ -70,6 +70,9 @@ spec:
         gardener.cloud/role: system-component
     spec:
       serviceAccount: cri-resmgr-agent
+      # only install to nodes with containerd
+      nodeSelector:
+        worker.gardener.cloud/cri-name: containerd
       containers:
         - name: cri-resmgr-agent
           env:
