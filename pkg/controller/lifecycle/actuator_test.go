@@ -49,7 +49,7 @@ var _ = Describe("cri-resource-manager extension actuator tests", func() {
 		// TODO: consider using mock instead of real rendered - not enough logic inside golang code yet!
 		// unused but useful for future
 		// "github.com/golang/mock/gomock"
-		a := actuator.NewActuator().(*actuator.Actuator)
+		a := actuator.NewActuator("mock").(*actuator.Actuator)
 		ctx := context.TODO()
 		log := logger.ZapLogger(true)
 

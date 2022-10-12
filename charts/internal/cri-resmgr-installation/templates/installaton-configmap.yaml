@@ -104,6 +104,7 @@ data:
           if [ "$criIsActive" == "active" ] && [ "$containerdIsActive" == "active" ] && [ "$kubeletIsActive" == "active" ];then
               break
           fi
+          sleep 1
       done
       echo Restart kubelet
       chroot /var/host bash -c "systemctl daemon-reload"
@@ -162,14 +163,26 @@ data:
     trap uninstall SIGTERM SIGINT
 
     # Sleep after installation the task
-    echo "cri-resource-manager installed. Sleeping..."
+    echo "cri-resource-manager installed. Run checks in a loop..."
     while true; do
-      # put sleep in background and wait to allow bash to capture and handle signals
+
+      # Put sleep in background and wait to allow bash to capture and handle signals
       # based on https://unix.stackexchange.com/questions/146756/forward-sigterm-to-child-in-bash
-      sleep 3600 &
+      sleep 60 &
       child=$!
       wait $child
-      echo "Still sleeping...";
+
+      # Run checks and uninstall if there is any issues with kubelet or cri-rm or containerd
+      criIsActive=$(chroot /var/host bash -c "systemctl is-active cri-resource-manager")
+      kubeletIsActive=$(chroot /var/host bash -c "systemctl is-active kubelet")
+      containerdIsActive=$(chroot /var/host bash -c "systemctl is-active containerd")
+      if [ "$criIsActive" != "active" ] || [ "$containerdIsActive" != "active" ] || [ "$kubeletIsActive" != "active" ];then
+        echo "Checks FAILED (cri-resource-manager=${criIsActive} kubelet=${kubeletIsActive} containerd=${containerdIsActive})"
+        echo "Uninstall cri-resource-manager to give "human" a chance to fix config/state..."
+        uninstall
+      else
+        echo "Checks OK (cri-resource-manager=${criIsActive} kubelet=${kubeletIsActive} containerd=${containerdIsActive})"
+      fi
     done
 
 

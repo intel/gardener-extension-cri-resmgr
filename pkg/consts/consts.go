@@ -27,6 +27,7 @@ const (
 
 	ControllerName = "cri-resmgr-controller"
 	ActuatorName   = "cri-resmgr-actuator"
+	ConfigsSuffix   = "-configs"  // used for logger name, finalizer and controller name
 
 	ManagedResourceName      = "extension-runtime-cri-resmgr"
 	ConfigMapName            = "gardener-extension-cri-resmgr-configs"

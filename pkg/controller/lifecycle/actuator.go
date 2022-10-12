@@ -45,10 +45,17 @@ import (
 // -                                        Actuator                                     -
 // ---------------------------------------------------------------------------------------
 
-func NewActuator() extension.Actuator {
+func NewActuator(name string) extension.Actuator {
 	return &Actuator{
 		ChartRendererFactory: extensionscontroller.ChartRendererFactoryFunc(util.NewChartRendererForShoot),
-		logger:               log.Log.WithName(consts.ActuatorName),
+		logger:               log.Log.WithName(name),
+	}
+}
+
+func NewActuatorWithSuffix(nameSuffix string) extension.Actuator {
+	return &Actuator{
+		ChartRendererFactory: extensionscontroller.ChartRendererFactoryFunc(util.NewChartRendererForShoot),
+		logger:               log.Log.WithName(consts.ActuatorName + nameSuffix),
 	}
 }
 

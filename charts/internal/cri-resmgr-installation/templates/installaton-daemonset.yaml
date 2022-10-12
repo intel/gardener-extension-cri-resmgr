@@ -53,6 +53,11 @@ spec:
             command: ["chroot", "/var/host", "bash", "-c", "systemctl status cri-resource-manager"]
           failureThreshold: 1
           initialDelaySeconds: 10
+        readinessProbe:
+          exec:
+            command: ["chroot", "/var/host", "bash", "-c", "grep cri-resmgr.sock  /etc/systemd/system/kubelet.service"]
+          failureThreshold: 1
+          initialDelaySeconds: 10
       volumes:
       - name: host-volume
         hostPath:

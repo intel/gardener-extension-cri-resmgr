@@ -88,7 +88,7 @@ func configMapToAllExtensionMapper(ctx context.Context, log logr.Logger, reader 
 func AddToManager(mgr manager.Manager, options *options.Options, ignoreOperationAnnotation bool) error {
 
 	return extension.Add(mgr, extension.AddArgs{
-		Actuator:                  NewActuator(),
+		Actuator:                  NewActuator(consts.ActuatorName),
 		ControllerOptions:         options.ControllerOptions.Completed().Options(),
 		Name:                      consts.ControllerName,
 		FinalizerSuffix:           consts.ExtensionType,
@@ -105,14 +105,14 @@ func AddConfigMapWatchingControllerToManager(mgr manager.Manager, options *optio
 	// Create another instance of options - this time for "configMap2Extensions reconciler"
 	controllerOptions := options.ControllerOptions.Completed().Options()
 	configReconcilerArgs := extension.AddArgs{
-		Actuator:        NewActuator(),
+		Actuator:        NewActuator(consts.ActuatorName + consts.ConfigsSuffix),
 		Resync:          60 * time.Minute,
-		FinalizerSuffix: consts.ExtensionType + "-configs",
+		FinalizerSuffix: consts.ExtensionType + consts.ConfigsSuffix,
 	}
 	controllerOptions.Reconciler = extension.NewReconciler(configReconcilerArgs)
 	controllerOptions.RecoverPanic = true
 
-	controllerName := consts.ControllerName + "-configs"
+	controllerName := consts.ControllerName + consts.ConfigsSuffix
 	ctrl, err := controller.New(controllerName, mgr, controllerOptions)
 	if err != nil {
 		return err
