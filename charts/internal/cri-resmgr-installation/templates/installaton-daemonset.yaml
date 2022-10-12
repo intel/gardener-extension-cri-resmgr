@@ -44,17 +44,18 @@ spec:
           mountPath: /var/host
         - name: cri-resmgr-installation-script
           mountPath: /scripts
-        {{ if .Values.configs.fallback }}
-        - name: config-volume-fallback
+        {{- if (.Values.configs | default dict).static }}
+        - name: static-configs
           mountPath: /etc/cri-resmgr/
-        {{ end }}
-        {{ if .Values.configs.force }}
-        - name: config-volume-force
-          mountPath: /configs
-        {{ end }}
+        {{- end }}
         livenessProbe:
           exec:
             command: ["chroot", "/var/host", "bash", "-c", "systemctl status cri-resource-manager"]
+          failureThreshold: 1
+          initialDelaySeconds: 10
+        readinessProbe:
+          exec:
+            command: ["chroot", "/var/host", "bash", "-c", "grep cri-resmgr.sock  /etc/systemd/system/kubelet.service"]
           failureThreshold: 1
           initialDelaySeconds: 10
       volumes:
@@ -65,19 +66,8 @@ spec:
         configMap:
           name: cri-resmgr-installation-script
           defaultMode: 0744
-      {{ if .Values.configs.fallback }}
-      - name: config-volume-fallback
+      {{- if (.Values.configs | default dict).static }}
+      - name: static-configs
         configMap:
-          name: cri-resmgr-config.fallback
-          items:
-          - key: policy
-            path: fallback.cfg
-      {{ end }}
-      {{ if .Values.configs.force }}
-      - name: config-volume-force
-        configMap:
-          name: cri-resmgr-config.force
-          items:
-          - key: policy
-            path: force.cfg
-      {{ end }}
+          name: cri-resmgr-static-configs
+      {{- end }}

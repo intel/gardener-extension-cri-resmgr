@@ -15,13 +15,13 @@
 package configs
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
-	"path/filepath"
-	"strings"
 
 	// Local
+
 	"github.com/intel/gardener-extension-cri-resmgr/pkg/consts"
 
 	// Gardener
@@ -29,11 +29,9 @@ import (
 
 	// Other
 	"github.com/go-logr/logr"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-)
-
-const (
-	ConfigsOverrideEnv = "CONFIGS_OVERWRITE"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // CriResMgrConfig is a providerConfig specific type for CRI-res-mgr extension.
@@ -42,68 +40,80 @@ type CriResMgrConfig struct {
 	Configs map[string]string `json:"configs,omitempty"`
 }
 
-// GetConfigs gets and merges configs values from Shoot.spec.extensions.providerConfig and
-// from files found in directory defined by ConfigsOverrideEnv.
-// Path defined by ConfigsOverrideEnv is first validated (is directory) then all files are read
-// and passed to helm installation charts to be rendered and additional configmaps for cri-resource-manager.
-func GetConfigs(logger logr.Logger, extensions []v1beta1.Extension) (map[string]string, error) {
-	configs := map[string]string{}
+// MergeConfigs merges base configs and values from Shoot.spec.extensions.providerConfig.
+// Result is then used for helm installation charts to be rendered and additional configmaps for cri-resource-manager.
+func MergeConfigs(logger logr.Logger, configs map[string]string, extensions []v1beta1.Extension) (map[string]string, error) {
 
-	// I. Configs are read from directory provided by ConfigsOverrideEnv
-	configsOverwritePath := os.Getenv(ConfigsOverrideEnv)
-	if len(configsOverwritePath) > 0 {
-		path, err := os.Open(configsOverwritePath)
-		if err != nil {
-			return nil, err
-		}
-		defer path.Close()
-		fileStat, err := path.Stat()
-		if err != nil {
-			return nil, fmt.Errorf("cannot stat path provided by ConfigsOverrideEnv")
-		}
-		if !fileStat.IsDir() {
-			return nil, fmt.Errorf("provided %s from is not a directory", ConfigsOverrideEnv)
-		}
-		dirInfo, err := path.ReadDir(-1)
-		if err != nil {
-			return nil, fmt.Errorf("cannot ReadDir %w", err)
-		}
-		for _, dirEntry := range dirInfo {
-			configName := dirEntry.Name()
-			fullPath := filepath.Join(path.Name(), dirEntry.Name())
-			// ignore entries starting with dot (hidden or directories create by Kubernetes when mounting configMaps)
-			if strings.HasPrefix(configName, ".") || strings.HasPrefix(configName, "..") {
-				continue
-			}
-			configContents, err := os.ReadFile(fullPath)
-			if err != nil {
-				return nil, fmt.Errorf("cannot read file of config file: %w", err)
-			}
-			configs[configName] = string(configContents)
-		}
-		logger.Info("configs: from env provided directory", "configs", configs)
-	}
-
-	// II. Parse provideConfig data from Cluster.Extension (it is a copy from within Shoot.spec.extensions.providerConfig).
+	// Get and parse provideConfig data from Cluster.Extension (it is a copy from within Shoot.spec.extensions.providerConfig).
 	var providerConfig *runtime.RawExtension
 	var criResMgrConfig *CriResMgrConfig
 
+	// If providerConfig were specified in Shoot spec.extensions then merge it with configs.
 	for _, extension := range extensions {
 		if extension.Type == consts.ExtensionType {
 			providerConfig = extension.ProviderConfig
 		}
 	}
-	// If providerConfig were specified in Shoot spec.extensions then merge it values with those found in filesystem
 	if providerConfig != nil {
 		if err := json.Unmarshal(providerConfig.Raw, &criResMgrConfig); err != nil {
-			logger.Error(err, "error unmarshalling providerConfig", "providerConfig", string(providerConfig.Raw))
+			logger.Error(err, "configs: ERROR unmarshalling providerConfig", "providerConfig", string(providerConfig.Raw))
 			return nil, err
 		}
-		logger.Info("configs: from cluster.extensions.providerConfig", "criResMgrConfig", criResMgrConfig)
+		configKeys := []string{}
 		for configName, configContents := range criResMgrConfig.Configs {
 			configs[configName] = configContents
+			configKeys = append(configKeys, configName)
 		}
+		logger.Info("configs: from shoot.providerConfig configs", "types", configKeys)
+	}
+	return configs, nil
+}
+
+// GetBaseConfigsFromConfigMap reads extension ConfigMap and get its "configs" as baseConfigs
+func GetBaseConfigsFromConfigMap(ctx context.Context, logger logr.Logger, k8sClient client.Client) (map[string]string, error) {
+
+	baseConfigs := map[string]string{}
+	extensionConfigMapNamespace := os.Getenv(consts.ConfigMapNamespaceEnvKey)
+	if extensionConfigMapNamespace != "" {
+		configMap := &corev1.ConfigMap{}
+		err := k8sClient.Get(ctx, client.ObjectKey{Namespace: extensionConfigMapNamespace, Name: consts.ConfigMapName}, configMap)
+		if err != nil {
+			return nil, fmt.Errorf("configs: cannot read base configs: %s (%s/%s)", err, extensionConfigMapNamespace, consts.ConfigMapName)
+		}
+		baseConfigs = configMap.Data
+
+		// Just for logging to not print all the contents
+		baseConfigsKeys := []string{}
+		for key := range configMap.Data {
+			baseConfigsKeys = append(baseConfigsKeys, key)
+		}
+		logger.Info("configs: from configMap use as baseConfigs", "types", baseConfigsKeys)
+	}
+	return baseConfigs, nil
+}
+
+// PrepareConfigTypes merges baseConfigs and configs found in extensions.providerConfig and split that two "static" and "dynamic" types.
+func PrepareConfigTypes(logger logr.Logger, baseConfigs map[string]string, extensions []v1beta1.Extension) (map[string]map[string]string, error) {
+
+	// Get configs either from configMap (initial) and override with values from Shot.Spec.Extensions.providerConfig
+	configs, err := MergeConfigs(logger, baseConfigs, extensions)
+	if err != nil {
+		return nil, err
 	}
 
-	return configs, nil
+	configTypes := map[string]map[string]string{
+		"static":  {},
+		"dynamic": {},
+	}
+	configTypes["static"] = map[string]string{}
+	for configName, configContent := range configs {
+		if configName == "fallback" || configName == "force" || configName == "EXTRA_OPTIONS" {
+			// static configs
+			configTypes["static"][configName] = configContent
+		} else {
+			// dynamic configs
+			configTypes["dynamic"][configName] = configContent
+		}
+	}
+	return configTypes, nil
 }

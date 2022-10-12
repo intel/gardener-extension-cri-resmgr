@@ -5,6 +5,7 @@
         "peterschmalfeldt.explorer-exclude",
         "golang.go",
         "766b.go-outliner",
-        "redhat.vscode-yaml"
+        "redhat.vscode-yaml",
+        "ms-kubernetes-tools.vscode-kubernetes-tools"
     ]
 }

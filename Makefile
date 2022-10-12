@@ -28,16 +28,28 @@ CRI_RM_URL_RELEASE               := https://github.com/intel/cri-resource-manage
 
 # make start options
 IGNORE_OPERATION_ANNOTATION 	 := false
+# overwrite it if you want "make start" to read "configs" ConfigMap from Kubernetes
+EXTENSION_CONFIGMAP_NAMESPACE    := ""
+
+VERSION 						 := devel
+
+
+update-version:
+	# TODO-replace with latest tag
+	# e.g. git describe --tags 
+	echo -n 'devel' >pkg/consts/VERSION
+	echo -n `git rev-parse HEAD` >pkg/consts/COMMIT
 
 build:
-	go build -v ./cmd/gardener-extension-cri-resmgr
+	go build -ldflags="-X github.com/intel/gardener-extension-cri-resmgr/pkg/consts.Commit=`git rev-parse HEAD` -X github.com/intel/gardener-extension-cri-resmgr/pkg/consts.Version=$(VERSION)" -v ./cmd/gardener-extension-cri-resmgr
+
 	go test -c -v  ./test/e2e/cri-resmgr-extension/. -o gardener-extension-cri-resmgr.e2e-tests
 	go test -c -v ./pkg/controller/lifecycle -o ./gardener-extension-cri-resmgr.actuator.test
 	go test -c -v ./pkg/configs -o ./gardener-extension-cri-resmgr.configs.test
 
 test:
 	# Those tests (renders charts, uses env to read files) change CWD during execution (required because rely on charts and fixtures).
-	ginkgo ./pkg/...
+	go test  -v ./pkg/...
 
 clean:
 	go clean -cache -modcache -testcache

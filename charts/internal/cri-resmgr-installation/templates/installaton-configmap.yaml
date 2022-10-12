@@ -47,16 +47,40 @@ data:
       fi
 
       # Handle force.cfg
-      if [[ -f /configs/force.cfg ]]; then
-        echo 'Installing mounted configuration file from /configs/force.cfg to host /etc/cri-resmgr/'
-        cp -v /configs/force.cfg /var/host/etc/cri-resmgr/force.cfg
-        sed -i 's!fallback.cfg"!fallback.cfg --force-config /etc/cri-resmgr/force.cfg"!' /var/host/etc/default/cri-resource-manager
+      if [[ -f /etc/cri-resmgr/force.cfg ]]; then
+        echo 'Installing mounted configuration file from /etc/cri-resmgr/force.cfg to host /etc/cri-resmgr/'
+        cp -v /etc/cri-resmgr/force.cfg /var/host/etc/cri-resmgr/force.cfg
+        sed -i 's!fallback!force!g' /var/host/etc/default/cri-resource-manager
       else 
         # check if force is used and remove if not mounted (from filesystem config systemd config
         if [[ -f /var/host/etc/cri-resmgr/force.cfg ]]; then
           rm -v /var/host/etc/cri-resmgr/force.cfg
         fi
-        sed -i 's!fallback.cfg --force-config /etc/cri-resmgr/force.cfg"!fallback.cfg"!' /var/host/etc/default/cri-resource-manager
+        sed -i 's!force!fallback!g' /var/host/etc/default/cri-resource-manager
+      fi
+
+      # Handle EXTRA_OPTIONS
+      if [[ -f /etc/cri-resmgr/EXTRA_OPTIONS.cfg ]]; then
+        echo 'Installing EXTRA_OPTIONS configuration file from /etc/cri-resmgr/EXTRA_OPTIONS to host /etc/cri-resmgr/'
+        cp -v /etc/cri-resmgr/EXTRA_OPTIONS.cfg /var/host/etc/cri-resmgr/EXTRA_OPTIONS.cfg
+        echo 'Modify cri-resource-manager.service to include EXTRA_OPTIONS when starting cri-resmgr binary!'
+        sed -i 's!\$POLICY_OPTIONS$!\$POLICY_OPTIONS \$EXTRA_OPTIONS!' /var/host/etc/systemd/system/cri-resource-manager.service
+        sed -z -i 's!EnvironmentFile=/etc/default/cri-resource-manager\nExecStart!EnvironmentFile=/etc/default/cri-resource-manager\nEnvironmentFile=/etc/cri-resmgr/EXTRA_OPTIONS.cfg\nExecStart!' /var/host/etc/systemd/system/cri-resource-manager.service
+      else 
+        if [[ -f /var/host/etc/cri-resmgr/EXTRA_OPTIONS ]]; then
+          echo 'Remove EXTRA_OPTIONS.cfg file from host'
+          rm -v /var/host/etc/cri-resmgr/EXTRA_OPTIONS.cfg
+        fi
+        echo 'Modify cri-resource-manager.service to remove EXTRA_OPTIONS when starting cri-resmgr binary!'
+        sed -z -i 's!EnvironmentFile=/etc/default/cri-resource-manager\nEnvironmentFile=/etc/cri-resmgr/EXTRA_OPTIONS.cfg\n!EnvironmentFile=/etc/default/cri-resource-manager\n!' /var/host/etc/systemd/system/cri-resource-manager.service
+        sed -i 's!\$POLICY_OPTIONS \$EXTRA_OPTIONS$!\$POLICY_OPTIONS!' /var/host/etc/systemd/system/cri-resource-manager.service
+      fi
+
+      # Warning if previous state exists
+      if [[ -d /var/host/var/lib/cri-resmgr ]]; then
+        echo 'WARNING! previous state of cri-resmgr still exists in hosts /var/lib/cri-resmgr!'
+        echo '         cri-resource-manager was not properly uninstalled, cached config will be used instead of fallback.cfg'
+        echo '         To fix just restart this pod or manually remove /var/lib/cri-resmgr on host.'
       fi
 
       echo Enable and restart cri-resource-manager systemd unit.
@@ -80,6 +104,7 @@ data:
           if [ "$criIsActive" == "active" ] && [ "$containerdIsActive" == "active" ] && [ "$kubeletIsActive" == "active" ];then
               break
           fi
+          sleep 1
       done
       echo Restart kubelet
       chroot /var/host bash -c "systemctl daemon-reload"
@@ -119,6 +144,9 @@ data:
           fi
       done
 
+      # Remove cache and state directory of cri-resmgr
+      rm -rf /var/lib/cri-resmgr
+
       # Sleep after successful removal 
       echo 'Uninstallation successful.'
       echo "cri-resource-manager successfully removed. Try to kill pid $child myself..."
@@ -135,14 +163,26 @@ data:
     trap uninstall SIGTERM SIGINT
 
     # Sleep after installation the task
-    echo "cri-resource-manager installed. Sleeping..."
+    echo "cri-resource-manager installed. Run checks in a loop..."
     while true; do
-      # put sleep in background and wait to allow bash to capture and handle signals
+
+      # Put sleep in background and wait to allow bash to capture and handle signals
       # based on https://unix.stackexchange.com/questions/146756/forward-sigterm-to-child-in-bash
-      sleep 3600 &
+      sleep 60 &
       child=$!
       wait $child
-      echo "Still sleeping...";
+
+      # Run checks and uninstall if there is any issues with kubelet or cri-rm or containerd
+      criIsActive=$(chroot /var/host bash -c "systemctl is-active cri-resource-manager")
+      kubeletIsActive=$(chroot /var/host bash -c "systemctl is-active kubelet")
+      containerdIsActive=$(chroot /var/host bash -c "systemctl is-active containerd")
+      if [ "$criIsActive" != "active" ] || [ "$containerdIsActive" != "active" ] || [ "$kubeletIsActive" != "active" ];then
+        echo "Checks FAILED (cri-resource-manager=${criIsActive} kubelet=${kubeletIsActive} containerd=${containerdIsActive})"
+        echo "Uninstall cri-resource-manager to give "human" a chance to fix config/state..."
+        uninstall
+      else
+        echo "Checks OK (cri-resource-manager=${criIsActive} kubelet=${kubeletIsActive} containerd=${containerdIsActive})"
+      fi
     done
 
 

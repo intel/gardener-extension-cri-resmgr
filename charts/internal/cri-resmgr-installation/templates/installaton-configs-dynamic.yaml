@@ -11,7 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-set -x
-echo "Usage example: SHOOT=local2 hacks/disable-extension-in-local-shoot.sh"
-SHOOT=${SHOOT:-local}
-kubectl patch shoot ${SHOOT} -n garden-local -p '{"spec":{"extensions": [ {"type": "cri-resmgr-extension", "disabled": true} ] } }'
+
+{{/* dynamic configuration have different form than static configs - are read by cri-agent */}}
+{{- range $configName, $configContent := (.Values.configs | default dict).dynamic }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: kube-system
+  name: "cri-resmgr-config.{{ $configName}}"
+data:
+{{- $configObject := fromYaml $configContent }}
+{{- range $configKey, $configValue := $configObject }}
+  {{ $configKey }}: |
+    {{- $configValue | toYaml | nindent 4 }}
+{{- end }}
+---
+
+{{- end }}
