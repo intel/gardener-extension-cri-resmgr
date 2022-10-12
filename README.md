@@ -11,9 +11,9 @@ This Gardener extension will deploy and manage lifecycle of [CRI-Resource-Manage
 
 ### Requirements
 
-- `container-runtime` of shoot nodes must be configured to **containerd** 
-- for production usage: **docker image registry** where installation and extension images can be pushed (until #47 is resolved)
-- for local development: Gardener v1.56.0
+- `container-runtime` of shoot nodes must be configured to **containerd**, 
+- for production usage: provide **docker image registry** where installation and extension images can be pushed (until #47 is resolved)
+- for local development: tested with Gardener v1.56.0
 
 ### Features
 
@@ -22,7 +22,7 @@ This Gardener extension will deploy and manage lifecycle of [CRI-Resource-Manage
     - when extension is enabled globally but later disabled by shoot 
     - disabled globally but later enabled and disabled for shoot 
     - `ControllerRegistration` is removed and there are already Shoots deployed with extension
-  **WARNING** although extension supports removal of CRI-resource-manager, state of system (container configuraiton) depends on if and how policy implements cleaning the state!
+  **WARNING** although extension supports removal of CRI-resource-manager, state of system (container configuration) depends on policy configured (and how this policy implements)
 - **healthcheck** of cri-resource-manager which reports back to **ControllerInstallation** Healthy condition based on liveness probe that calls "`systemctl status cri-resource-manager`"
 - CRI-Resource-Manager **configuration overwriting && types** - user can provide "fallback", "default", "per node", "per group" or "force" configuration in `ControllerDeployment` which can be later overridden by Shoot "owner" with `providerConfig` - more information [here](#configuring-cri-resource-manager)
 - **dynamic configuration** - "default", "per node" or "per group" configuration are propagated from `ControllerDeployment` and `Shoot.Extension.ProviderConfig` to CRI-Resource-Manager through cri-resmgr-agent
