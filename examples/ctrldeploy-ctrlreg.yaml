@@ -38,6 +38,10 @@ providerConfig:
       fallback: |
         policy:
           Active: balloons
+          AvailableResources:
+            CPU: cpuset:1-1000
+          ReservedResources:
+            CPU: 1
         logger:
           Debug: resource-manager,cache,policy,resource-control,config-server
           Klog:
@@ -48,7 +52,7 @@ providerConfig:
         policy:
           Active: balloons
           AvailableResources:
-            CPU: cpuset:1-1000
+            CPU: cpuset:1-15
           ReservedResources:
             CPU: cpuset:15
           balloons:
@@ -79,4 +83,4 @@ spec:
     type: cri-resmgr-extension
     globallyEnabled: false
     # we need to wait for kubelet readines and almost whole shoot ready - give it a pleanty of time 5 minutes
-    reconcileTimeout: "300s" 
+    reconcileTimeout: "300s"
