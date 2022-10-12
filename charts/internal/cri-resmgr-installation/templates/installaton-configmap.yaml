@@ -180,6 +180,10 @@ data:
       criIsActive=$(chroot /var/host bash -c "systemctl is-active cri-resource-manager")
       kubeletIsActive=$(chroot /var/host bash -c "systemctl is-active kubelet")
       containerdIsActive=$(chroot /var/host bash -c "systemctl is-active containerd")
+      if [ "$criIsActive" == "activating" ] || [ "$containerdIsActive" == "activating" ] || [ "$kubeletIsActive" == "activating" ];then
+        echo "*** [$(date --rfc-3339=seconds)] Checks WARNING (cri-resource-manager=${criIsActive} kubelet=${kubeletIsActive} containerd=${containerdIsActive}) is activating!"
+      fi
+      
       if [ "$criIsActive" == "failed" ] || [ "$containerdIsActive" == "failed" ] || [ "$kubeletIsActive" == "failed" ];then
         echo "*** [$(date --rfc-3339=seconds)] Checks FAILED (cri-resource-manager=${criIsActive} kubelet=${kubeletIsActive} containerd=${containerdIsActive})"
 
