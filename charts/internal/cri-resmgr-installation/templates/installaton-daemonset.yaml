@@ -38,7 +38,9 @@ spec:
         image: {{ index .Values.images "gardener-extension-cri-resmgr-installation" }}
         command: ["/scripts/install-cri-resmgr.sh"]
         securityContext:
-          privileged: true
+          capabilities:
+            add:
+            - SYS_CHROOT
         volumeMounts:
         - name: host-volume
           mountPath: /var/host
