@@ -11,5 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+CONTEXT=${CONTEXT:-kind-gardener-local}
 SHOOT=${SHOOT:-local}
-kubectl --context kind-gardener-local -n shoot--local--${SHOOT} annotate extension cri-resmgr-extension "gardener.cloud/operation=reconcile" --overwrite
+PROJECT=${PROJECT:-local}
+OPERATION=${OPERATION:-reconcile}
+kubectl --context ${CONTEXT} -n shoot--${PROJECT}--${SHOOT} annotate extension/cri-resmgr-extension "gardener.cloud/operation=${OPERATION}" --overwrite
