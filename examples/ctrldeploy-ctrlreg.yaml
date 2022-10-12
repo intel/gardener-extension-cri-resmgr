@@ -17,15 +17,15 @@ providerConfig:
     ### "image" overwrites extension (for seed) and "images" overwrite installation/agent (for shoot) images defined in charts/images.yaml
     #image:
     #  repository: v2.isvimgreg.com/gardener-extension-cri-resmgr
-    #  tag: mybranch
+    #  tag: latest
     #  pullPolicy: Always
     #imageVectorOverwrite: |
     #  images:
     #  - name: gardener-extension-cri-resmgr-installation
-    #    tag: mybranch
+    #    tag: latest
     #    repository: v2.isvimgreg.com/gardener-extension-cri-resmgr-installation
     #  - name: gardener-extension-cri-resmgr-agent
-    #    tag: mybranch
+    #    tag: latest
     #    repository: v2.isvimgreg.com/gardener-extension-cri-resmgr-agent
     ### Uncomment to provide own "fallback" configuration for CRI-Resource-Manager
     ### Use ballons policy as an example:
