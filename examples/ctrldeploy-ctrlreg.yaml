@@ -6,7 +6,7 @@ metadata:
   name: cri-resmgr-extension
 type: helm
 providerConfig:
-  chart: H4sIAAAAAAAAA+1c65PaOBLPZ/4Klee2ancrGGxeV9yXI2SSUJd5FDObXD5NCVuAd2zLK8kQLtn/fVuSbQzM8JgHyWXVVQnGarda3a1ftyQ8E8x8EhNWJZ8FiXlA46rHgiojPJqw2osnoTpQp9VSn0Drn+raaTZcYGq78r7TarrNF6j1NN1vp5QLzBB6wSgV2/h2tf+f0mSr//tTzIS9wFH4mD6kg9vN5n3+B9c74H+31XHqjY7jgv87jVbjBao/1SC30d/c/yeoT5MFCyZTgdy666JBLEgIN1lCGRYQDzbqhSEaSg6OhoQTNiO+XTmpnKD3gQcxQ3yUxj5hSEwJ6iXYg4+s5SX6QJgMKuTadfSzZLCyJuuXf4GEBU1RhBcopgKlnICIgKNxEBJEPnskESiIkUejJAxw7BE0D8RUdZMJATXQp0wEHQkM3Bj4E/g2LvMhLJTCkqZCJN1abT6f21gpa1M2qYWakdfeD/qn51enVVBYPfJbHBLOESN/pAGDoY4WCCegj4dHoGWI54gyhCeMQJugUt85C0QQT14iTsdijhkBKX7ABQtGqVgxVq4djLnMAObCMbJ6V2hwZaFXvavB1UuQ8XFw/e7it2v0sTcc9s6vB6dX6GKI+hfnrwfXg4tz+PYG9c4/of8Mzl+/RARMBd2QzwmT+oOSgTSjch26ImRFgTHVCvGEeME48GBc8STFE4ImdEZYDMNBCWFRwKUzOajng5QwiAKhYoRvDsquVHASZO7voplTiXFEumiJLkvIqfiEw/1EKNYeekfCCHkSe7RJYYpCCGZP0pR5hFcjHIN+YHqOCjmS+20GaChh9HfiiUpFLBLoN3Oa7KIyy7Wq2w64GZoKPS3Hdtp23ap864l5JNqO/4JAzGAB0+IxfRye/ztN1zX5/xi0r/8TFlDAtYUXYs4PrAh25v9WW+X/Vr1TbzvOi7rbcN2Wyf/HIJP/Tf4/Rv7nYGg/DUGQfftPbge0BhXBbRD7XXSZQUtfQkslIgL7WOBuBSFdMWyFqMoMhykwOUUqqUxCOsLhazLGaSi6aIxDTlYrDCvvEik4K4Zf1A5FT+V6xf4Ri4J98V9Oe3As9jyaxgcuCXev/9wl/tfbEv8bsCQ0+H8EMvhv8P9I6z+N9lcaSHoaSA6Ge83FwXHA+uULsockJBi6O89voz//BK4Qj0jIpVQk/WXfpiMYBwEok7lnn56+9cw8Du2L/2yEvYduBO7A/2a70Vrif6sD+O+4TYP/RyGD/wb/nwv/q9XqSg5QGIJTMYXa+386ttbXAv0Q5iNhQxqSO1JDgVHcznHL9kKa+t1dSePx6eDuJ9XeZHxXLpJpiKUQO91KFR4M3jKaJkoD+TXhcFFsZuq7PklCuohILMqNKq9pBtl1FUSpKSg1gv9HWduECPUZQhypizkW3lRdJerqQUrs7mBD7L0+2uzL085+YEfYz8KRkYmcPOWA2uwrSmWkxpM5GU0pvfVoPA4mqX5oPwXkVZpAQBKtPCP55T0GPsASfswZ8SjzH2iLQtzOnvS2uV/cXe3P+tXaFG5Zm2KKIuz5o2TJuva1BlNPpPs7L1l3414j1ZES4UR3zwk4XmSqzDanyZ0W9Ci4Noi3R6iCjjVpWZA9DkhfwQ2I/B8BT2E0QzKW3eYW3mIM4NpMKo8dOk9H8lRJofqdC5qnXMYcof7bt/6/mZIQKgBui+TgJcCu/Z+WK+v/htOqt92O5HOdTqtt6v9jkCxxzQrArACeZQVwUvnypYqgphwHMfg9iECehapqg0a2BGM0xfySQftnZPEpdlvtroXsD3JPHyBc8tsCT1DxRMKCWIyR9RP/9098nZORhPJAULbYJgLyFrlLYPfBAmNffildfutJfQDti/9FGVTVV4ecAe/E/45TnP87bl3u/3fqTYP/xyCD/wb/nxn/AeVz9MywQ2LknYcDfdV+hpNDzwVyVDri+UCunRzi+vi+QiB8AnyEC7AcCIGp9X3miMPxX2XAGayBKKvK0JDBTrZmg134L/f8V+v/dhvSgMH/I5DBf4P/x8N/hR0fFHZc5NDxDMngToj6BqlB6cFvVlGyi75WZO/bTPIVZVmj+dxZY1/8X54LHH4KvOv8123r+t9xnLrbbAD+u822Of89Chn0N+h/jN//yNPG5enE6wJNvuMfAEljdNU5zSyQbe/ARZQt3stRd1FdtahA4FqRDNCzm315GqBV4aChxHetTCSPod6XtHv4CUoOz5ngkiWV1BhmlXZPfqvYdtuVkHN2mB7eLU+j2gMSrrJKEHth6hP0s9poQ/+wrzOd7VfgtEsM89naa3Fh/YJsyIt6kxA0KmtZSpD6Rrhi3sccUeVBICkp/1D5fE8B0v3lA6L9nwOrSESDGZQrUN1zhmhStlxxQr4Da5eNp+5dpmF4SSFuFyuxrHc7k6JxJTRoFAEOLI1cRdujpGAk8az8lB7T6X+vAXcBx24A0d4M3p71Lm/Oe2enV5e9/mnBjZD6vfcbRqNu6SaCnEFCPzsb3Lgvw6xbzA+7AJB9y9N1XQdnvbenH0771xfDm4sPp8OPw8H1ho5dVFOvsJXqv9qdBWHx4IyGaUTOZJTwTQPdV9TmFMnn9Eg3Oy7xMYL9izgERwuW5gJ01xuBtr1PLy/Qy0Z/TH2ek69/u39GfRDVdOvf4b7Jj0Lb6/+ZnhePfAF8R/3fcN32+vt/bcc19f8xyNT/pv5/rvq/XAl3kVOpnJycoGvpYTlgjfE6VyoFlq9xq/wgrTmC/wmXNlGel4uH6gjLiEsYnQU+XITUw6FuLl7fwiPQGjl2qyWdCJ0OxirS5jhWb5QXOQcF4iVK1Pohl6gV4pKtDwUYo2FI2HK9krMxvTtlZwhZ0cWWXhNkZ8ZdrduUctFt1evOzupI4Ak8I7db5M+IklJJ1gvneMG1Ac8vrk+7YMZC08IU4G+IdPhHIb0rk/qQZUOaSMVrUqzyYwpTGyJdvjkPYUY+Y4gLOZNA9uuyU3h2cO+rSagqCntCEcyZW+kemAgkGhFf/rYsa87qG5UvlCJqwutfuakZyVIxtXRXl9rqPtVzP5blpLSvAHsBbqR62pW99jtANYhYIGsq/z5AvvhBtqXcT1OxDCEZ5HdVc3LzTcKAVrSrrveqqqvZXyHQf0BAI0nZXydZbfUw529K308pGEQsnl6bXGx2nKXNNAb9RuD73IQQoTo6s28I9TwRzEBnK2e1VJOfv4m587mM80d8z/J7pX3qvxsZU48oAnfVf431+s+tt1um/jsKmfrP1H+m/jP13w9X/91X/S1rvwdVfuuV1tNVfYfVfE+qhxZZVHurtV65Yru3zlup8rY8UVR4SManR3Z1IHkkc0x98obSHewZl6kfDRkyZMiQIUOGDBkyZMiQIUOGDBkyZMiQIUOGDBkyZMiQIUOGDBky9HegvwCHQ3H6AHgAAA==
+  chart: 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
 
   values:
     ### For development purposes - set it to 0 (if you want to register extension but use local process with "make start").
@@ -48,7 +48,7 @@ providerConfig:
         policy:
           Active: balloons
           AvailableResources:
-            CPU: cpuset:1-15
+            CPU: cpuset:1-1000
           ReservedResources:
             CPU: cpuset:15
           balloons:
@@ -63,20 +63,6 @@ providerConfig:
         # For furhter debugging
         # dump:
         #   Config: off:.*,full:((Create)|(Remove)|(Run)|(Update)|(Start)|(Stop)).*
-    ### Example of how to use default
-    #   fallback: |
-    #     ### This is default policy from CRI-resource-manage fallback.cfg.sample
-    #     policy:
-    #       Active: topology-aware
-    #       ReservedResources:
-    #         CPU: 750m
-    #     logger:
-    #       Debug: resource-manager,cache,policy,resource-control
-    #       Klog:
-    #         # Enables nice logs with logger names that can be used in Debug
-    #         skip_headers: true
-    #     dump:
-    #       Config: off:.*,full:((Create)|(Remove)|(Run)|(Update)|(Start)|(Stop)).*
 ---
 apiVersion: core.gardener.cloud/v1beta1
 kind: ControllerRegistration
@@ -92,4 +78,5 @@ spec:
   - kind: Extension
     type: cri-resmgr-extension
     globallyEnabled: false
-    reconcileTimeout: "60s"
+    # we need to wait for kubelet readines and almost whole shoot ready - give it a pleanty of time 5 minutes
+    reconcileTimeout: "300s" 
