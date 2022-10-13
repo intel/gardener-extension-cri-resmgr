@@ -35,7 +35,7 @@ spec:
       terminationGracePeriodSeconds: 30
       # only install to nodes with containerd
       nodeSelector:
-        worker.gardener.cloud/cri-name: containerd
+{{ toYaml .Values.nodeSelector | indent 8 }}
       containers:
       - name: installation
         image: {{ index .Values.images "gardener-extension-cri-resmgr-installation" }}

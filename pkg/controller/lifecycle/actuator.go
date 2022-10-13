@@ -16,6 +16,7 @@ package lifecycle
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -27,7 +28,8 @@ import (
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
 	"github.com/gardener/gardener/extensions/pkg/controller/extension"
 	"github.com/gardener/gardener/extensions/pkg/util"
-	extensions1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
+	"github.com/gardener/gardener/pkg/apis/core/v1beta1"
+	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	managedresources "github.com/gardener/gardener/pkg/utils/managedresources"
 
 	// Other
@@ -40,6 +42,36 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
+
+// CriResMgrConfig is a providerConfig specific type for CRI-res-mgr extension.
+type CriResMgrConfig struct {
+	// Configs is a map of name of config file for cri-resource-manager and its contents.
+	Configs map[string]string `json:"configs,omitempty"`
+	// nodeSelector
+	NodeSelector map[string]string `json: "nodeSelector,omitempty"`
+}
+
+func GetProviderConfig(logger logr.Logger, extensions []v1beta1.Extension) (bool, CriResMgrConfig, error) {
+	// Get and parse provideConfig data from Cluster.Extension (it is a copy from within Shoot.spec.extensions.providerConfig).
+	var providerConfig *runtime.RawExtension
+	var criResMgrConfig *CriResMgrConfig
+
+	// Get providerConfig for our extension
+	for _, extension := range extensions {
+		if extension.Type == consts.ExtensionType {
+			providerConfig = extension.ProviderConfig
+		}
+	}
+	// If found, the parse and unmarshal
+	if providerConfig != nil {
+		if err := json.Unmarshal(providerConfig.Raw, &criResMgrConfig); err != nil {
+			logger.Error(err, "ERROR unmarshalling providerConfig", "providerConfig", string(providerConfig.Raw))
+			return false, CriResMgrConfig{}, err
+		}
+		return true, *criResMgrConfig, nil
+	}
+	return false, CriResMgrConfig{}, nil
+}
 
 // ---------------------------------------------------------------------------------------
 // -                                        Actuator                                     -
@@ -67,8 +99,8 @@ type Actuator struct {
 	logger               logr.Logger
 }
 
-func (a *Actuator) GenerateSecretData(logger logr.Logger, ctx context.Context, ex *extensions1alpha1.Extension,
-	chartPath string, namespace string, k8sVersion string, configs map[string]map[string]string) (map[string][]byte, error) {
+func (a *Actuator) GenerateSecretData(logger logr.Logger, ctx context.Context, chartPath string, namespace string,
+	k8sVersion string, configs map[string]map[string]string, nodeSelector map[string]string) (map[string][]byte, error) {
 	emptyMap := map[string][]byte{}
 	// Depending on shoot, chartRenderer will have different capabilities based on K8s version.
 	chartRenderer, err := a.ChartRendererFactory.NewChartRendererForShoot(k8sVersion)
@@ -81,6 +113,9 @@ func (a *Actuator) GenerateSecretData(logger logr.Logger, ctx context.Context, e
 			logger.Info(fmt.Sprintf("images: found imageVector[name=%s]", imageSource.Name), "imageSource", (*imageSource.ToImage(&k8sVersion)).String())
 		}
 	}
+
+	// Only run on containerd nodes
+	nodeSelector[extensionsv1alpha1.CRINameWorkerLabel] = string(extensionsv1alpha1.CRINameContainerD)
 
 	// TODO k8sVersion can be used to extend FindImage FindOptions(targetVersion)
 	// to choose different version of image depending of target shoot Kubernetes. Not needed for now.
@@ -97,7 +132,8 @@ func (a *Actuator) GenerateSecretData(logger logr.Logger, ctx context.Context, e
 			consts.InstallationImageName: installationImage.String(),
 			consts.AgentImageName:        agentImage.String(),
 		},
-		"configs": configs,
+		"configs":      configs,
+		"nodeSelector": nodeSelector,
 	}
 	// TODO: release, err := chartRenderer.RenderEmbeddedFS(chartPath, InstallationReleaseName, metav1.NamespaceSystem, chartValues)
 	// Instead of using external chart files, we can embed everything in golang binary.
@@ -111,7 +147,7 @@ func (a *Actuator) GenerateSecretData(logger logr.Logger, ctx context.Context, e
 	return secretData, nil
 }
 
-func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extensions1alpha1.Extension) error {
+func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extensionsv1alpha1.Extension) error {
 	namespace := ex.GetNamespace()
 
 	// Find what shoot cluster we dealing with.
@@ -128,15 +164,25 @@ func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extens
 	if err != nil {
 		return err
 	}
+	foundProviderConfig, criResMgrConfig, err := GetProviderConfig(logger, cluster.Shoot.Spec.Extensions)
+	if err != nil {
+		return err
+	}
+	var providerConfigs map[string]string
+	nodeSelector := map[string]string{}
+	if foundProviderConfig {
+		providerConfigs = criResMgrConfig.Configs
+		nodeSelector = criResMgrConfig.NodeSelector
+	}
 
 	// Merge baseConfigs and providerConfig.configs from Shoot.Spec and split into types "static","dynamic".
-	configTypes, err := configs.PrepareConfigTypes(a.logger, baseConfigs, cluster.Shoot.Spec.Extensions)
+	configTypes, err := configs.PrepareConfigTypes(a.logger, baseConfigs, providerConfigs)
 	if err != nil {
 		return err
 	}
 
 	// Generate secret data that will be used by reference by ManagedResource to deploy.
-	secretData, err := a.GenerateSecretData(a.logger, ctx, ex, consts.ChartPath, namespace, cluster.Shoot.Spec.Kubernetes.Version, configTypes)
+	secretData, err := a.GenerateSecretData(a.logger, ctx, consts.ChartPath, namespace, cluster.Shoot.Spec.Kubernetes.Version, configTypes, nodeSelector)
 	if err != nil {
 		return err
 	}
@@ -149,7 +195,7 @@ func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extens
 	return nil
 }
 
-func (a *Actuator) Delete(ctx context.Context, logger logr.Logger, ex *extensions1alpha1.Extension) error {
+func (a *Actuator) Delete(ctx context.Context, logger logr.Logger, ex *extensionsv1alpha1.Extension) error {
 	namespace := ex.GetNamespace()
 	cluster, err := extensionscontroller.GetCluster(ctx, a.client, namespace)
 	if err != nil {
@@ -173,11 +219,11 @@ func (a *Actuator) Delete(ctx context.Context, logger logr.Logger, ex *extension
 	return nil
 }
 
-func (a *Actuator) Restore(ctx context.Context, logger logr.Logger, ex *extensions1alpha1.Extension) error {
+func (a *Actuator) Restore(ctx context.Context, logger logr.Logger, ex *extensionsv1alpha1.Extension) error {
 	return a.Reconcile(ctx, logger, ex)
 }
 
-func (a *Actuator) Migrate(ctx context.Context, logger logr.Logger, ex *extensions1alpha1.Extension) error {
+func (a *Actuator) Migrate(ctx context.Context, logger logr.Logger, ex *extensionsv1alpha1.Extension) error {
 	return a.Delete(ctx, logger, ex)
 }
 
