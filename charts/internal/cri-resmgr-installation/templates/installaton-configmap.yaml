@@ -26,6 +26,7 @@ data:
       exit 1
     fi
     function install() {
+      echo "*** Installation start ($(cat /VERSION)-$(cat /COMMIT))"
       echo Installing binaries from /opt/ to host /
       cp -v -r /cri-resmgr-installation/opt/ /var/host/
 

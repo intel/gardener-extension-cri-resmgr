@@ -15,10 +15,7 @@ package consts
 
 import _ "embed"
 
-//go:embed VERSION
 var Version string
-
-//go:embed COMMIT
 var Commit string
 
 const (
@@ -27,7 +24,7 @@ const (
 
 	ControllerName = "cri-resmgr-controller"
 	ActuatorName   = "cri-resmgr-actuator"
-	ConfigsSuffix   = "-configs"  // used for logger name, finalizer and controller name
+	ConfigsSuffix  = "-configs" // used for logger name, finalizer and controller name
 
 	ManagedResourceName      = "extension-runtime-cri-resmgr"
 	ConfigMapName            = "gardener-extension-cri-resmgr-configs"
