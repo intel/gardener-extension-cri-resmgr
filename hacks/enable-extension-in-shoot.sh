@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 set -x
+CONTEXT=${CONTEXT:-kind-gardener-local}
+NAMESPACE=${NAMESPACE:-garden-local}
 SHOOT=${SHOOT:-local}
-kubectl -n garden-local annotate shoot ${SHOOT} "confirmation.gardener.cloud/deletion=true" --overwrite
-kubectl -n garden-local delete shoot ${SHOOT} --wait=false
+kubectl patch --context ${CONTEXT} -n ${NAMESPACE} shoot/${SHOOT}  -p '{"spec":{"extensions": [ {"type": "cri-resmgr-extension", "disabled": false} ] } }'

@@ -11,8 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-echo "Usage example: SHOOT=local2 OPERATION=retry hacks/reconcile-extension-trigger.sh - SHOOT/OPERATION are optional!"
 set -x
-OPERATION=${OPERATION:-reconcile}
+CONTEXT=${CONTEXT:-kind-gardener-local}
+NAMESPACE=${NAMESPACE:-garden-local}
 SHOOT=${SHOOT:-local}
-kubectl -n garden-local annotate shoot ${SHOOT} "gardener.cloud/operation=${OPERATION}" --overwrite
+OPERATION=${OPERATION:-reconcile}
+kubectl --context ${CONTEXT} -n ${NAMESPACE} annotate shoot/${SHOOT} "gardener.cloud/operation=${OPERATION}" --overwrite

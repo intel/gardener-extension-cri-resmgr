@@ -24,8 +24,7 @@ spec:
   cloudProfileName: local
   secretBindingName: local
   region: local
-  ### In shoot local2 extension is required and not disabled.
-  ### with own config to test override.
+  ### In shoot local2 extension is required and not disabled with own config to test override.
   extensions:
   - type: cri-resmgr-extension
     disabled: false
@@ -34,10 +33,14 @@ spec:
         ### Those options are passed directly to cri-resmgr binary.
         EXTRA_OPTIONS: | 
           EXTRA_OPTIONS="--metrics-interval 15s" 
-        ### This is *static* initial configuraiton file that will be passed do systemd unit
+        ### This is *static* initial configuration file that will be passed do systemd unit
         fallback: |
           policy:
             Active: balloons
+            AvailableResources:
+              CPU: cpuset:1-10000
+            ReservedResources:
+              CPU: 1
           logger:
             Debug: resource-manager,cache,policy,resource-control,config-server
             Klog:
@@ -52,7 +55,7 @@ spec:
               CPU: cpuset:15
             balloons:
               BalloonTypes:
-                - Name: "mediumBalloon"
+                - Name: "mediumBalloonForShoot2"
                   MinCPUs: 3
                   MaxCPUs: 3
                   MinBalloons: 2
@@ -72,6 +75,15 @@ spec:
     type: local
     workers:
     - name: local
+      machine:
+        type: local
+      cri:
+        name: containerd
+      minimum: 2
+      maximum: 2
+      maxSurge: 1
+      maxUnavailable: 0
+    - name: local2
       machine:
         type: local
       cri:

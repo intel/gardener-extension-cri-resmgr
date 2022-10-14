@@ -24,22 +24,11 @@ spec:
   cloudProfileName: local
   secretBindingName: local
   region: local
-  ## Mark as required extension or use globallyEnabled: true
-  ## It is disabled by default
-  ## Enable it by changing disabled to false
+  ## In this shoot, local extension is disabled by default and uses configuration from ControllerDeployment.
+  ## To enable mark it as disable=false or use globallyEnabled: true
   extensions:
   - type: cri-resmgr-extension
     disabled: true
-    #providerConfig:
-    #  # configs:
-    #  #   default: |+
-    #  #     Active: default-test
-    #  #     AvailableResources:
-    #  #       cpu: cpuset:0-63
-    #  #   fallback: |+
-    #  #     Active: fallback-test
-    #  #     AvailableResources:
-    #  #       cpu: cpuset:0-63
 
   networking:
     type: calico

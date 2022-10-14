@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 set -x
-echo "Usage example: SHOOT=local2 hacks/disable-extension-in-local-shoot.sh"
+CONTEXT=${CONTEXT:-kind-gardener-local}
+NAMESPACE=${NAMESPACE:-garden-local}
 SHOOT=${SHOOT:-local}
-kubectl patch shoot ${SHOOT} -n garden-local -p '{"spec":{"extensions": [ {"type": "cri-resmgr-extension", "disabled": true} ] } }'
+kubectl --context ${CONTEXT} -n ${NAMESPACE} annotate shoot ${SHOOT} "confirmation.gardener.cloud/deletion=true" --overwrite
+kubectl --context ${CONTEXT} -n ${NAMESPACE} delete shoot ${SHOOT} --wait=false
