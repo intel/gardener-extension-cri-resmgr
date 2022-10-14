@@ -136,7 +136,7 @@ data:
 
       # Remove cache and state directory of cri-resmgr
       echo "Remove cri-resmgr cache"
-      rm -vrf /var/lib/cri-resmgr
+      rm -vrf /var/host/var/lib/cri-resmgr
 
       echo "*** Restart kubelet with original configuration"
       sleep 2
