@@ -25,7 +25,9 @@ COPY pkg pkg
 # only those two are required for building golang extension
 COPY charts/images.go charts/images.go
 COPY charts/images.yaml charts/images.yaml
-RUN go install ./cmd/gardener-extension-cri-resmgr/...
+ARG COMMIT=unset
+ARG VERSION=unset
+RUN go install -ldflags="-X github.com/intel/gardener-extension-cri-resmgr/pkg/consts.Commit=${COMMIT} -X github.com/intel/gardener-extension-cri-resmgr/pkg/consts.Version=${VERSION}" ./cmd/gardener-extension-cri-resmgr/... 
 # copying late saves time - no need to rebuild binary when only assest change
 COPY charts charts
 
@@ -41,3 +43,7 @@ FROM ubuntu:22.04 AS gardener-extension-cri-resmgr-installation
 RUN apt update -y && apt install -y make wget
 COPY Makefile .
 RUN make _install-binaries
+ARG COMMIT=unset
+ARG VERSION=unset
+RUN bash -c "echo ${VERSION} >/VERSION"
+RUN bash -c "echo ${COMMIT} >/COMMIT"
