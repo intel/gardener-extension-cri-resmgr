@@ -114,6 +114,8 @@ data:
     }
 
     function uninstall() {
+      echo "*** Staring uninstallation procedure..." 
+
       # Remove cri-resmgr from kubelet configuration
       echo "Remove cri-resmgr from kubelet configuration"
       sed -i '/\[Unit\]/aAfter=containerd.service' /var/host/etc/systemd/system/kubelet.service
@@ -173,7 +175,7 @@ data:
 
     # Sleep after installation the task
     echo "cri-resource-manager installed. Run checks in a loop..."
-    # Just five seconds  before first check to allow kubelet/cri to go from activating to active state
+    # Wait five seconds before first check to allow kubelet/cri-resmgr to switch from activating to active state.
     sleep 5
     while true; do
       # Run checks and uninstall if there is any issues with kubelet or cri-rm or containerd
@@ -240,6 +242,7 @@ data:
       # based on https://unix.stackexchange.com/questions/146756/forward-sigterm-to-child-in-bash
       sleep 60 &
       child=$!
+      echo "Wait for sleeping child: ${child}"
       wait $child
 
     done
