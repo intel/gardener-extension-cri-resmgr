@@ -129,10 +129,14 @@ data:
 
       # Remove files left after cri-resmgr
       echo "Remove files left after cri-resmgr"
-      rm -rf /var/host/opt/intel
-      rm -rf /var/host/etc/cri-resmgr
-      rm -rf /var/host/etc/systemd/system/cri-resource-manager.service
-      rm -rf /var/host/etc/default/cri-resource-manager 
+      rm -vrf /var/host/opt/intel
+      rm -vrf /var/host/etc/cri-resmgr
+      rm -vrf /var/host/etc/systemd/system/cri-resource-manager.service
+      rm -vrf /var/host/etc/default/cri-resource-manager 
+
+      # Remove cache and state directory of cri-resmgr
+      echo "Remove cri-resmgr cache"
+      rm -vrf /var/lib/cri-resmgr
 
       echo "*** Restart kubelet with original configuration"
       sleep 2
@@ -147,9 +151,6 @@ data:
               break
           fi
       done
-
-      # Remove cache and state directory of cri-resmgr
-      rm -rf /var/lib/cri-resmgr
 
       # Sleep after successful removal 
       echo '*** Uninstallation successful.'
