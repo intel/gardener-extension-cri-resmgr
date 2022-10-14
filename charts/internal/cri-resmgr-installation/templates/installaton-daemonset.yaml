@@ -31,32 +31,51 @@ spec:
     spec:
       hostPID: true
       hostIPC: true
-      # give a minute to uninstall cri-rm
-      terminationGracePeriodSeconds: 60
+      # give a 30 seconds to uninstall cri-resmgr from the host system
+      terminationGracePeriodSeconds: 30
+      # only install to nodes with containerd
+      nodeSelector:
+        worker.gardener.cloud/cri-name: containerd
       containers:
       - name: installation
         image: {{ index .Values.images "gardener-extension-cri-resmgr-installation" }}
         command: ["/scripts/install-cri-resmgr.sh"]
         securityContext:
-          privileged: true
+          capabilities:
+            add:
+            - SYS_CHROOT
         volumeMounts:
         - name: host-volume
           mountPath: /var/host
         - name: cri-resmgr-installation-script
           mountPath: /scripts
-        {{ if .Values.configs.fallback }}
-        - name: config-volume-fallback
+        {{- if (.Values.configs | default dict).static }}
+        - name: static-configs
           mountPath: /etc/cri-resmgr/
-        {{ end }}
-        {{ if .Values.configs.force }}
-        - name: config-volume-force
-          mountPath: /configs
-        {{ end }}
-        livenessProbe:
+        {{- end }}
+        readinessProbe:
           exec:
             command: ["chroot", "/var/host", "bash", "-c", "systemctl status cri-resource-manager"]
           failureThreshold: 1
           initialDelaySeconds: 10
+      - name: logger
+        image: alpine
+        command: 
+        - chroot
+        - /var/host
+        - journalctl
+        - -f
+        - -u
+        - cri-resource-manager
+        - -n
+        - "1000"
+        securityContext:
+          capabilities:
+            add:
+            - SYS_CHROOT
+        volumeMounts:
+        - name: host-volume
+          mountPath: /var/host
       volumes:
       - name: host-volume
         hostPath:
@@ -65,19 +84,8 @@ spec:
         configMap:
           name: cri-resmgr-installation-script
           defaultMode: 0744
-      {{ if .Values.configs.fallback }}
-      - name: config-volume-fallback
+      {{- if (.Values.configs | default dict).static }}
+      - name: static-configs
         configMap:
-          name: cri-resmgr-config.fallback
-          items:
-          - key: policy
-            path: fallback.cfg
-      {{ end }}
-      {{ if .Values.configs.force }}
-      - name: config-volume-force
-        configMap:
-          name: cri-resmgr-config.force
-          items:
-          - key: policy
-            path: force.cfg
-      {{ end }}
+          name: cri-resmgr-static-configs
+      {{- end }}

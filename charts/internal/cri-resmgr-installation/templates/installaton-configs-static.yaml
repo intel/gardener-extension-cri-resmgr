@@ -11,5 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-kubectl -n garden-local annotate shoot local "confirmation.gardener.cloud/deletion=true" --overwrite
-kubectl -n garden-local delete shoot local --wait=false
+
+{{- if (.Values.configs | default dict).static }}
+{{/* static configuration is just one ConfigMap  with keys like falllback/force */}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: kube-system
+  name: "cri-resmgr-static-configs"
+data:
+{{- range $configName, $configContent := .Values.configs.static }}
+  {{ $configName }}.cfg: |+
+  {{- $configContent | nindent 4 }}
+{{- end}}
+{{- end}}

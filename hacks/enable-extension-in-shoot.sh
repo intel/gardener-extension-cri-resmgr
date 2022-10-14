@@ -12,4 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 set -x
-kubectl patch shoot local -n garden-local -p '{"spec":{"extensions": [ {"type": "cri-resmgr-extension", "disabled": false} ] } }'
+CONTEXT=${CONTEXT:-kind-gardener-local}
+NAMESPACE=${NAMESPACE:-garden-local}
+SHOOT=${SHOOT:-local}
+kubectl patch --context ${CONTEXT} -n ${NAMESPACE} shoot/${SHOOT}  -p '{"spec":{"extensions": [ {"type": "cri-resmgr-extension", "disabled": false} ] } }'

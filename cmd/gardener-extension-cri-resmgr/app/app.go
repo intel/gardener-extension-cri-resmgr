@@ -17,16 +17,15 @@ package app
 import (
 	"context"
 	"fmt"
-	"time"
 
 	// Local
-	"github.com/intel/gardener-extension-cri-resmgr/pkg/consts"
+
 	"github.com/intel/gardener-extension-cri-resmgr/pkg/controller/healthcheck"
-	actuator "github.com/intel/gardener-extension-cri-resmgr/pkg/controller/lifecycle"
+	"github.com/intel/gardener-extension-cri-resmgr/pkg/controller/lifecycle"
+	"github.com/intel/gardener-extension-cri-resmgr/pkg/options"
 
 	// Gardener
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
-	"github.com/gardener/gardener/extensions/pkg/controller/extension"
 	resourcemanagerv1alpha1 "github.com/gardener/gardener/pkg/apis/resources/v1alpha1"
 
 	// Other
@@ -37,14 +36,14 @@ import (
 
 func NewExtensionControllerCommand(ctx context.Context) *cobra.Command {
 
-	options := NewOptions()
+	options := options.NewOptions()
 
 	cmd := &cobra.Command{
 		Use:   "cri-resmgr-controller-manager",
 		Short: "CRI Resource manager Controller manages components which install CRI-Resource-Manager as CRI proxy.",
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := options.optionAggregator.Complete(); err != nil {
+			if err := options.OptionAggregator.Complete(); err != nil {
 				return fmt.Errorf("error completing options: %s", err)
 			}
 
@@ -53,7 +52,7 @@ func NewExtensionControllerCommand(ctx context.Context) *cobra.Command {
 				MetricsBindAddress: "0",
 			}
 
-			mgr, err := manager.New(options.restOptions.Completed().Config, mgrOpts)
+			mgr, err := manager.New(options.RestOptions.Completed().Config, mgrOpts)
 			if err != nil {
 				return fmt.Errorf("could not instantiate controller-manager: %s", err)
 			}
@@ -65,13 +64,18 @@ func NewExtensionControllerCommand(ctx context.Context) *cobra.Command {
 				return err
 			}
 
+			// mgrOpts.ClientDisableCacheFor = []client.Object{
+			// 	&corev1.ConfigMap{}, // applied for ManagedResources
+			// }
+
 			// Enable healthcheck.
 			// "Registration" adds additional controller that watches over Extension/Cluster.
+			// TODO: ENABLE before merging!!!
 			if err := healthcheck.RegisterHealthChecks(mgr); err != nil {
 				return err
 			}
 
-			ignoreOperationAnnotation := options.reconcileOptions.Completed().IgnoreOperationAnnotation
+			ignoreOperationAnnotation := options.ReconcileOptions.Completed().IgnoreOperationAnnotation
 			// if true:
 			//		predicates: only observe "generation change" predicate (oldObject.generation != newObject.generation)
 			// 		watches:  watch Cluster (additionally and map to extensions) and Extension
@@ -82,17 +86,14 @@ func NewExtensionControllerCommand(ctx context.Context) *cobra.Command {
 			// 		watches: only Extension
 			log.Log.Info("Reconciler options", "ignoreOperationAnnotation", ignoreOperationAnnotation)
 
-			if err := extension.Add(mgr, extension.AddArgs{
-				Actuator:                  actuator.NewActuator(),
-				ControllerOptions:         options.controllerOptions.Completed().Options(),
-				Name:                      consts.ControllerName,
-				FinalizerSuffix:           consts.ExtensionType,
-				Resync:                    60 * time.Minute,
-				Type:                      consts.ExtensionType, // to be used for TypePredicate
-				Predicates:                extension.DefaultPredicates(ignoreOperationAnnotation),
-				IgnoreOperationAnnotation: ignoreOperationAnnotation,
-			}); err != nil {
+			// I. This is the primary controller that watches over Extension (and possible Cluster based on ignoreOperationAnnotation)
+			if err := lifecycle.AddToManager(mgr, options, ignoreOperationAnnotation); err != nil {
 				return fmt.Errorf("error configuring controller with extensions actuator: %s", err)
+			}
+			// II. Create another controller for watching over specific configMap and
+			// reconciling all Extensions that all only in Succeeded state to prevent race over Extension reconciliation
+			if err := lifecycle.AddConfigMapWatchingControllerToManager(mgr, options); err != nil {
+				return fmt.Errorf("error configuring configMap controller with extensions actuator: %s", err)
 			}
 
 			if err := mgr.Start(ctx); err != nil {
@@ -103,7 +104,7 @@ func NewExtensionControllerCommand(ctx context.Context) *cobra.Command {
 		},
 	}
 
-	options.optionAggregator.AddFlags(cmd.Flags())
+	options.OptionAggregator.AddFlags(cmd.Flags())
 
 	return cmd
 }

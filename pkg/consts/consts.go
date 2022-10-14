@@ -4,15 +4,22 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
 package consts
+
+import _ "embed"
+
+//go:embed VERSION
+var Version string
+
+//go:embed COMMIT
+var Commit string
 
 const (
 	ExtensionName = "cri-resmgr"
@@ -20,9 +27,12 @@ const (
 
 	ControllerName = "cri-resmgr-controller"
 	ActuatorName   = "cri-resmgr-actuator"
+	ConfigsSuffix   = "-configs"  // used for logger name, finalizer and controller name
 
-	ManagedResourceName = "extension-runtime-cri-resmgr"
-	ConfigKey           = "config.yaml"
+	ManagedResourceName      = "extension-runtime-cri-resmgr"
+	ConfigMapName            = "gardener-extension-cri-resmgr-configs"
+	ConfigMapNamespaceEnvKey = "EXTENSION_CONFIGMAP_NAMESPACE"
+	ConfigKey                = "config.yaml"
 
 	ChartPath               = "charts/internal/cri-resmgr-installation/"
 	InstallationImageName   = "gardener-extension-cri-resmgr-installation"

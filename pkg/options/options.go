@@ -12,34 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package app
+package options
 
 import (
 	controllercmd "github.com/gardener/gardener/extensions/pkg/controller/cmd"
 )
 
 type Options struct {
-	restOptions       *controllercmd.RESTOptions       // kubeconfig / MasterURL
-	controllerOptions *controllercmd.ControllerOptions // MaxConcurrentReconciles
-	reconcileOptions  *controllercmd.ReconcilerOptions // IgnoreOperationAnnotation
-	optionAggregator  controllercmd.OptionAggregator
+	RestOptions       *controllercmd.RESTOptions       // kubeconfig / MasterURL
+	ControllerOptions *controllercmd.ControllerOptions // MaxConcurrentReconciles
+	ReconcileOptions  *controllercmd.ReconcilerOptions // IgnoreOperationAnnotation
+	OptionAggregator  controllercmd.OptionAggregator
 }
 
 func NewOptions() *Options {
 
 	options := &Options{
-		restOptions: &controllercmd.RESTOptions{},
-		controllerOptions: &controllercmd.ControllerOptions{
+		RestOptions: &controllercmd.RESTOptions{},
+		ControllerOptions: &controllercmd.ControllerOptions{
 			MaxConcurrentReconciles: 1,
 		},
-		reconcileOptions: &controllercmd.ReconcilerOptions{},
+		ReconcileOptions: &controllercmd.ReconcilerOptions{},
 	}
 
-	options.optionAggregator = controllercmd.NewOptionAggregator(
-		options.restOptions,
-		// options.managerOptions, // disabled until leader/webhooks or metrics/healthchecks are required to configure
-		options.controllerOptions,
-		options.reconcileOptions,
+	options.OptionAggregator = controllercmd.NewOptionAggregator(
+		options.RestOptions,
+		options.ControllerOptions,
+		options.ReconcileOptions,
 	)
 	return options
 }
