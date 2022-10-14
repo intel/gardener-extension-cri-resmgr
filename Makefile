@@ -31,11 +31,13 @@ IGNORE_OPERATION_ANNOTATION 	 := false
 # overwrite it if you want "make start" to read "configs" ConfigMap from Kubernetes
 EXTENSION_CONFIGMAP_NAMESPACE    := ""
 
+# Those two are lazy, because sometimes there is not .git context available
 COMMIT:=`git rev-parse HEAD`
+DIRTY:=`git diff --quiet || echo '-dirty'`
 VERSION:=`git tag | sort -V | tail -1`
 build:
-	echo "Building ${VERSION}/${COMMIT}"
-	go build -ldflags="-X github.com/intel/gardener-extension-cri-resmgr/pkg/consts.Commit=${COMMIT} -X github.com/intel/gardener-extension-cri-resmgr/pkg/consts.Version=${VERSION}" -v ./cmd/gardener-extension-cri-resmgr
+	echo "Building ${VERSION}-${COMMIT}${DIRTY}"
+	go build -ldflags="-X github.com/intel/gardener-extension-cri-resmgr/pkg/consts.Commit=${COMMIT}${DIRTY} -X github.com/intel/gardener-extension-cri-resmgr/pkg/consts.Version=${VERSION}" -v ./cmd/gardener-extension-cri-resmgr
 
 	go test -c -v  ./test/e2e/cri-resmgr-extension/. -o gardener-extension-cri-resmgr.e2e-tests
 	go test -c -v ./pkg/controller/lifecycle -o ./gardener-extension-cri-resmgr.actuator.test
@@ -77,12 +79,14 @@ _install-binaries:
 	rm /cri-resmgr-installation/$(CRI_RM_ARCHIVE_NAME)
 
 _build-extension-image:
-	docker build --build-arg COMMIT=${COMMIT} --build-arg VERSION=${VERSION} -t $(REGISTRY)$(EXTENSION_IMAGE_NAME):$(TAG) -f Dockerfile --target $(EXTENSION_IMAGE_NAME) .
+	docker build --build-arg COMMIT=${COMMIT}${DIRTY} --build-arg VERSION=${VERSION} -t $(REGISTRY)$(EXTENSION_IMAGE_NAME):$(TAG) -f Dockerfile --target $(EXTENSION_IMAGE_NAME) .
 _build-installation-image:
-	docker build --build-arg COMMIT=${COMMIT} --build-arg VERSION=${VERSION} -t $(REGISTRY)$(INSTALLATION_IMAGE_NAME):$(TAG) -f Dockerfile --target $(INSTALLATION_IMAGE_NAME) .
+	docker build --build-arg COMMIT=${COMMIT}${DIRTY} --build-arg VERSION=${VERSION} -t $(REGISTRY)$(INSTALLATION_IMAGE_NAME):$(TAG) -f Dockerfile --target $(INSTALLATION_IMAGE_NAME) .
 
 build-images: _build-extension-image _build-installation-image
+	echo "Building ${VERSION}-${COMMIT}${DIRTY} done."
 
 push-images:
 	docker push $(REGISTRY)$(EXTENSION_IMAGE_NAME):$(TAG)
 	docker push $(REGISTRY)$(INSTALLATION_IMAGE_NAME):$(TAG)
+	echo "Images ${VERSION}-${COMMIT}${DIRTY} pushed."
