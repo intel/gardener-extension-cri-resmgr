@@ -22,8 +22,12 @@ RUN go mod download
 COPY cmd cmd
 COPY cmd/gardener-extension-cri-resmgr/app cmd/gardener-extension-cri-resmgr/app
 COPY pkg pkg
-COPY charts charts
+# only those two are required for building golang extension
+COPY charts/images.go charts/images.go
+COPY charts/images.yaml charts/images.yaml
 RUN go install ./cmd/gardener-extension-cri-resmgr/...
+# copying late saves time - no need to rebuild binary when only assest change
+COPY charts charts
 
 ### extension
 FROM alpine:3.16.0 AS gardener-extension-cri-resmgr
