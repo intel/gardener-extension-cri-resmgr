@@ -99,6 +99,11 @@ types `default` and `fallback` have special meaning:
 
 * **EXTRA_OPTIONS** will become file systemd EnvironmentFile that should contain single line **EXTRA_OPTIONS** that will be appended to `cri-resmgr` command 
 
+| Note | 
+| ---- |
+| Configurations from different levels are not merged. They can merge only in case of configuration propagated by cri-resmgr-agent but when manually  CRI-resource-manager is restarted the configuration from agent is first pulled as a whole and not merged with cached/previous/fallback state.  **Always provide full configuration for every type!** |
+
+
 More about priorities and type of config can be found here:
 
 * https://intel.github.io/cri-resource-manager/stable/docs/cri-resmgr-agent.html
