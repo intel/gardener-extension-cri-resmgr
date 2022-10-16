@@ -26,6 +26,7 @@ import (
 
 	// Gardener
 	"github.com/gardener/gardener/extensions/pkg/controller/extension"
+	gardencorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	"github.com/gardener/gardener/pkg/controllerutils/mapper"
 
@@ -62,25 +63,25 @@ func configMapToAllExtensionMapper(ctx context.Context, log logr.Logger, reader 
 	extensionsFound := []string{}
 	for _, extension := range extensionList.Items {
 		if extension.Spec.Type == consts.ExtensionType {
-			isOk := false
-			// Assume, there is only one condition and it is is Ok "True", then add this extension to requests for reconciliation
-			for _, condition := range extension.Status.Conditions {
-				isOk = (condition.Status == "True")
-				break
+
+			// Skip extensions in "processing" state to not race with original extension controller
+			// https://github.com/gardener/gardener/blob/5bf28f8ff7ecf3e2ffe21224f0cb6ee30daf9997/extensions/pkg/controller/status.go#L115
+			// Optionally take every that previously succeeded: if !(extension.Status.LastOperation.State == gardencorev1beta1.LastOperationStateSucceeded) {
+			if extension.Status.LastOperation.State == gardencorev1beta1.LastOperationStateProcessing {
+				log.Info("ignore extension", "module", "configs", "extensionNamespace", extension.Namespace)
+				continue
 			}
-			if isOk {
-				requests = append(requests, reconcile.Request{
-					NamespacedName: types.NamespacedName{
-						Namespace: extension.Namespace,
-						Name:      extension.Name,
-					},
-				})
-				extensionsFound = append(extensionsFound, fmt.Sprintf("%s/%s", extension.Namespace, extension.Name))
-			}
+			requests = append(requests, reconcile.Request{
+				NamespacedName: types.NamespacedName{
+					Namespace: extension.Namespace,
+					Name:      extension.Name,
+				},
+			})
+			extensionsFound = append(extensionsFound, fmt.Sprintf("%s/%s", extension.Namespace, extension.Name))
 		}
 	}
 
-	log.Info("found configMap so start reconciliation of all healthy extensions", "module", "configs", "configMap", configMap, "extensions", extensionsFound)
+	log.Info("found configMap so start reconciliation of all extensions", "module", "configs", "configMap", configMap, "extensions", extensionsFound)
 	return requests
 }
 
