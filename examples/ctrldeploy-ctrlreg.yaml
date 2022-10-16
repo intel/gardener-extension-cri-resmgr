@@ -6,7 +6,7 @@ metadata:
   name: cri-resmgr-extension
 type: helm
 providerConfig:
-  chart: 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
+  chart: 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
 
   values:
     ### For development purposes - set it to 0 (if you want to register extension but use local process with "make start").
@@ -33,13 +33,13 @@ providerConfig:
     configs:
       ### Those options are passed directly to cri-resmgr binary.
       EXTRA_OPTIONS: | 
-        EXTRA_OPTIONS="--metrics-interval 10s" 
+        EXTRA_OPTIONS="--metrics-interval 30s" 
       ### This is *static* initial configuraiton file that will be passed do systemd unit
       fallback: |
         policy:
           Active: balloons
           AvailableResources:
-            CPU: cpuset:1-1000
+            CPU: cpuset:1-128
           ReservedResources:
             CPU: 1
           balloons:
@@ -50,19 +50,25 @@ providerConfig:
                 MinCPUs: 2
                 MaxCPUs: 2
                 MinBalloons: 1
+        instrumentation:
+          HTTPEndpoint: :8891
+          PrometheusExport: true
         logger:
           Debug: resource-manager,cache,policy,resource-control,config-server,cpuallocator
           Klog:
             # Enables nice logs with logger names that can be used in Debug
             skip_headers: true
+        dump:
+          Debug: true
+          #Config: off:.*,full:((Create)|(Remove)|(Run)|(Update)|(Start)|(Stop)).*
       ### This is *dynamic* config that will be applied by cri-resmgr-agent
       default: |
         policy:
           Active: balloons
           AvailableResources:
-            CPU: cpuset:1-1000
+            CPU: cpuset:1-128
           ReservedResources:
-            CPU: cpuset:1
+            CPU: 1
           balloons:
             BalloonTypes:
               - Name: "smallHPBalloon"
@@ -76,9 +82,15 @@ providerConfig:
         instrumentation:
           HTTPEndpoint: :8891
           PrometheusExport: true
-        # For furhter debugging
-        # dump:
-        #   Config: off:.*,full:((Create)|(Remove)|(Run)|(Update)|(Start)|(Stop)).*
+        logger:
+          Debug: resource-manager,cache,policy,resource-control,config-server,cpuallocator
+          Klog:
+            # Enables nice logs with logger names that can be used in Debug
+            skip_headers: true
+        dump:
+          Debug: true
+          #Config: off:.*,full:((Create)|(Remove)|(Run)|(Update)|(Start)|(Stop)).*
+
 ---
 apiVersion: core.gardener.cloud/v1beta1
 kind: ControllerRegistration
