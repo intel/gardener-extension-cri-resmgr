@@ -58,24 +58,28 @@ spec:
             command: ["chroot", "/var/host", "bash", "-c", "systemctl status cri-resource-manager"]
           failureThreshold: 1
           initialDelaySeconds: 10
-      - name: logger
-        image: alpine
-        command: 
-        - chroot
-        - /var/host
-        - journalctl
-        - -f
-        - -u
-        - cri-resource-manager
-        - -n
-        - "1000"
-        securityContext:
-          capabilities:
-            add:
-            - SYS_CHROOT
-        volumeMounts:
-        - name: host-volume
-          mountPath: /var/host
+      ### HELPER CONTAINER to get output from cri-resmgr unit
+      #- name: logger
+      #  image: alpine
+      #  command: 
+      #  - chroot
+      #  - /var/host
+      #  - journalctl
+      #  - -f
+      #  - -u
+      #  - cri-resource-manager
+      #  - -n
+      #  - "1000"
+      #  - -o 
+      #  - short-iso 
+      #  - --no-hostname
+      #  securityContext:
+      #    capabilities:
+      #      add:
+      #      - SYS_CHROOT
+      #  volumeMounts:
+      #  - name: host-volume
+      #    mountPath: /var/host
       volumes:
       - name: host-volume
         hostPath:
