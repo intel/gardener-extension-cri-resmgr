@@ -26,6 +26,7 @@ data:
       exit 1
     fi
     function install() {
+      echo "*** Installation start ($(cat /VERSION)-$(cat /COMMIT))"
       echo Installing binaries from /opt/ to host /
       cp -v -r /cri-resmgr-installation/opt/ /var/host/
 
@@ -121,22 +122,11 @@ data:
       sed -i '/\[Unit\]/aAfter=containerd.service' /var/host/etc/systemd/system/kubelet.service
       sed -i 's/\/var\/run\/cri-resmgr\/cri-resmgr.sock/unix:\/\/\/run\/containerd\/containerd.sock/g' /var/host/etc/systemd/system/kubelet.service
 
-      # Stop and disable cri-resource-manager
-      echo 'Stop and disable cri-resource-manager'
-      chroot /var/host bash -c "systemctl disable cri-resource-manager"
-      chroot /var/host bash -c "systemctl stop cri-resource-manager"
-
-      # Remove files left after cri-resmgr
-      echo "Remove files left after cri-resmgr"
-      rm -rf /var/host/opt/intel
-      rm -rf /var/host/etc/cri-resmgr
-      rm -rf /var/host/etc/systemd/system/cri-resource-manager.service
-      rm -rf /var/host/etc/default/cri-resource-manager 
-
       echo "*** Restart kubelet with original configuration"
       sleep 2
       chroot /var/host bash -c "systemctl daemon-reload"
       chroot /var/host bash -c "systemctl restart kubelet"
+      sleep 5
 
       # Check if kubelet is active
       echo 'Check if kubelet is active'
@@ -147,8 +137,24 @@ data:
           fi
       done
 
+      # Stop and disable cri-resource-manager
+      echo 'Stop and disable cri-resource-manager'
+      chroot /var/host bash -c "systemctl disable cri-resource-manager"
+      chroot /var/host bash -c "systemctl stop cri-resource-manager"
+      echo 'cri-resource-manager --reset-policy'
+      chroot /var/host /opt/intel/bin/cri-resmgr --reset-policy
+
+      # Remove files left after cri-resmgr
+      echo "Remove files left after cri-resmgr"
+      rm -vrf /var/host/opt/intel
+      rm -vrf /var/host/etc/cri-resmgr
+      rm -vrf /var/host/etc/systemd/system/cri-resource-manager.service
+      rm -vrf /var/host/etc/default/cri-resource-manager 
+
       # Remove cache and state directory of cri-resmgr
-      rm -rf /var/lib/cri-resmgr
+      echo "Remove cri-resmgr cache"
+      rm -vrf /var/host/var/lib/cri-resmgr
+
 
       # Sleep after successful removal 
       echo '*** Uninstallation successful.'
@@ -157,8 +163,7 @@ data:
     function quit() {
       echo "Try to kill pid $child myself..."
       kill -KILL "$child" 2>/dev/null
-      # give 5 sec see logs 
-      sleep 5
+      sleep 1
       exit 0
     }
 
@@ -233,7 +238,10 @@ data:
         echo
         echo "=========================== III. Sleep forever... =============================="
         echo "Note: sleep to give "human" a chance to fix config/state (then please restart this pod)..."
-        sleep inf
+        sleep inf &
+        child=$?
+        wait $child
+        trap quit SIGTERM SIGINT
       else
         echo "*** [$(date --rfc-3339=seconds)] Checks OK (cri-resource-manager=${criIsActive} kubelet=${kubeletIsActive} containerd=${containerdIsActive})"
       fi

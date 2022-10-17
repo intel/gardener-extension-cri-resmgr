@@ -54,13 +54,13 @@ providerConfig:
     configs:
       ### Those options are passed directly to cri-resmgr binary.
       EXTRA_OPTIONS: | 
-        EXTRA_OPTIONS="--metrics-interval 10s" 
+        EXTRA_OPTIONS="--metrics-interval 30s" 
       ### This is *static* initial configuraiton file that will be passed do systemd unit
       fallback: |
         policy:
           Active: balloons
           AvailableResources:
-            CPU: cpuset:1-1000
+            CPU: cpuset:1-128
           ReservedResources:
             CPU: 1
           balloons:
@@ -71,19 +71,25 @@ providerConfig:
                 MinCPUs: 2
                 MaxCPUs: 2
                 MinBalloons: 1
+        instrumentation:
+          HTTPEndpoint: :8891
+          PrometheusExport: true
         logger:
-          Debug: resource-manager,cache,policy,resource-control,config-server,cpuallocator
+          Debug: resource-manager,cache,policy,config-server,cpuallocator
           Klog:
             # Enables nice logs with logger names that can be used in Debug
             skip_headers: true
+        dump:
+          Debug: true
+          #Config: off:.*,full:((Create)|(Remove)|(Run)|(Update)|(Start)|(Stop)).*
       ### This is *dynamic* config that will be applied by cri-resmgr-agent
       default: |
         policy:
           Active: balloons
           AvailableResources:
-            CPU: cpuset:1-1000
+            CPU: cpuset:1-128
           ReservedResources:
-            CPU: cpuset:1
+            CPU: 1
           balloons:
             BalloonTypes:
               - Name: "smallHPBalloon"
@@ -97,9 +103,15 @@ providerConfig:
         instrumentation:
           HTTPEndpoint: :8891
           PrometheusExport: true
-        # For furhter debugging
-        # dump:
-        #   Config: off:.*,full:((Create)|(Remove)|(Run)|(Update)|(Start)|(Stop)).*
+        logger:
+          Debug: resource-manager,cache,policy,config-server,cpuallocator
+          Klog:
+            # Enables nice logs with logger names that can be used in Debug
+            skip_headers: true
+        dump:
+          Debug: true
+          #Config: off:.*,full:((Create)|(Remove)|(Run)|(Update)|(Start)|(Stop)).*
+
 ---
 apiVersion: core.gardener.cloud/v1beta1
 kind: ControllerRegistration
