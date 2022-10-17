@@ -11,10 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-echo "Usage: SHOOT=local2 . ./hacks/export-kubeconfig-for-local-shoot.sh"
 CONTEXT=${CONTEXT:-kind-gardener-local}
 NAMESPACE=${NAMESPACE:-garden-local}
 SHOOT=${SHOOT:-local}
+echo CONTEXT=$CONTEXT
+echo NAMESPACE=$NAMESPACE
+echo SHOOT=$SHOOT
 KUBECONFIG=~/.kube/config kubectl --context ${CONTEXT} -n ${NAMESPACE} get secret/${SHOOT}.kubeconfig -o jsonpath={.data.kubeconfig} | base64 -d > /tmp/kubeconfig-shoot-${SHOOT}.yaml
 export KUBECONFIG=/tmp/kubeconfig-shoot-${SHOOT}.yaml
 echo KUBECONFIG set to ${SHOOT} shoot by /tmp/kubeconfig-shoot-${SHOOT}.yaml
