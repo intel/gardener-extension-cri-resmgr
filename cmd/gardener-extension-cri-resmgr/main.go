@@ -18,6 +18,7 @@ import (
 	"os"
 
 	"github.com/intel/gardener-extension-cri-resmgr/cmd/gardener-extension-cri-resmgr/app"
+	"github.com/intel/gardener-extension-cri-resmgr/pkg/consts"
 
 	// Gardener
 	"github.com/gardener/gardener/pkg/logger"
@@ -35,6 +36,7 @@ func main() {
 	log.SetLogger(logger.ZapLogger(false))
 
 	ctx := signals.SetupSignalHandler()
+	log.Log.Info("Build", "Version", consts.Version, "Commit", consts.Commit)
 
 	cmd := app.NewExtensionControllerCommand(ctx)
 	if err := cmd.ExecuteContext(ctx); err != nil {

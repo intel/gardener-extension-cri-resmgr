@@ -11,8 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-# Usage: source ./hacks/export-kubeconfig-for-local-shoot.sh
-KUBECONFIG=~/.kube/config kubectl -n garden-local get secret local.kubeconfig -o jsonpath={.data.kubeconfig} | base64 -d > /tmp/kubeconfig-shoot-local.yaml
-export KUBECONFIG=/tmp/kubeconfig-shoot-local.yaml
-echo KUBECONFIG set to local shoot by /tmp/kubeconfig-shoot-local.yaml
+set -x
+CONTEXT=${CONTEXT:-kind-gardener-local}
+NAMESPACE=${NAMESPACE:-garden-local}
+SHOOT=${SHOOT:-local}
+kubectl --context ${CONTEXT} -n ${NAMESPACE} annotate shoot ${SHOOT} "confirmation.gardener.cloud/deletion=true" --overwrite
+kubectl --context ${CONTEXT} -n ${NAMESPACE} delete shoot ${SHOOT} --wait=false

@@ -70,6 +70,9 @@ spec:
         gardener.cloud/role: system-component
     spec:
       serviceAccount: cri-resmgr-agent
+      # only install to nodes with containerd
+      nodeSelector:
+        worker.gardener.cloud/cri-name: containerd
       containers:
         - name: cri-resmgr-agent
           env:
@@ -89,7 +92,7 @@ spec:
             mountPath: /var/run/cri-resmgr
           resources:
             limits:
-              cpu: 1
+              cpu: 100m
               memory: 512Mi
           livenessProbe:
             exec:

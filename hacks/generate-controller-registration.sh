@@ -29,7 +29,7 @@ type: helm
 providerConfig:
   chart: $chart
 
-  # values:
+  values:
     ### For development purposes - set it to 0 (if you want to register extension but use local process with "make start").
     # replicaCount: 1            
 
@@ -49,20 +49,69 @@ providerConfig:
     #    tag: mybranch
     #    repository: v2.isvimgreg.com/gardener-extension-cri-resmgr-agent
     ### Uncomment to provide own "fallback" configuration for CRI-Resource-Manager
-    # configs:
-    #   fallback: |
-    #     ### This is default policy from CRI-resource-manage fallback.cfg.sample
-    #     policy:
-    #       Active: topology-aware
-    #       ReservedResources:
-    #         CPU: 750m
-    #     logger:
-    #       Debug: resource-manager,cache,policy,resource-control
-    #       Klog:
-    #         # Enables nice logs with logger names that can be used in Debug
-    #         skip_headers: true
-    #     dump:
-    #       Config: off:.*,full:((Create)|(Remove)|(Run)|(Update)|(Start)|(Stop)).*
+    ### Use ballons policy as an example:
+    # based on: https://github.com/intel/cri-resource-manager/blob/master/sample-configs/balloons-policy.cfg
+    configs:
+      ### Those options are passed directly to cri-resmgr binary.
+      EXTRA_OPTIONS: | 
+        EXTRA_OPTIONS="--metrics-interval 30s" 
+      ### This is *static* initial configuraiton file that will be passed do systemd unit
+      fallback: |
+        policy:
+          Active: balloons
+          AvailableResources:
+            CPU: cpuset:1-128
+          ReservedResources:
+            CPU: 1
+          balloons:
+            PinCPU: true
+            PinMemory: true
+            BalloonTypes:
+              - Name: "smallBalloon"
+                MinCPUs: 2
+                MaxCPUs: 2
+                MinBalloons: 1
+        instrumentation:
+          HTTPEndpoint: :8891
+          PrometheusExport: true
+        logger:
+          Debug: resource-manager,cache,policy,config-server,cpuallocator
+          Klog:
+            # Enables nice logs with logger names that can be used in Debug
+            skip_headers: true
+        dump:
+          Debug: true
+          #Config: off:.*,full:((Create)|(Remove)|(Run)|(Update)|(Start)|(Stop)).*
+      ### This is *dynamic* config that will be applied by cri-resmgr-agent
+      default: |
+        policy:
+          Active: balloons
+          AvailableResources:
+            CPU: cpuset:1-128
+          ReservedResources:
+            CPU: 1
+          balloons:
+            BalloonTypes:
+              - Name: "smallHPBalloon"
+                MinCPUs: 2
+                MaxCPUs: 2
+                MinBalloons: 1
+              - Name: "mediumLPBalloon"
+                MinCPUs: 4
+                MaxCPUs: 4
+                MinBalloons: 1
+        instrumentation:
+          HTTPEndpoint: :8891
+          PrometheusExport: true
+        logger:
+          Debug: resource-manager,cache,policy,config-server,cpuallocator
+          Klog:
+            # Enables nice logs with logger names that can be used in Debug
+            skip_headers: true
+        dump:
+          Debug: true
+          #Config: off:.*,full:((Create)|(Remove)|(Run)|(Update)|(Start)|(Stop)).*
+
 ---
 apiVersion: core.gardener.cloud/v1beta1
 kind: ControllerRegistration
@@ -78,7 +127,7 @@ spec:
   - kind: Extension
     type: cri-resmgr-extension
     globallyEnabled: false
-    reconcileTimeout: "60s"
+    reconcileTimeout: "120s"
 EOT
 
 echo "Successfully generated ControllerRegistration and ControllerDeployment example to $OUT"

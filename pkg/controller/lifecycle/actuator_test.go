@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package actuator_test
+package lifecycle_test
 
 import (
 	"context"
@@ -32,18 +32,24 @@ import (
 
 var _ = Describe("cri-resource-manager extension actuator tests", func() {
 	It("rendering charts installation chart without configs", func() {
-		configs := map[string]string{
-			// this should generate
-			// ConfigMap with name "cri-resmgr-config.default"
-			// with data.policy "THIS_WILL_CONFIG_BODY_OF_DEFAULT"
-			"default": "THIS_WILL_CONFIG_BODY_OF_DEFAULT",
-			// nodeFoo -> "THIS_WILL_CONFIG_BODY_OF_NODEFOO"
-			"nodeFoo": "THIS_WILL_CONFIG_BODY_OF_NODEFOO",
+		configs := map[string]map[string]string{
+			// this should generate one ConfigMap with two keys
+			"static": {
+				"fallback": "FALLBACK_BODY:1",
+				"force":    "FORCE_BODY:1",
+			},
+			"dynamic": {
+				// this should generate
+				// ConfigMap with name "cri-resmgr-config.default"
+				"default": "CONFIG_BODY_OF_DEFAULT: 1",
+				// ConfigMap with name "cri-resmgr-config.nodeFoo"
+				"nodeFoo": "CONFIG_BODY_OF_NODEFOO: 1",
+			},
 		}
 		// TODO: consider using mock instead of real rendered - not enough logic inside golang code yet!
 		// unused but useful for future
 		// "github.com/golang/mock/gomock"
-		a := actuator.NewActuator().(*actuator.Actuator)
+		a := actuator.NewActuator("mock").(*actuator.Actuator)
 		ctx := context.TODO()
 		log := logger.ZapLogger(true)
 
@@ -53,9 +59,15 @@ var _ = Describe("cri-resource-manager extension actuator tests", func() {
 
 		Expect(secret).Should(HaveKey(consts.InstallationSecretKey))
 
+		// check static
+		Expect(string(secret[consts.InstallationSecretKey])).Should(ContainSubstring(`name: "cri-resmgr-static-configs"`))
+		Expect(string(secret[consts.InstallationSecretKey])).Should(ContainSubstring("FALLBACK_BODY:1")) // notice no space between is passed as is
+		Expect(string(secret[consts.InstallationSecretKey])).Should(ContainSubstring("FORCE_BODY:1"))
+
+		// check dynamic (first level is unpacked) and rest becomes multi string
 		Expect(string(secret[consts.InstallationSecretKey])).Should(ContainSubstring(`name: "cri-resmgr-config.default"`))
-		Expect(string(secret[consts.InstallationSecretKey])).Should(ContainSubstring("policy:  THIS_WILL_CONFIG_BODY_OF_DEFAULT"))
+		Expect(string(secret[consts.InstallationSecretKey])).Should(ContainSubstring("CONFIG_BODY_OF_DEFAULT: |"))
 		Expect(string(secret[consts.InstallationSecretKey])).Should(ContainSubstring(`name: "cri-resmgr-config.nodeFoo"`))
-		Expect(string(secret[consts.InstallationSecretKey])).Should(ContainSubstring("policy:  THIS_WILL_CONFIG_BODY_OF_NODEFOO"))
+		Expect(string(secret[consts.InstallationSecretKey])).Should(ContainSubstring("CONFIG_BODY_OF_NODEFOO: |"))
 	})
 })
