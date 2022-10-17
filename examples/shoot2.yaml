@@ -79,17 +79,8 @@ spec:
         type: local
       cri:
         name: containerd
-      minimum: 2
-      maximum: 2
-      maxSurge: 1
-      maxUnavailable: 0
-    - name: local2
-      machine:
-        type: local
-      cri:
-        name: containerd
-      minimum: 2
-      maximum: 2
+      minimum: 1
+      maximum: 1
       maxSurge: 1
       maxUnavailable: 0
   kubernetes:

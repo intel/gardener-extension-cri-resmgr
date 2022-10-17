@@ -75,7 +75,7 @@ providerConfig:
           HTTPEndpoint: :8891
           PrometheusExport: true
         logger:
-          Debug: resource-manager,cache,policy,resource-control,config-server,cpuallocator
+          Debug: resource-manager,cache,policy,config-server,cpuallocator
           Klog:
             # Enables nice logs with logger names that can be used in Debug
             skip_headers: true
@@ -104,7 +104,7 @@ providerConfig:
           HTTPEndpoint: :8891
           PrometheusExport: true
         logger:
-          Debug: resource-manager,cache,policy,resource-control,config-server,cpuallocator
+          Debug: resource-manager,cache,policy,config-server,cpuallocator
           Klog:
             # Enables nice logs with logger names that can be used in Debug
             skip_headers: true

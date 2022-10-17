@@ -462,9 +462,11 @@ To debug issues you can consult logs of following components (commands are for l
    ```
 ### Logging in Grafana
 
-Logs for extension are available in Grafana in namespace garden. Logs for cri-resmgr-installation, cri-resmgr-agent and cri-resource-manager in seed grafana (commands below assume running local setup)
+Logs for `cri-resmgr-extension` are available in "Garden" Grafana in garden namespace. Logs for `cri-resmgr-installation`, `cri-resmgr-agent` and `cri-resource-manager` daemon are in dedicated Grafana for shoot (deployed in a seed in shoot namespace e.g. shoot--local--local). 
 
-#### cri-resmgr-extension
+Note that example commands below assume running local setup with kind based Gardener.
+
+#### cri-resmgr-extension logs
 You can check the logs in Grafana - svc/grafana namespace garden.
 
 Expose it first with:
@@ -473,7 +475,7 @@ kubectl port-forward -n garden svc/grafana 3000:3000
 ```
 Then go to http://127.0.0.1:3000 and Dashboards/Extensions or (generic Pod Logs) and choose "gardener-extension-cri-resmgr"
 
-Dashboard grafana:
+Grafana dashboard:
 
 <a href="./doc/cri-resmeg-extension.png">
 <img src="./doc/cri-resmeg-extension.png" width="80%" height="80%">
@@ -484,12 +486,12 @@ or Explore with Loki expression
 {container_name="gardener-extension-cri-resmgr"}
 ```
 
-to filter only errors with following query:
+to filter only errors use the following query:
 ```
 {container_name="gardener-extension-cri-resmgr"}|json|log_level="error"|line_format "{{.log_msg}} {{.log_error}}"
 ```
 
-#### cri-resmgr-installation and cri-resmgr-agent
+#### cri-resmgr-installation and cri-resmgr-agent logs
 
 You can check the logs in Grafana for operators "grafana-operators" in Shoot namespace.
 
@@ -505,7 +507,7 @@ Then go to http://127.0.0.1:3001 and Kubernetes DaemonSets and chose "cri-resmgr
 | For local kind-based setup, HTTP header is missing: `X-Scope-OrgID: operator`. To fix it do the following, first sign in with `admin/admin` and then:
 <a href="./doc/fix_grafana_loki.png"> <img src="./doc/fix_grafana_loki.png" width="80%" height="80%"> </a> |
 
-Or use Explorer and entry following Loki queries for **installation** logs:
+Or use Explorer and enter following Loki queries for **installation** logs:
 
 ```
 {pod_name=~"cri-resmgr-installation-.*", container_name="installation"}
@@ -516,34 +518,31 @@ and for **agent**:
 {pod_name=~"cri-resmgr-agent-.*"}
 ```
 
-Example screenshots below:
-
-Installation:
+##### Example screenshot cri-resmgr-installation pod:
 
 <a href="./doc/cri-resmeg-installation-full.png">
 <img src="./doc/cri-resmeg-installation-full.png" width="60%" height="60%">
 </a>
-<a href="./doc/cri-resmeg-installation-logs.png">
+<!-- <a href="./doc/cri-resmeg-installation-logs.png">
 <img src="./doc/cri-resmeg-installation-logs.png" width="60%" height="60%">
-</a>
+</a> -->
 
-And agent:
+##### Example screenshot of cri-resmgr-agent pod:
 
 <a href="./doc/cri-resmeg-agent-full.png">
 <img src="./doc/cri-resmeg-agent-full.png" width="60%" height="60%">
 </a>
-<a href="./doc/cri-resmeg-agent-logs.png">
+<!-- <a href="./doc/cri-resmeg-agent-logs.png">
 <img src="./doc/cri-resmeg-agent-logs.png" width="60%" height="60%">
-</a>
+</a> -->
 
-#### cri-resource-manager systemd unit
+#### cri-resource-manager daemon logs
 
 You can check the logs in Grafana - svc/grafana-operators in seed namespace.
 
 Loki expression 
 
 ```
-{origin="systemd-journal",job="systemd-combine-journal"} | json | unit="cri-resource-manager.service"
 {origin="systemd-journal",job="systemd-combine-journal"} | json | unit="cri-resource-manager.service" | unpack
 ```
 
@@ -567,7 +566,8 @@ I: [resource-manager] successfully switched to new configuration
 
 
 
-Dashboard grafana
+
+##### Example screenshot of cri-resource-manager daemon:
 
 <a href="./doc/cri-resmeg.png">
 <img src="./doc/cri-resmeg.png" width="60%" height="60%">
