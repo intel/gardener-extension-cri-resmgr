@@ -92,7 +92,7 @@ spec:
             mountPath: /var/run/cri-resmgr
           resources:
             limits:
-              cpu: 1
+              cpu: 100m
               memory: 512Mi
           livenessProbe:
             exec:
