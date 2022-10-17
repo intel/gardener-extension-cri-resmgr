@@ -1,0 +1,29 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+    name: stress
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: stress
+  namespace: stress
+spec:
+  selector:
+    matchLabels:
+      app: stress-sts
+  serviceName: stress-sts
+  template:
+    metadata:
+      labels:
+        app: stress-sts
+    spec:
+      terminationGracePeriodSeconds: 1
+      containers:
+        - name: stress-ng
+          image: alexeiled/stress-ng
+          args: [--cpu, "2"]
+          resources:
+            requests:
+              cpu: "2"
