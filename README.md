@@ -546,7 +546,7 @@ Loki expression
 {origin="systemd-journal",job="systemd-combine-journal"} | json | unit="cri-resource-manager.service" | unpack
 ```
 
-with skip_headers=on in cri-resource-manager you can even more parse output from cri-resource-manager
+with skip_headers=on in cri-resource-manager you can even parse more output from cri-resource-manager
 ```
 {origin="systemd-journal",job="systemd-combine-journal"} | json | unit="cri-resource-manager.service" | unpack | label_format _entry="" | regexp "(?P<level>.): \\[ *(?P<module>.*?) *\\] (?P<msg>.*)" | line_format "{{.msg}}" | label_format msg=""
 ```
