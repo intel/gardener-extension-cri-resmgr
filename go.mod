@@ -20,7 +20,7 @@ go 1.19
 // sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.12.1
 
 require (
-	github.com/gardener/gardener v1.56.0
+	github.com/gardener/gardener v1.57.1
 	github.com/go-logr/logr v1.2.3
 	github.com/onsi/ginkgo/v2 v2.1.6
 	github.com/onsi/gomega v1.20.2
@@ -114,7 +114,7 @@ require (
 	istio.io/client-go v1.14.0 // indirect
 	k8s.io/apiextensions-apiserver v0.25.0 // indirect
 	k8s.io/apiserver v0.25.0 // indirect
-	k8s.io/autoscaler/vertical-pod-autoscaler v0.11.0 // indirect
+	k8s.io/autoscaler/vertical-pod-autoscaler v0.12.0 // indirect
 	k8s.io/component-base v0.25.0 // indirect
 	k8s.io/helm v2.16.1+incompatible // indirect
 	k8s.io/klog/v2 v2.70.1 // indirect

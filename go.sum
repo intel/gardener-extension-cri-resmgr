@@ -148,8 +148,8 @@ github.com/fsnotify/fsnotify v1.5.4 h1:jRbGcIw6P2Meqdwuo0H1p6JVLbL5DHKAKlYndzMwV
 github.com/fsnotify/fsnotify v1.5.4/go.mod h1:OVB6XrOHzAwXMpEM7uPOzcehqUV2UqJxmVXmkdnm1bU=
 github.com/gardener/etcd-druid v0.12.3 h1:FBpsEe+FrBwJ1a2VhaPlXjZsfIAcHGSsF5DvDOcDnbM=
 github.com/gardener/etcd-druid v0.12.3/go.mod h1:EJF6z4Ghv2FGUe1UzZWOEF1MxCA186fxvjBO44oSJX4=
-github.com/gardener/gardener v1.56.0 h1:GAs+Nil9bYnGcUJ6rr71SI16pa5Qa1NjXxa6qkpmikg=
-github.com/gardener/gardener v1.56.0/go.mod h1:Hca1sbJdfOUbdiaU+xd5s1j4IxjsUjv6cQLuhD3OwXs=
+github.com/gardener/gardener v1.57.1 h1:pGfxjh5tq/9Y9K8ylgJ7BsU9D4KVJ41GDHIO5ej40cM=
+github.com/gardener/gardener v1.57.1/go.mod h1:4vopE/Pg4LJud1CRg80rAcp94v83MJIgktlHNcSKO84=
 github.com/gardener/hvpa-controller/api v0.5.0 h1:f4F3O7YUrenwh4S3TgPREPiB287JjjUiUL18OqPLyAA=
 github.com/gardener/hvpa-controller/api v0.5.0/go.mod h1:QQl3ELkCaki+8RhXl0FZMfvnm0WCGwGJlGmrxJj6lvM=
 github.com/getkin/kin-openapi v0.76.0/go.mod h1:660oXbgy5JFMKreazJaQTw7o+X00qeSyhcnluiMv+Xg=
@@ -981,8 +981,8 @@ k8s.io/apimachinery v0.25.0/go.mod h1:qMx9eAk0sZQGsXGu86fab8tZdffHbwUfsvzqKn4mfB
 k8s.io/apiserver v0.25.0 h1:8kl2ifbNffD440MyvHtPaIz1mw4mGKVgWqM0nL+oyu4=
 k8s.io/apiserver v0.25.0/go.mod h1:BKwsE+PTC+aZK+6OJQDPr0v6uS91/HWxX7evElAH6xo=
 k8s.io/autoscaler/vertical-pod-autoscaler v0.9.0/go.mod h1:PwWTGRRCxefhAezrDbG/tRYSAW7etHjjMPAr8fXKVAA=
-k8s.io/autoscaler/vertical-pod-autoscaler v0.11.0 h1:vh6cHU/sZBjdfYlKZOhXkMI5CTCgK12TauHGoQOue+4=
-k8s.io/autoscaler/vertical-pod-autoscaler v0.11.0/go.mod h1:CviXA+byKc3EV10oxt8S+YYVipks1+onIqLGNPV52xM=
+k8s.io/autoscaler/vertical-pod-autoscaler v0.12.0 h1:cy8LoXSl5GkTNJDTx3ZCS143f9Ai7gqnGkoUxPlGSmI=
+k8s.io/autoscaler/vertical-pod-autoscaler v0.12.0/go.mod h1:LraL5kR2xX7jb4VMCG6/tUH4I75uRHlnzC0VWQHcyWk=
 k8s.io/client-go v0.25.0 h1:CVWIaCETLMBNiTUta3d5nzRbXvY5Hy9Dpl+VvREpu5E=
 k8s.io/client-go v0.25.0/go.mod h1:lxykvypVfKilxhTklov0wz1FoaUZ8X4EwbhS6rpRfN8=
 k8s.io/code-generator v0.0.0-20191121015212-c4c8f8345c7e/go.mod h1:DVmfPQgxQENqDIzVR2ddLXMH34qeszkKSdH/N+s+38s=
