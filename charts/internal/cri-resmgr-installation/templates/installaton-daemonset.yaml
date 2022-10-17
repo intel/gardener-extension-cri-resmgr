@@ -45,6 +45,10 @@ spec:
           capabilities:
             add:
             - SYS_CHROOT
+        # give it some CPU resources to allow healthcheck/readiness probe work under heavy load 
+        resources:
+          requests:
+            cpu: 100m
         volumeMounts:
         - name: host-volume
           mountPath: /var/host
