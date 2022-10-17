@@ -34,8 +34,6 @@ spec:
       # give a 30 seconds to uninstall cri-resmgr from the host system
       # this is the default
       terminationGracePeriodSeconds: 30
-      # we are trying to limit interruptions of kubelet in case of failure
-      restartPolicy: Never
       # only install to nodes with containerd
       nodeSelector:
         worker.gardener.cloud/cri-name: containerd
