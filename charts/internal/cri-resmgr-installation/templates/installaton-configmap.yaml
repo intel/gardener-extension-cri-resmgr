@@ -189,22 +189,27 @@ data:
     # Wait five seconds before first check to allow kubelet/cri-resmgr to switch from activating to active state.
     sleep 5
     while true; do
-      # Workaround for misconfigured "null policy" but also suppport switching policy.
-      active_policy=$(chroot /var/host bash -c 'cat /var/lib/cri-resmgr/cache | jq .PolicyName -r')
-      cfg_data=$(chroot /var/host bash -c 'cat /var/lib/cri-resmgr/cache | jq .Cfg.Data -r')
-      if [[ "$cfg_data" == "null" ]]; then
-          requested_policy="null"
-      else 
-          requested_policy=$(chroot /var/host bash -c 'cat /var/lib/cri-resmgr/cache | jq .Cfg.Data.policy -r | grep Active | cut -f 2 -d " "')
-      fi
-      if [[ "$requested_policyX" != "X" && "$active_policyX" != "X" && "$requested_policy" != "$active_policy" ]]; then
-          echo "*** [$(date --rfc-3339=seconds)] Policy update: requested policy from agent ($requested_policy) is different from active=$active_policy - reconfigure/reset daemon policy..."
-          chroot /var/host systemctl stop cri-resource-manager
-          sleep 5
-          chroot /var/host /opt/intel/bin/cri-resmgr --reset-policy
-          chroot /var/host systemctl start cri-resource-manager
-          sleep 5
-          continue
+      # only where there is not force.cfg
+      if [[ ! -f /etc/cri-resmgr/force.cfg ]]; then
+          # Support switching policy if one requested from agent is different than active.
+          active_policy=$(chroot /var/host bash -c 'cat /var/lib/cri-resmgr/cache | jq .PolicyName -r')
+          cfg_data=$(chroot /var/host bash -c 'cat /var/lib/cri-resmgr/cache | jq .Cfg.Data -r')
+          if [[ "$cfg_data" == "null"  ]]; then
+              requested_policy="null"
+          else 
+              requested_policy=$(chroot /var/host bash -c 'cat /var/lib/cri-resmgr/cache | jq .Cfg.Data.policy -r | grep Active | cut -f 2 -d " "')
+          fi
+          if [[ "$requested_policyX" != "X" && "$active_policyX" != "X" && "$requested_policy" != "$active_policy" ]]; then
+              echo "*** [$(date --rfc-3339=seconds)] Policy update: requested policy from agent ($requested_policy) is different from active=$active_policy - reconfigure/reset daemon policy..."
+              chroot /var/host systemctl stop cri-resource-manager
+              sleep 5
+              chroot /var/host /opt/intel/bin/cri-resmgr --reset-policy
+              chroot /var/host systemctl start cri-resource-manager
+              sleep 5
+              continue
+          fi
+      else
+        active_policy="forced"
       fi
 
       # Run checks and uninstall if there is any issues with kubelet or cri-rm or containerd
@@ -262,10 +267,7 @@ data:
         echo
         echo "=========================== III. Sleep forever... =============================="
         echo "Note: sleep to give "human" a chance to fix config/state (then please restart this pod)..."
-        sleep inf &
-        child=$?
-        wait $child
-        trap quit SIGTERM SIGINT
+        sleep inf
       else
         echo "*** [$(date --rfc-3339=seconds)] Checks OK (cri-resource-manager=${criIsActive} kubelet=${kubeletIsActive} containerd=${containerdIsActive} ActivePolicy=$active_policy)"
       fi

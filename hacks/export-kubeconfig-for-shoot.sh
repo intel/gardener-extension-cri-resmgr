@@ -17,6 +17,8 @@ SHOOT=${SHOOT:-local}
 echo CONTEXT=$CONTEXT
 echo NAMESPACE=$NAMESPACE
 echo SHOOT=$SHOOT
+echo "KUBECONFIG=~/.kube/config kubectl --context ${CONTEXT} -n ${NAMESPACE} get secret/${SHOOT}.kubeconfig -o jsonpath={.data.kubeconfig} | base64 -d > /tmp/kubeconfig-shoot-${SHOOT}.yaml"
+echo "export KUBECONFIG=/tmp/kubeconfig-shoot-${SHOOT}.yaml"
 KUBECONFIG=~/.kube/config kubectl --context ${CONTEXT} -n ${NAMESPACE} get secret/${SHOOT}.kubeconfig -o jsonpath={.data.kubeconfig} | base64 -d > /tmp/kubeconfig-shoot-${SHOOT}.yaml
 export KUBECONFIG=/tmp/kubeconfig-shoot-${SHOOT}.yaml
 echo KUBECONFIG set to ${SHOOT} shoot by /tmp/kubeconfig-shoot-${SHOOT}.yaml
