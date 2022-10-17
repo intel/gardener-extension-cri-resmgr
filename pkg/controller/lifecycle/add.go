@@ -66,7 +66,6 @@ func configMapToAllExtensionMapper(ctx context.Context, log logr.Logger, reader 
 
 			// Skip extensions in "processing" state to not race with original extension controller
 			// https://github.com/gardener/gardener/blob/5bf28f8ff7ecf3e2ffe21224f0cb6ee30daf9997/extensions/pkg/controller/status.go#L115
-			// Optionally take every that previously succeeded: if !(extension.Status.LastOperation.State == gardencorev1beta1.LastOperationStateSucceeded) {
 			if extension.Status.LastOperation.State == gardencorev1beta1.LastOperationStateProcessing {
 				log.Info("ignore extension", "module", "configs", "extensionNamespace", extension.Namespace)
 				continue
