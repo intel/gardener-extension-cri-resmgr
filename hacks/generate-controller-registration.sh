@@ -54,7 +54,40 @@ providerConfig:
     configs:
       ### Those options are passed directly to cri-resmgr binary.
       EXTRA_OPTIONS: | 
-        EXTRA_OPTIONS="--metrics-interval 30s" 
+        EXTRA_OPTIONS="--metrics-interval 10s" 
+      ### This is *dynamic* config that will be applied by cri-resmgr-agent
+      default: |
+        policy:
+          Active: balloons
+          AvailableResources:
+            CPU: cpuset:1-128
+          ReservedResources:
+            CPU: 1
+          balloons:
+            BalloonTypes:
+              - Name: "HP-balloon"
+                MinCPUs: 2
+                MaxCPUs: 2
+                MinBalloons: 1
+                Namespaces:
+                - nginx
+              - Name: "LP-balloon"
+                MinCPUs: 4
+                MaxCPUs: 4
+                MinBalloons: 1
+                Namespaces:
+                - stress
+        instrumentation:
+          HTTPEndpoint: :8891
+          PrometheusExport: true
+        logger:
+          Debug: resource-manager,cache,policy,config-server,cpuallocator
+          Klog:
+            # Enables nice logs with logger names that can be used in Debug
+            skip_headers: true
+        dump:
+          Debug: true
+          #Config: off:.*,full:((Create)|(Remove)|(Run)|(Update)|(Start)|(Stop)).*
       ### This is *static* initial configuraiton file that will be passed do systemd unit
       fallback: |
         policy:
@@ -67,39 +100,12 @@ providerConfig:
             PinCPU: true
             PinMemory: true
             BalloonTypes:
-              - Name: "smallBalloon"
+              - Name: "defaultBalloon"
                 MinCPUs: 2
                 MaxCPUs: 2
                 MinBalloons: 1
-        instrumentation:
-          HTTPEndpoint: :8891
-          PrometheusExport: true
-        logger:
-          Debug: resource-manager,cache,policy,config-server,cpuallocator
-          Klog:
-            # Enables nice logs with logger names that can be used in Debug
-            skip_headers: true
-        dump:
-          Debug: true
-          #Config: off:.*,full:((Create)|(Remove)|(Run)|(Update)|(Start)|(Stop)).*
-      ### This is *dynamic* config that will be applied by cri-resmgr-agent
-      default: |
-        policy:
-          Active: balloons
-          AvailableResources:
-            CPU: cpuset:1-128
-          ReservedResources:
-            CPU: 1
-          balloons:
-            BalloonTypes:
-              - Name: "smallHPBalloon"
-                MinCPUs: 2
-                MaxCPUs: 2
-                MinBalloons: 1
-              - Name: "mediumLPBalloon"
-                MinCPUs: 4
-                MaxCPUs: 4
-                MinBalloons: 1
+                Namespaces:
+                - default
         instrumentation:
           HTTPEndpoint: :8891
           PrometheusExport: true
