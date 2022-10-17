@@ -84,6 +84,12 @@ data:
         echo '         To fix just restart this pod or manually remove /var/lib/cri-resmgr on host.'
       fi
 
+      # Wait for agent to be ready and give 15 seconds for initilization.
+      while ! [ -S /var-run-cri-resmgr/cri-resmgr-agent.sock ]; do 
+          echo 'Waiting for agent socket...'; 
+          sleep 1; 
+      done 
+
       echo Enable and restart cri-resource-manager systemd unit.
       chroot /var/host bash -c "systemctl enable cri-resource-manager"
       chroot /var/host bash -c "systemctl restart cri-resource-manager"
@@ -183,6 +189,14 @@ data:
     # Wait five seconds before first check to allow kubelet/cri-resmgr to switch from activating to active state.
     sleep 5
     while true; do
+      # Workaround for misconfigured "null policy"
+      requested_policy=$(chroot /var/host bash -c 'cat /var/lib/cri-resmgr/cache | jq .Cfg.Data.policy -r | grep Active | cut -f 2 -d " "')
+      active_policy=$(chroot /var/host bash -c 'cat /var/lib/cri-resmgr/cache | jq .PolicyName -r')
+      if [[ "$requested_policyX" != "X" && "$active_policyX" != "X" && "$requested_policy" != "$active_policy" ]]; then
+          echo "requested_policy=$requested_policy is different from active=$active_policy - restart daemon"
+          chroot /var/host bash -c 'systemctl restart cri-resource-manager'
+      fi
+
       # Run checks and uninstall if there is any issues with kubelet or cri-rm or containerd
       criIsActive=$(chroot /var/host bash -c "systemctl is-active cri-resource-manager")
       kubeletIsActive=$(chroot /var/host bash -c "systemctl is-active kubelet")
@@ -243,7 +257,7 @@ data:
         wait $child
         trap quit SIGTERM SIGINT
       else
-        echo "*** [$(date --rfc-3339=seconds)] Checks OK (cri-resource-manager=${criIsActive} kubelet=${kubeletIsActive} containerd=${containerdIsActive})"
+        echo "*** [$(date --rfc-3339=seconds)] Checks OK (cri-resource-manager=${criIsActive} kubelet=${kubeletIsActive} containerd=${containerdIsActive} ActivePolicy=$active_policy RequestedPolicy=$requested_policy)"
       fi
 
       # Put sleep in background and wait to allow bash to capture and handle signals
