@@ -189,12 +189,22 @@ data:
     # Wait five seconds before first check to allow kubelet/cri-resmgr to switch from activating to active state.
     sleep 5
     while true; do
-      # Workaround for misconfigured "null policy"
-      requested_policy=$(chroot /var/host bash -c 'cat /var/lib/cri-resmgr/cache | jq .Cfg.Data.policy -r | grep Active | cut -f 2 -d " "')
+      # Workaround for misconfigured "null policy" but also suppport switching policy.
       active_policy=$(chroot /var/host bash -c 'cat /var/lib/cri-resmgr/cache | jq .PolicyName -r')
+      cfg_data=$(chroot /var/host bash -c 'cat /var/lib/cri-resmgr/cache | jq .Cfg.Data -r')
+      if [[ "$cfg_data" == "null" ]]; then
+          requested_policy="null"
+      else 
+          requested_policy=$(chroot /var/host bash -c 'cat /var/lib/cri-resmgr/cache | jq .Cfg.Data.policy -r | grep Active | cut -f 2 -d " "')
+      fi
       if [[ "$requested_policyX" != "X" && "$active_policyX" != "X" && "$requested_policy" != "$active_policy" ]]; then
-          echo "requested_policy=$requested_policy is different from active=$active_policy - restart daemon"
-          chroot /var/host bash -c 'systemctl restart cri-resource-manager'
+          echo "*** [$(date --rfc-3339=seconds)] Policy update: requested policy from agent ($requested_policy) is different from active=$active_policy - reconfigure/reset daemon policy..."
+          chroot /var/host systemctl stop cri-resource-manager
+          sleep 5
+          chroot /var/host /opt/intel/bin/cri-resmgr --reset-policy
+          chroot /var/host systemctl start cri-resource-manager
+          sleep 5
+          continue
       fi
 
       # Run checks and uninstall if there is any issues with kubelet or cri-rm or containerd
@@ -257,14 +267,14 @@ data:
         wait $child
         trap quit SIGTERM SIGINT
       else
-        echo "*** [$(date --rfc-3339=seconds)] Checks OK (cri-resource-manager=${criIsActive} kubelet=${kubeletIsActive} containerd=${containerdIsActive} ActivePolicy=$active_policy RequestedPolicy=$requested_policy)"
+        echo "*** [$(date --rfc-3339=seconds)] Checks OK (cri-resource-manager=${criIsActive} kubelet=${kubeletIsActive} containerd=${containerdIsActive} ActivePolicy=$active_policy)"
       fi
 
       # Put sleep in background and wait to allow bash to capture and handle signals
       # based on https://unix.stackexchange.com/questions/146756/forward-sigterm-to-child-in-bash
-      sleep 60 &
+      sleep 30 &
       child=$!
-      echo "Wait for sleeping child: ${child}"
+      # echo "Wait for sleeping child: ${child}"
       wait $child
 
     done
