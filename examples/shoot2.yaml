@@ -32,19 +32,7 @@ spec:
       configs:
         ### Those options are passed directly to cri-resmgr binary.
         EXTRA_OPTIONS: | 
-          EXTRA_OPTIONS="--metrics-interval 15s" 
-        ### This is *static* initial configuration file that will be passed do systemd unit
-        fallback: |
-          policy:
-            Active: balloons
-            AvailableResources:
-              CPU: cpuset:1-10000
-            ReservedResources:
-              CPU: 1
-          logger:
-            Debug: resource-manager,cache,policy,resource-control,config-server
-            Klog:
-              skip_headers: true
+          EXTRA_OPTIONS="--metrics-interval 5s" 
         ### This is *dynamic* config that will be applied by cri-resmgr-agent
         default: |
           policy:
@@ -52,13 +40,32 @@ spec:
             AvailableResources:
               CPU: cpuset:1-15
             ReservedResources:
-              CPU: cpuset:15
+              CPU: cpuset:1
             balloons:
               BalloonTypes:
-                - Name: "mediumBalloonForShoot2"
+                - Name: "some-special-balloon-for-shoot2"
                   MinCPUs: 3
                   MaxCPUs: 3
                   MinBalloons: 2
+          logger:
+            Debug: resource-manager,cache,policy,config-server
+            Klog:
+              skip_headers: true
+          instrumentation:
+            HTTPEndpoint: :8891
+            PrometheusExport: true
+        ### This is *static* initial configuration file that will be passed do systemd unit
+        fallback: |
+          policy:
+            Active: balloons
+            AvailableResources:
+              CPU: cpuset:1-15
+            ReservedResources:
+              CPU: 1
+          logger:
+            Debug: resource-manager,cache,policy,config-server
+            Klog:
+              skip_headers: true
           instrumentation:
             HTTPEndpoint: :8891
             PrometheusExport: true
