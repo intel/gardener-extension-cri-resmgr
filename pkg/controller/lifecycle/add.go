@@ -80,7 +80,9 @@ func configMapToAllExtensionMapper(ctx context.Context, log logr.Logger, reader 
 		}
 	}
 
-	log.Info("found configMap so start reconciliation of all extensions", "module", "configs", "configMap", configMap, "extensions", extensionsFound)
+	if len(extensionsFound) > 0 {
+		log.Info("configs: configMap changed so reconcile following extensions", "module", "configs", "configMap", configMap, "extensions", extensionsFound)
+	}
 	return requests
 }
 
