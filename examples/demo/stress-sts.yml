@@ -21,7 +21,7 @@ spec:
     spec:
       terminationGracePeriodSeconds: 1
       containers:
-        - name: stress-ng
+        - name: stress
           image: alexeiled/stress-ng
           args: [--cpu, "2"]
           resources:
