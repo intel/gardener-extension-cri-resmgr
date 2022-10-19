@@ -20,13 +20,13 @@ go 1.19
 // sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.12.1
 
 require (
-	github.com/gardener/gardener v1.56.0
+	github.com/gardener/gardener v1.57.1
 	github.com/go-logr/logr v1.2.3
-	github.com/onsi/ginkgo/v2 v2.1.6
-	github.com/onsi/gomega v1.20.2
+	github.com/onsi/ginkgo/v2 v2.3.1
+	github.com/onsi/gomega v1.22.1
 	github.com/spf13/cobra v1.4.0
-	k8s.io/api v0.25.0
-	k8s.io/apimachinery v0.25.0
+	k8s.io/api v0.25.3
+	k8s.io/apimachinery v0.25.3
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
 	k8s.io/utils v0.0.0-20220728103510-ee6ede2d64ed
 	sigs.k8s.io/controller-runtime v0.13.0
@@ -114,7 +114,7 @@ require (
 	istio.io/client-go v1.14.0 // indirect
 	k8s.io/apiextensions-apiserver v0.25.0 // indirect
 	k8s.io/apiserver v0.25.0 // indirect
-	k8s.io/autoscaler/vertical-pod-autoscaler v0.11.0 // indirect
+	k8s.io/autoscaler/vertical-pod-autoscaler v0.12.0 // indirect
 	k8s.io/component-base v0.25.0 // indirect
 	k8s.io/helm v2.16.1+incompatible // indirect
 	k8s.io/klog/v2 v2.70.1 // indirect
