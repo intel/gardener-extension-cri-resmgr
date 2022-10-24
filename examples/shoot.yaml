@@ -29,8 +29,7 @@ spec:
   ## To enable mark it as disable=false or use globallyEnabled: true
   extensions:
   - type: cri-resmgr-extension
-    #disabled: false
-    #disabled: false
+    disabled: false
     providerConfig:
      configs:
       #  default: |+
