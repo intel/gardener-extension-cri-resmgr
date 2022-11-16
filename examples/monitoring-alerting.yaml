@@ -1,0 +1,121 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: extension-cri-resmgr-extension-monitoring-ccm
+  namespace: shoot--local--local
+  labels:
+    extensions.gardener.cloud/configuration: monitoring
+data:
+  scrape_config: |
+    - job_name: cri-rm
+      honor_timestamps: true
+      scrape_interval: 1m
+      scrape_timeout: 10s
+      metrics_path: /metrics
+      scheme: https
+      authorization:
+        type: Bearer
+        credentials_file: /var/run/secrets/gardener.cloud/shoot/token/token
+      tls_config:
+        ca_file: /etc/prometheus/seed/ca.crt
+        insecure_skip_verify: false
+      follow_redirects: true
+      enable_http2: true
+      relabel_configs:
+      - separator: ;
+        regex: (.*)
+        target_label: __address__
+        replacement: kube-apiserver:443
+        action: replace
+      - separator: ;
+        regex: (.*)
+        target_label: __metrics_path__
+        replacement: /api/v1/namespaces/kube-system/services/cri-resmgr-installation:8891/proxy/metrics
+        action: replace
+      - separator: ;
+        regex: (.*)
+        target_label: type
+        replacement: shoot
+        action: replace
+      kubernetes_sd_configs:
+      - api_server: https://kube-apiserver:443
+        role: node
+        kubeconfig_file: ""
+        authorization:
+          type: Bearer
+          credentials_file: /var/run/secrets/gardener.cloud/shoot/token/token
+        tls_config:
+          ca_file: /etc/prometheus/seed/ca.crt
+          insecure_skip_verify: false
+        follow_redirects: true
+        enable_http2: true
+
+ # kubernetes_sd_configs:
+ # - api_server: https://kube-apiserver:443
+ #   role: endpoints
+ #   kubeconfig_file: ""
+ #   authorization:
+ #     type: Bearer
+ #     credentials_file: /var/run/secrets/gardener.cloud/shoot/token/token
+ #   tls_config:
+ #     ca_file: /etc/prometheus/seed/ca.crt
+ #     insecure_skip_verify: false
+ #   follow_redirects: true
+ #   enable_http2: true
+ # relabel_configs:
+ # - separator: ;
+ #   regex: (.*)
+ #   target_label: type
+ #   replacement: shoot
+ #   action: replace
+ # - source_labels: [__meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+ #   separator: ;
+ #   regex: cri-resmgr-installation;metrics
+ #   replacement: $1
+ #   action: keep
+ # - separator: ;
+ #   regex: __meta_kubernetes_service_label_(.+)
+ #   replacement: $1
+ #   action: labelmap
+ # - source_labels: [__meta_kubernetes_pod_name]
+ #   separator: ;
+ #   regex: (.*)
+ #   target_label: pod
+ #   replacement: $1
+ #   action: replace
+ # - source_labels: [__meta_kubernetes_pod_node_name]
+ #   separator: ;
+ #   regex: (.*)
+ #   target_label: node
+ #   replacement: $1
+ #   action: replace
+ # - separator: ;
+ #   regex: (.*)
+ #   target_label: __address__
+ #   replacement: kube-apiserver:443
+ #   action: replace
+ # - source_labels: [__meta_kubernetes_pod_name, __meta_kubernetes_pod_container_port_number]
+ #   separator: ;
+ #   regex: (.+);(.+)
+ #   target_label: __metrics_path__
+ #   replacement: /api/v1/namespaces/kube-system/pods/${1}:${2}/proxy/metrics
+ #   action: replace
+
+ 
+
+  # alerting_rules: |
+  #   cloud-controller-manager.rules.yaml: |
+  #     groups:
+  #     - name: cloud-controller-manager.rules
+  #       rules:
+  #       - alert: CloudControllerManagerDown
+  #         expr: absent(up{job="cloud-controller-manager"} == 1)
+  #         for: 15m
+  #         labels:
+  #           service: cloud-controller-manager
+  #           severity: critical
+  #           type: seed
+  #           visibility: all
+  #         annotations:
+  #           description: All infrastructure specific operations cannot be completed (e.g. creating load balancers or persistent volumes).
+  #           summary: Cloud controller manager is down.    

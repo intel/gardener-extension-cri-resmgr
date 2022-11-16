@@ -7,7 +7,7 @@ metadata:
     extensions.gardener.cloud/configuration: monitoring
 data:
   scrape_config: |
-    - job_name: cri-rm4
+    - job_name: cri-rm
       honor_timestamps: true
       scrape_interval: 1m
       scrape_timeout: 10s
