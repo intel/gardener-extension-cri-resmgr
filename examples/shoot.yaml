@@ -1,0 +1,88 @@
+# Copyright 2022 Intel Corporation. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+apiVersion: core.gardener.cloud/v1beta1
+kind: Shoot
+metadata:
+  name: local
+  namespace: garden-local
+  annotations:
+    shoot.gardener.cloud/infrastructure-cleanup-wait-period-seconds: "0"
+    confirmation.gardener.cloud/deletion: "true"
+spec:
+  seedName: local
+  cloudProfileName: local
+  secretBindingName: local
+  region: local
+  ## In this shoot, local extension is disabled by default and uses configuration from ControllerDeployment.
+  ## To enable mark it as disable=false or use globallyEnabled: true
+  extensions:
+  - type: cri-resmgr-extension
+    disabled: false
+    providerConfig:
+     configs:
+      #  default: |+
+      #    Active: default-test
+      #    AvailableResources:
+      #      cpu: cpuset:0-63
+       fallback: |+
+        policy:
+          Active: balloons
+          ReservedResources:
+            CPU: 1
+          balloons:
+            PinCPU: true
+            PinMemory: true
+            IdleCPUClass: lowpower
+            BalloonTypes:
+              - Name: "quad"
+                MinCpus: 1
+                MaxCPUs: 4
+                CPUClass: dynamic
+                Namespaces:
+                  - "*"
+        logger:
+          Debug: resource-manager,cache,policy,resource-control
+        dump:
+          Config: off:.*,full:((Create)|(Remove)|(Run)|(Update)|(Start)|(Stop)).*
+        instrumentation:
+          # The balloons policy exports containers running in each balloon,
+          # and cpusets of balloons. Accessible in command line:
+          # curl --silent http://localhost:8891/metrics
+          HTTPEndpoint: :8891
+          PrometheusExport: true
+
+
+  networking:
+    type: calico
+    providerConfig:
+      apiVersion: calico.networking.extensions.gardener.cloud/v1alpha1
+      kind: NetworkConfig
+      backend: none
+      typha:
+        enabled: false
+  provider:
+    type: local
+    workers:
+    - name: local
+      machine:
+        type: local
+      cri:
+        name: containerd
+      minimum: 1
+      maximum: 1 # currently, only single-node clusters are supported
+      maxSurge: 1
+      maxUnavailable: 0
+  kubernetes:
+    version: 1.24.0
