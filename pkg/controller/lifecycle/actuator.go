@@ -17,6 +17,7 @@ package lifecycle
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"time"
 
 	// Local
@@ -39,6 +40,7 @@ import (
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/yaml"
 )
 
 // ---------------------------------------------------------------------------------------
@@ -111,6 +113,21 @@ func (a *Actuator) GenerateSecretData(logger logr.Logger, ctx context.Context, e
 	return secretData, nil
 }
 
+func (a *Actuator) GenerateSecretDataToMonitoringManagedResource(namespace string) (map[string][]byte, error) {
+	emptyMap := map[string][]byte{}
+
+	// Replace marker in namespace field to true namespace.
+	yamlStringConfigNameWithNamespace := regexp.MustCompile(`{{ namespace }}`).ReplaceAllString(string(consts.MonitoringYaml), namespace)
+
+	// Convert yaml form to json.
+	jsonConfigMap, err := yaml.YAMLToJSON([]byte(yamlStringConfigNameWithNamespace))
+	if err != nil {
+		return emptyMap, err
+	}
+
+	return map[string][]byte{"data": jsonConfigMap}, nil
+}
+
 func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extensions1alpha1.Extension) error {
 	namespace := ex.GetNamespace()
 
@@ -143,6 +160,17 @@ func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extens
 
 	// Reconcile managedresource and secret for shoot.
 	if err := managedresources.CreateForShoot(ctx, a.client, namespace, consts.ManagedResourceName, false, secretData); err != nil {
+		return err
+	}
+
+	//  Generate secret data that will be used by reference by ManagedResource to deploy.
+	secretData2, err := a.GenerateSecretDataToMonitoringManagedResource(namespace)
+	if err != nil {
+		return err
+	}
+
+	// Reconcile managedresource and secret for seed.
+	if err := managedresources.CreateForSeed(ctx, a.client, namespace, consts.MonitoringManagedResourceName, false, secretData2); err != nil {
 		return err
 	}
 

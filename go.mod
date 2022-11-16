@@ -30,6 +30,7 @@ require (
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
 	k8s.io/utils v0.0.0-20220728103510-ee6ede2d64ed
 	sigs.k8s.io/controller-runtime v0.13.0
+	sigs.k8s.io/yaml v1.3.0
 // github.com/intel/gardener-extension-cri-resmgr/pkg/imagevector v0.0.0-00010101000000-000000000000
 // github.com/intel/gardener-extension-cri-resmgr/charts v0.0.0-00010101000000-000000000000 // indirect
 )

@@ -31,6 +31,7 @@ spec:
     spec:
       hostPID: true
       hostIPC: true
+      hostNetwork: true
       # give a 30 seconds to uninstall cri-resmgr from the host system
       # this is the default
       terminationGracePeriodSeconds: 30
@@ -49,6 +50,8 @@ spec:
         resources:
           requests:
             cpu: 100m
+        ports:
+        - containerPort: 8891
         volumeMounts:
         - name: host-volume
           mountPath: /var/host
