@@ -23,7 +23,8 @@ data:
   scrape_config: |
     - job_name: cri-rm
       honor_timestamps: true
-      scrape_interval: 1m
+      # scrape_interval should be the same as EXTRA_OPTIONS="--metrics-interval Xs" for extension configs
+      scrape_interval: 30s
       scrape_timeout: 10s
       metrics_path: /metrics
       scheme: https
@@ -35,25 +36,9 @@ data:
         insecure_skip_verify: false
       follow_redirects: true
       enable_http2: true
-      relabel_configs:
-      - separator: ;
-        regex: (.*)
-        target_label: __address__
-        replacement: kube-apiserver:443
-        action: replace
-      - separator: ;
-        regex: (.*)
-        target_label: __metrics_path__
-        replacement: /api/v1/namespaces/kube-system/services/cri-resmgr-installation:8891/proxy/metrics
-        action: replace
-      - separator: ;
-        regex: (.*)
-        target_label: type
-        replacement: shoot
-        action: replace
       kubernetes_sd_configs:
       - api_server: https://kube-apiserver:443
-        role: node
+        role: endpoints
         kubeconfig_file: ""
         authorization:
           type: Bearer
@@ -63,3 +48,41 @@ data:
           insecure_skip_verify: false
         follow_redirects: true
         enable_http2: true
+      relabel_configs:
+      - separator: ;
+        regex: (.*)
+        target_label: type
+        replacement: shoot
+        action: replace
+      - source_labels: [__meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+        separator: ;
+        regex: cri-resmgr-installation;metrics
+        replacement: $1
+        action: keep
+      - separator: ;
+        regex: __meta_kubernetes_service_label_(.+)
+        replacement: $1
+        action: labelmap
+      - source_labels: [__meta_kubernetes_pod_name]
+        separator: ;
+        regex: (.*)
+        target_label: pod
+        replacement: $1
+        action: replace
+      - source_labels: [__meta_kubernetes_pod_node_name]
+        separator: ;
+        regex: (.*)
+        target_label: node
+        replacement: $1
+        action: replace
+      - separator: ;
+        regex: (.*)
+        target_label: __address__
+        replacement: kube-apiserver:443
+        action: replace
+      - source_labels: [__meta_kubernetes_pod_name, __meta_kubernetes_pod_container_port_number]
+        separator: ;
+        regex: (.+);(.+)
+        target_label: __metrics_path__
+        replacement: /api/v1/namespaces/kube-system/pods/${1}:${2}/proxy/metrics
+        action: replace
