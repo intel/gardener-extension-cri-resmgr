@@ -10,7 +10,7 @@ providerConfig:
 
   values:
     ### For development purposes - set it to 0 (if you want to register extension but use local process with "make start").
-    replicaCount: 1            
+    # replicaCount: 1            
 
     ### Uncomment this is you want to overwrite extension image or internal installation and agent images.
     ### Remember to build and push image  "make REGISTRY=v2.isvimgreg.com TAG=mybranch build-images push-images"
