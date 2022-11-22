@@ -29,7 +29,7 @@ ARG COMMIT=unset
 ARG VERSION=unset
 RUN go install -ldflags="-X github.com/intel/gardener-extension-cri-resmgr/pkg/consts.Commit=${COMMIT} -X github.com/intel/gardener-extension-cri-resmgr/pkg/consts.Version=${VERSION}" ./cmd/gardener-extension-cri-resmgr/... 
 # copying late saves time - no need to rebuild binary when only assest change
-COPY charts charts
+#COPY charts charts
 
 ### extension
 FROM alpine:3.16.0 AS gardener-extension-cri-resmgr

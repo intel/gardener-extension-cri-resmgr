@@ -54,7 +54,7 @@ var _ = Describe("cri-resource-manager extension actuator tests", func() {
 		log := logger.ZapLogger(true)
 
 		ex := &extensionsv1alpha1.Extension{}
-		secret, err := a.GenerateSecretData(log, ctx, ex, consts.ChartPath, "foo_namespace", "v1.0.0", configs)
+		secret, err := a.GenerateSecretData(log, ctx, ex, consts.Charts, consts.ChartPath, "foo_namespace", "v1.0.0", configs)
 		Expect(err).NotTo(HaveOccurred())
 
 		Expect(secret).Should(HaveKey(consts.InstallationSecretKey))

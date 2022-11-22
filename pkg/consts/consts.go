@@ -13,10 +13,24 @@
 // limitations under the License.
 package consts
 
-import _ "embed"
+import (
+	"embed"
+	_ "embed"
+)
 
 var Version string
 var Commit string
+
+// go embed requires files in package through security
+//
+//go:generate cp -r ../../charts .
+var (
+	//go:embed monitoring.yaml
+	MonitoringYaml []byte
+
+	//go:embed charts/*
+	Charts embed.FS
+)
 
 const (
 	ExtensionName = "cri-resmgr"
@@ -30,8 +44,8 @@ const (
 	ConfigMapName            = "gardener-extension-cri-resmgr-configs"
 	ConfigMapNamespaceEnvKey = "EXTENSION_CONFIGMAP_NAMESPACE"
 	ConfigKey                = "config.yaml"
-
-	ChartPath               = "charts/internal/cri-resmgr-installation/"
+	// Don't use "/"" on the end of the path! Func read from embed.FS don't see dir
+	ChartPath               = "charts/internal/cri-resmgr-installation"
 	InstallationImageName   = "gardener-extension-cri-resmgr-installation"
 	AgentImageName          = "gardener-extension-cri-resmgr-agent"
 	InstallationReleaseName = "cri-resmgr-installation"

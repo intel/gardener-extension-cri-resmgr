@@ -36,6 +36,7 @@ COMMIT:=`git rev-parse HEAD`
 DIRTY:=`git diff --quiet || echo '-dirty'`
 VERSION:=`git tag | sort -V | tail -1`
 build:
+	go generate ./...
 	echo "Building ${VERSION}-${COMMIT}${DIRTY}"
 	go build -ldflags="-X github.com/intel/gardener-extension-cri-resmgr/pkg/consts.Commit=${COMMIT}${DIRTY} -X github.com/intel/gardener-extension-cri-resmgr/pkg/consts.Version=${VERSION}" -v ./cmd/gardener-extension-cri-resmgr
 
@@ -44,6 +45,7 @@ build:
 	go test -c -v ./pkg/configs -o ./gardener-extension-cri-resmgr.configs.test
 
 test:
+	go generate ./...
 	# Those tests (renders charts, uses env to read files) change CWD during execution (required because rely on charts and fixtures).
 	go test  -v ./pkg/...
 

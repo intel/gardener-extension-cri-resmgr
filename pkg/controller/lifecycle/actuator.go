@@ -16,6 +16,7 @@ package lifecycle
 
 import (
 	"context"
+	"embed"
 	"fmt"
 	"time"
 
@@ -68,7 +69,7 @@ type Actuator struct {
 }
 
 func (a *Actuator) GenerateSecretData(logger logr.Logger, ctx context.Context, ex *extensions1alpha1.Extension,
-	chartPath string, namespace string, k8sVersion string, configs map[string]map[string]string) (map[string][]byte, error) {
+	charts embed.FS, chartPath string, namespace string, k8sVersion string, configs map[string]map[string]string) (map[string][]byte, error) {
 	emptyMap := map[string][]byte{}
 	// Depending on shoot, chartRenderer will have different capabilities based on K8s version.
 	chartRenderer, err := a.ChartRendererFactory.NewChartRendererForShoot(k8sVersion)
@@ -99,9 +100,8 @@ func (a *Actuator) GenerateSecretData(logger logr.Logger, ctx context.Context, e
 		},
 		"configs": configs,
 	}
-	// TODO: release, err := chartRenderer.RenderEmbeddedFS(chartPath, InstallationReleaseName, metav1.NamespaceSystem, chartValues)
-	// Instead of using external chart files, we can embed everything in golang binary.
-	release, err := chartRenderer.Render(chartPath, consts.InstallationReleaseName, metav1.NamespaceSystem, chartValues)
+
+	release, err := chartRenderer.RenderEmbeddedFS(charts, chartPath, consts.InstallationReleaseName, metav1.NamespaceSystem, chartValues)
 
 	if err != nil {
 		return emptyMap, err
@@ -136,7 +136,7 @@ func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extens
 	}
 
 	// Generate secret data that will be used by reference by ManagedResource to deploy.
-	secretData, err := a.GenerateSecretData(a.logger, ctx, ex, consts.ChartPath, namespace, cluster.Shoot.Spec.Kubernetes.Version, configTypes)
+	secretData, err := a.GenerateSecretData(a.logger, ctx, ex, consts.Charts, consts.ChartPath, namespace, cluster.Shoot.Spec.Kubernetes.Version, configTypes)
 	if err != nil {
 		return err
 	}
