@@ -48,7 +48,7 @@ type CriResMgrConfig struct {
 	// Configs is a map of name of config file for cri-resource-manager and its contents.
 	Configs map[string]string `json:"configs,omitempty"`
 	// nodeSelector
-	NodeSelector map[string]string `json: "nodeSelector,omitempty"`
+	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
 }
 
 func GetProviderConfig(logger logr.Logger, extensions []v1beta1.Extension) (bool, CriResMgrConfig, error) {
@@ -107,16 +107,20 @@ func (a *Actuator) GenerateSecretData(logger logr.Logger, ctx context.Context, c
 	if err != nil {
 		return emptyMap, err
 	}
+
+	// Check if config was not empty
+	if nodeSelector == nil {
+		nodeSelector = map[string]string{}
+	}
+	// Only run on containerd nodes
+	nodeSelector[extensionsv1alpha1.CRINameWorkerLabel] = string(extensionsv1alpha1.CRINameContainerD)
+
 	imageVector := imagevector.ImageVector()
 	if len(imageVector) > 0 {
 		for _, imageSource := range imageVector {
 			logger.Info(fmt.Sprintf("images: found imageVector[name=%s]", imageSource.Name), "imageSource", (*imageSource.ToImage(&k8sVersion)).String())
 		}
 	}
-
-	// Only run on containerd nodes
-	nodeSelector[extensionsv1alpha1.CRINameWorkerLabel] = string(extensionsv1alpha1.CRINameContainerD)
-
 	// TODO k8sVersion can be used to extend FindImage FindOptions(targetVersion)
 	// to choose different version of image depending of target shoot Kubernetes. Not needed for now.
 	installationImage, err := imageVector.FindImage(consts.InstallationImageName)
