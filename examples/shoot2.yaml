@@ -26,42 +26,45 @@ spec:
   region: local
   ### In shoot local2 extension is required and not disabled with own config to test override.
   extensions:
-  - type: cri-resmgr-extension
-    disabled: false
-    providerConfig:
-      configs:
-        ### Those options are passed directly to cri-resmgr binary.
-        EXTRA_OPTIONS: | 
-          EXTRA_OPTIONS="--metrics-interval 15s" 
-        ### This is *static* initial configuration file that will be passed do systemd unit
-        fallback: |
-          policy:
-            Active: balloons
-            AvailableResources:
-              CPU: cpuset:1-10000
-            ReservedResources:
-              CPU: 1
-          logger:
-            Debug: resource-manager,cache,policy,resource-control,config-server
-            Klog:
-              skip_headers: true
-        ### This is *dynamic* config that will be applied by cri-resmgr-agent
-        default: |
-          policy:
-            Active: balloons
-            AvailableResources:
-              CPU: cpuset:1-15
-            ReservedResources:
-              CPU: cpuset:15
-            balloons:
-              BalloonTypes:
-                - Name: "mediumBalloonForShoot2"
-                  MinCPUs: 3
-                  MaxCPUs: 3
-                  MinBalloons: 2
-          instrumentation:
-            HTTPEndpoint: :8891
-            PrometheusExport: true
+    - type: cri-resmgr-extension
+      disabled: false
+      providerConfig:
+        ### NodeSelector limits on which group of workers the cri will be uploaded
+        nodeSelector:
+          # worker.gardener.cloud/pool: local
+        configs:
+          ### Those options are passed directly to cri-resmgr binary.
+          EXTRA_OPTIONS: |
+            EXTRA_OPTIONS="--metrics-interval 15s"
+          ### This is *static* initial configuration file that will be passed do systemd unit
+          fallback: |
+            policy:
+              Active: balloons
+              AvailableResources:
+                CPU: cpuset:1-10000
+              ReservedResources:
+                CPU: 1
+            logger:
+              Debug: resource-manager,cache,policy,resource-control,config-server
+              Klog:
+                skip_headers: true
+          ### This is *dynamic* config that will be applied by cri-resmgr-agent
+          default: |
+            policy:
+              Active: balloons
+              AvailableResources:
+                CPU: cpuset:1-15
+              ReservedResources:
+                CPU: cpuset:15
+              balloons:
+                BalloonTypes:
+                  - Name: "mediumBalloonForShoot2"
+                    MinCPUs: 3
+                    MaxCPUs: 3
+                    MinBalloons: 2
+            instrumentation:
+              HTTPEndpoint: :8891
+              PrometheusExport: true
 
   networking:
     type: calico
@@ -74,23 +77,23 @@ spec:
   provider:
     type: local
     workers:
-    - name: local
-      machine:
-        type: local
-      cri:
-        name: containerd
-      minimum: 2
-      maximum: 2
-      maxSurge: 1
-      maxUnavailable: 0
-    - name: local2
-      machine:
-        type: local
-      cri:
-        name: containerd
-      minimum: 2
-      maximum: 2
-      maxSurge: 1
-      maxUnavailable: 0
+      - name: local
+        machine:
+          type: local
+        cri:
+          name: containerd
+        minimum: 2
+        maximum: 2
+        maxSurge: 1
+        maxUnavailable: 0
+      - name: local2
+        machine:
+          type: local
+        cri:
+          name: containerd
+        minimum: 2
+        maximum: 2
+        maxSurge: 1
+        maxUnavailable: 0
   kubernetes:
     version: 1.24.0
