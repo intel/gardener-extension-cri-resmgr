@@ -186,6 +186,14 @@ func (a *Actuator) Delete(ctx context.Context, logger logr.Logger, ex *extension
 		return err
 	}
 
+	if err := managedresources.DeleteForSeed(ctx, a.client, namespace, consts.MonitoringManagedResourceName); err != nil {
+		return err
+	}
+
+	if err := managedresources.WaitUntilDeleted(timeoutShootCtx, a.client, namespace, consts.MonitoringManagedResourceName); err != nil {
+		return err
+	}
+
 	return nil
 }
 
