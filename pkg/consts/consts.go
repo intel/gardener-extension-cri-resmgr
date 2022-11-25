@@ -25,9 +25,6 @@ var Commit string
 //
 //go:generate cp -r ../../charts .
 var (
-	//go:embed monitoring.yaml
-	MonitoringYaml []byte
-
 	//go:embed charts/*
 	Charts embed.FS
 )
