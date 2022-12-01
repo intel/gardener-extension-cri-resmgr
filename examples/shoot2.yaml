@@ -30,7 +30,8 @@ spec:
     disabled: false
     providerConfig:
       configs:
-        ### Those options are passed directly to cri-resmgr binary.
+        ### Those options are passed directly to cri-resmgr binary. 
+        ### Should be the same value in pkg/consts/monitoring.yaml for scrape_interval      
         EXTRA_OPTIONS: | 
           EXTRA_OPTIONS="--metrics-interval 5s" 
         ### This is *dynamic* config that will be applied by cri-resmgr-agent

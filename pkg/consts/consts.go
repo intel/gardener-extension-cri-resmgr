@@ -27,6 +27,9 @@ var Commit string
 var (
 	//go:embed charts/*
 	Charts embed.FS
+
+	//go:embed monitoring.yaml
+	MonitoringYaml []byte
 )
 
 const (
@@ -42,9 +45,10 @@ const (
 	ConfigMapNamespaceEnvKey = "EXTENSION_CONFIGMAP_NAMESPACE"
 	ConfigKey                = "config.yaml"
 	// Don't use "/"" on the end of the path! Func read from embed.FS don't see dir
-	ChartPath               = "charts/internal/cri-resmgr-installation"
-	InstallationImageName   = "gardener-extension-cri-resmgr-installation"
-	AgentImageName          = "gardener-extension-cri-resmgr-agent"
-	InstallationReleaseName = "cri-resmgr-installation"
-	InstallationSecretKey   = "installation_chart"
+	ChartPath                     = "charts/internal/cri-resmgr-installation"
+	MonitoringManagedResourceName = "extension-monitoring-cri-resmgr"
+	InstallationImageName         = "gardener-extension-cri-resmgr-installation"
+	AgentImageName                = "gardener-extension-cri-resmgr-agent"
+	InstallationReleaseName       = "cri-resmgr-installation"
+	InstallationSecretKey         = "installation_chart"
 )

@@ -18,6 +18,7 @@ import (
 	"context"
 	"embed"
 	"fmt"
+	"regexp"
 	"time"
 
 	// Local
@@ -111,6 +112,13 @@ func (a *Actuator) GenerateSecretData(logger logr.Logger, ctx context.Context, e
 	return secretData, nil
 }
 
+func (a *Actuator) GenerateSecretDataToMonitoringManagedResource(namespace string) map[string][]byte {
+	// Replace marker in namespace field to true namespace.
+	yamlStringConfigNameWithNamespace := regexp.MustCompile(`{{ namespace }}`).ReplaceAllString(string(consts.MonitoringYaml), namespace)
+
+	return map[string][]byte{"data": []byte(yamlStringConfigNameWithNamespace)}
+}
+
 func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extensions1alpha1.Extension) error {
 	namespace := ex.GetNamespace()
 
@@ -146,6 +154,14 @@ func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extens
 		return err
 	}
 
+	//  Generate secret data that will be used by reference by ManagedResource to deploy.
+	secretDataForMonitoring := a.GenerateSecretDataToMonitoringManagedResource(namespace)
+
+	// Reconcile managedresource and secret for seed.
+	if err := managedresources.CreateForSeed(ctx, a.client, namespace, consts.MonitoringManagedResourceName, false, secretDataForMonitoring); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -167,6 +183,14 @@ func (a *Actuator) Delete(ctx context.Context, logger logr.Logger, ex *extension
 	}
 
 	if err := managedresources.WaitUntilDeleted(timeoutShootCtx, a.client, namespace, consts.ManagedResourceName); err != nil {
+		return err
+	}
+
+	if err := managedresources.DeleteForSeed(ctx, a.client, namespace, consts.MonitoringManagedResourceName); err != nil {
+		return err
+	}
+
+	if err := managedresources.WaitUntilDeleted(timeoutShootCtx, a.client, namespace, consts.MonitoringManagedResourceName); err != nil {
 		return err
 	}
 
