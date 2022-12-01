@@ -18,6 +18,11 @@ import _ "embed"
 var Version string
 var Commit string
 
+var (
+	//go:embed monitoring.yaml
+	MonitoringYaml []byte
+)
+
 const (
 	ExtensionName = "cri-resmgr"
 	ExtensionType = "cri-resmgr-extension"
@@ -26,10 +31,11 @@ const (
 	ActuatorName   = "cri-resmgr-actuator"
 	ConfigsSuffix  = "-configs" // used for logger name, finalizer and controller name
 
-	ManagedResourceName      = "extension-runtime-cri-resmgr"
-	ConfigMapName            = "gardener-extension-cri-resmgr-configs"
-	ConfigMapNamespaceEnvKey = "EXTENSION_CONFIGMAP_NAMESPACE"
-	ConfigKey                = "config.yaml"
+	ManagedResourceName           = "extension-runtime-cri-resmgr"
+	MonitoringManagedResourceName = "extension-monitoring-cri-resmgr"
+	ConfigMapName                 = "gardener-extension-cri-resmgr-configs"
+	ConfigMapNamespaceEnvKey      = "EXTENSION_CONFIGMAP_NAMESPACE"
+	ConfigKey                     = "config.yaml"
 
 	ChartPath               = "charts/internal/cri-resmgr-installation/"
 	InstallationImageName   = "gardener-extension-cri-resmgr-installation"
