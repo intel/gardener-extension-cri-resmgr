@@ -14,11 +14,11 @@
 
 ### Only uncomment for testing with "helm template "
 ### Comment before merging to master!
-### - "images" will be taken from from chart/images.{go,yaml} should be enough and only one source of truth.
+### - "images" will be taken from from chart/images.{go,yaml} and should be enough and only one source of truth.
 ###            or can be overwritten with imageVectorOverwrite in ControllerDeployment
-### - "configs" will be provided from configMap or Shoot.Spec.Extensions.providerConfig 
-### - "nodeSelector" provided by spec.Shoot.providerConfig and default one forcing of using containerd as CRI runtime
-#images: 
+### - "configs" will be provided from configMap or Shoot.Spec.Extensions.providerConfig
+### - "nodeSelector" will be provided by spec.Shoot.providerConfig and default one forcing of using containerd as CRI runtime
+#images:
 #  gardener-extension-cri-resmgr-installation: localhost:5001/gardener-extension-cri-resmgr-installation:latest
 #  gardener-extension-cri-resmgr-agent: localhost:5001/gardener-extension-cri-resmgr-agent:latest
 #

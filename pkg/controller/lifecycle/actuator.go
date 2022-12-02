@@ -62,7 +62,7 @@ func GetProviderConfig(logger logr.Logger, extensions []v1beta1.Extension) (bool
 			providerConfig = extension.ProviderConfig
 		}
 	}
-	// If found, the parse and unmarshal
+	// If found, then parse and unmarshal
 	if providerConfig != nil {
 		if err := json.Unmarshal(providerConfig.Raw, &criResMgrConfig); err != nil {
 			logger.Error(err, "ERROR unmarshalling providerConfig", "providerConfig", string(providerConfig.Raw))
