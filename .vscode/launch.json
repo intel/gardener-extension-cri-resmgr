@@ -12,7 +12,8 @@
             "program": "./pkg/controller/lifecycle",
             // "cwd": "./pkg/controller/lifecycle",
             "showGlobalVariables": true,
-            "args": []
+            "args": [],
+            "preLaunchTask": "generate",
         },
         {
             "name": "unittests-configs",
@@ -32,7 +33,7 @@
             "program": "./cmd/gardener-extension-cri-resmgr",
             "cwd": "${workspaceFolder}",
             "hideSystemGoroutines": true,
-            "env":{
+            "env": {
                 // Comment/Uncomment if configMap cannot be read.
                 "EXTENSION_CONFIGMAP_NAMESPACE": "extension-cri-resmgr-extension-9htbx",
             },
@@ -40,11 +41,15 @@
             // https://github.com/golang/vscode-go/blob/master/docs/debugging.md#configuration
             // "console": "integratedTerminal", // CHANGES DEBUGCONCSOLE->TERMIANL
             // "console": "externalTerminal", // FAILS - TIMEOUT
-            "dlvFlags": ["-r", "stdout:stdput.log", "-r", "stderr:stderr.log"], // IGNORED
+            "dlvFlags": [
+                "-r",
+                "stdout:stdput.log",
+                "-r",
+                "stderr:stderr.log"
+            ], // IGNORED
             // "debugAdapter": "legacy", // ERROR
             //"dlvFlags": ["-r", "stderr:output.log"], // IGNORED - work from command live dlv debug -r but not for dlv dap
             // "logDest": "/home/root/gardener-extension-cri-resmgr/output.log", // ERROR
-
         }
     ]
 }

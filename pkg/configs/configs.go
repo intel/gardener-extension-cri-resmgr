@@ -16,7 +16,6 @@ package configs
 
 import (
 	"context"
-	"fmt"
 	"os"
 
 	// Local
@@ -40,7 +39,8 @@ func GetBaseConfigsFromConfigMap(ctx context.Context, logger logr.Logger, k8sCli
 		configMap := &corev1.ConfigMap{}
 		err := k8sClient.Get(ctx, client.ObjectKey{Namespace: extensionConfigMapNamespace, Name: consts.ConfigMapName}, configMap)
 		if err != nil {
-			return nil, fmt.Errorf("configs: cannot read base configs: %s (%s/%s)", err, extensionConfigMapNamespace, consts.ConfigMapName)
+			logger.Info("configs: cannot find configMap with base configs, return empty map")
+			return baseConfigs, nil
 		}
 		baseConfigs = configMap.Data
 

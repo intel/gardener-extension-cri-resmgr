@@ -26,6 +26,7 @@ import (
 
 	// Gardener
 	"github.com/gardener/gardener/extensions/pkg/controller/extension"
+	gardencorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	"github.com/gardener/gardener/pkg/controllerutils/mapper"
 
@@ -62,25 +63,26 @@ func configMapToAllExtensionMapper(ctx context.Context, log logr.Logger, reader 
 	extensionsFound := []string{}
 	for _, extension := range extensionList.Items {
 		if extension.Spec.Type == consts.ExtensionType {
-			isOk := false
-			// Assume, there is only one condition and it is is Ok "True", then add this extension to requests for reconciliation
-			for _, condition := range extension.Status.Conditions {
-				isOk = (condition.Status == "True")
-				break
+
+			// Skip extensions in "processing" state to not race with original extension controller
+			// https://github.com/gardener/gardener/blob/5bf28f8ff7ecf3e2ffe21224f0cb6ee30daf9997/extensions/pkg/controller/status.go#L115
+			if extension.Status.LastOperation.State == gardencorev1beta1.LastOperationStateProcessing {
+				log.Info("ignore extension", "module", "configs", "extensionNamespace", extension.Namespace)
+				continue
 			}
-			if isOk {
-				requests = append(requests, reconcile.Request{
-					NamespacedName: types.NamespacedName{
-						Namespace: extension.Namespace,
-						Name:      extension.Name,
-					},
-				})
-				extensionsFound = append(extensionsFound, fmt.Sprintf("%s/%s", extension.Namespace, extension.Name))
-			}
+			requests = append(requests, reconcile.Request{
+				NamespacedName: types.NamespacedName{
+					Namespace: extension.Namespace,
+					Name:      extension.Name,
+				},
+			})
+			extensionsFound = append(extensionsFound, fmt.Sprintf("%s/%s", extension.Namespace, extension.Name))
 		}
 	}
 
-	log.Info("found configMap so start reconciliation of all healthy extensions", "module", "configs", "configMap", configMap, "extensions", extensionsFound)
+	if len(extensionsFound) > 0 {
+		log.Info("configs: configMap changed so reconcile following extensions", "module", "configs", "configMap", configMap, "extensions", extensionsFound)
+	}
 	return requests
 }
 
@@ -107,7 +109,7 @@ func AddConfigMapWatchingControllerToManager(mgr manager.Manager, options *optio
 	configReconcilerArgs := extension.AddArgs{
 		Actuator:        NewActuator(consts.ActuatorName + consts.ConfigsSuffix),
 		Resync:          60 * time.Minute,
-		FinalizerSuffix: consts.ExtensionType, // on purpuse we're using the same finalizer as original controller to "delete" only once without need for waiting for another "configs" controller
+		FinalizerSuffix: consts.ExtensionType, // We're using the same finalizer as the original controller on purpose to "delete" only once without a need to wait for another "configs" controller
 	}
 	controllerOptions.Reconciler = extension.NewReconciler(configReconcilerArgs)
 	controllerOptions.RecoverPanic = true

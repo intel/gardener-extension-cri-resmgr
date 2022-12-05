@@ -16,8 +16,10 @@ package lifecycle
 
 import (
 	"context"
+	"embed"
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"time"
 
 	// Local
@@ -99,8 +101,8 @@ type Actuator struct {
 	logger               logr.Logger
 }
 
-func (a *Actuator) GenerateSecretData(logger logr.Logger, ctx context.Context, chartPath string, namespace string,
-	k8sVersion string, configs map[string]map[string]string, nodeSelector map[string]string) (map[string][]byte, error) {
+func (a *Actuator) GenerateSecretData(logger logr.Logger, ctx context.Context, charts embed.FS, chartPath string,
+	namespace string, k8sVersion string, configs map[string]map[string]string, nodeSelector map[string]string) (map[string][]byte, error) {
 	emptyMap := map[string][]byte{}
 	// Depending on shoot, chartRenderer will have different capabilities based on K8s version.
 	chartRenderer, err := a.ChartRendererFactory.NewChartRendererForShoot(k8sVersion)
@@ -139,9 +141,8 @@ func (a *Actuator) GenerateSecretData(logger logr.Logger, ctx context.Context, c
 		"configs":      configs,
 		"nodeSelector": nodeSelector,
 	}
-	// TODO: release, err := chartRenderer.RenderEmbeddedFS(chartPath, InstallationReleaseName, metav1.NamespaceSystem, chartValues)
-	// Instead of using external chart files, we can embed everything in golang binary.
-	release, err := chartRenderer.Render(chartPath, consts.InstallationReleaseName, metav1.NamespaceSystem, chartValues)
+
+	release, err := chartRenderer.RenderEmbeddedFS(charts, chartPath, consts.InstallationReleaseName, metav1.NamespaceSystem, chartValues)
 
 	if err != nil {
 		return emptyMap, err
@@ -149,6 +150,13 @@ func (a *Actuator) GenerateSecretData(logger logr.Logger, ctx context.Context, c
 	// Put chart into secret
 	secretData := map[string][]byte{consts.InstallationSecretKey: release.Manifest()}
 	return secretData, nil
+}
+
+func (a *Actuator) GenerateSecretDataToMonitoringManagedResource(namespace string) map[string][]byte {
+	// Replace marker in namespace field to true namespace.
+	yamlStringConfigNameWithNamespace := regexp.MustCompile(`{{ namespace }}`).ReplaceAllString(string(consts.MonitoringYaml), namespace)
+
+	return map[string][]byte{"data": []byte(yamlStringConfigNameWithNamespace)}
 }
 
 func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extensionsv1alpha1.Extension) error {
@@ -186,13 +194,21 @@ func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extens
 	}
 
 	// Generate secret data that will be used by reference by ManagedResource to deploy.
-	secretData, err := a.GenerateSecretData(a.logger, ctx, consts.ChartPath, namespace, cluster.Shoot.Spec.Kubernetes.Version, configTypes, nodeSelector)
+	secretData, err := a.GenerateSecretData(a.logger, ctx, consts.Charts, consts.ChartPath, namespace, cluster.Shoot.Spec.Kubernetes.Version, configTypes, nodeSelector)
 	if err != nil {
 		return err
 	}
 
 	// Reconcile managedresource and secret for shoot.
 	if err := managedresources.CreateForShoot(ctx, a.client, namespace, consts.ManagedResourceName, false, secretData); err != nil {
+		return err
+	}
+
+	//  Generate secret data that will be used by reference by ManagedResource to deploy.
+	secretDataForMonitoring := a.GenerateSecretDataToMonitoringManagedResource(namespace)
+
+	// Reconcile managedresource and secret for seed.
+	if err := managedresources.CreateForSeed(ctx, a.client, namespace, consts.MonitoringManagedResourceName, false, secretDataForMonitoring); err != nil {
 		return err
 	}
 
@@ -217,6 +233,14 @@ func (a *Actuator) Delete(ctx context.Context, logger logr.Logger, ex *extension
 	}
 
 	if err := managedresources.WaitUntilDeleted(timeoutShootCtx, a.client, namespace, consts.ManagedResourceName); err != nil {
+		return err
+	}
+
+	if err := managedresources.DeleteForSeed(ctx, a.client, namespace, consts.MonitoringManagedResourceName); err != nil {
+		return err
+	}
+
+	if err := managedresources.WaitUntilDeleted(timeoutShootCtx, a.client, namespace, consts.MonitoringManagedResourceName); err != nil {
 		return err
 	}
 

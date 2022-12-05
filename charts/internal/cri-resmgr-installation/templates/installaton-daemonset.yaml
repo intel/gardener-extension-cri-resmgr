@@ -31,7 +31,9 @@ spec:
     spec:
       hostPID: true
       hostIPC: true
-      # give a 30 seconds to uninstall cri-rm
+      hostNetwork: true
+      # give a 30 seconds to uninstall cri-resmgr from the host system
+      # this is the default
       terminationGracePeriodSeconds: 30
       # only install to nodes with containerd
       nodeSelector:
@@ -44,9 +46,18 @@ spec:
           capabilities:
             add:
             - SYS_CHROOT
+        # give it some CPU resources to allow healthcheck/readiness probe work under heavy load 
+        resources:
+          requests:
+            cpu: 100m
+        ports:
+        - containerPort: 8891
         volumeMounts:
         - name: host-volume
           mountPath: /var/host
+        - name: host-volume-var-run-cri-resmgr
+          mountPath: /var-run-cri-resmgr
+          path: /var/run/cri-resmgr/
         - name: cri-resmgr-installation-script
           mountPath: /scripts
         {{- if (.Values.configs | default dict).static }}
@@ -58,10 +69,35 @@ spec:
             command: ["chroot", "/var/host", "bash", "-c", "systemctl status cri-resource-manager"]
           failureThreshold: 1
           initialDelaySeconds: 10
+      ### HELPER CONTAINER to get output from cri-resmgr unit
+      #- name: logger
+      #  image: alpine
+      #  command: 
+      #  - chroot
+      #  - /var/host
+      #  - journalctl
+      #  - -f
+      #  - -u
+      #  - cri-resource-manager
+      #  - -n
+      #  - "1000"
+      #  - -o 
+      #  - short-iso 
+      #  - --no-hostname
+      #  securityContext:
+      #    capabilities:
+      #      add:
+      #      - SYS_CHROOT
+      #  volumeMounts:
+      #  - name: host-volume
+      #    mountPath: /var/host
       volumes:
       - name: host-volume
         hostPath:
           path: /
+      - name: host-volume-var-run-cri-resmgr
+        hostPath:
+          path: /var/run/cri-resmgr/
       - name: cri-resmgr-installation-script
         configMap:
           name: cri-resmgr-installation-script

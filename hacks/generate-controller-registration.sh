@@ -38,56 +38,56 @@ providerConfig:
     ### "image" overwrites extension (for seed) and "images" overwrite installation/agent (for shoot) images defined in charts/images.yaml
     #image:
     #  repository: v2.isvimgreg.com/gardener-extension-cri-resmgr
-    #  tag: latest
+    #  tag: mybranch
     #  pullPolicy: Always
     #imageVectorOverwrite: |
     #  images:
     #  - name: gardener-extension-cri-resmgr-installation
-    #    tag: latest
+    #    tag: mybranch
     #    repository: v2.isvimgreg.com/gardener-extension-cri-resmgr-installation
     #  - name: gardener-extension-cri-resmgr-agent
-    #    tag: latest
+    #    tag: mybranch
     #    repository: v2.isvimgreg.com/gardener-extension-cri-resmgr-agent
     ### Uncomment to provide own "fallback" configuration for CRI-Resource-Manager
     ### Use ballons policy as an example:
     # based on: https://github.com/intel/cri-resource-manager/blob/master/sample-configs/balloons-policy.cfg
     configs:
       ### Those options are passed directly to cri-resmgr binary.
-      EXTRA_OPTIONS: | 
-        EXTRA_OPTIONS="--metrics-interval 10s" 
-      ### This is *static* initial configuraiton file that will be passed do systemd unit
-      fallback: |
-        policy:
-          Active: balloons
-          AvailableResources:
-            CPU: cpuset:1-1000
-          ReservedResources:
-            CPU: 1
-        logger:
-          Debug: resource-manager,cache,policy,resource-control,config-server
-          Klog:
-            # Enables nice logs with logger names that can be used in Debug
-            skip_headers: true
+      # EXTRA_OPTIONS: | 
+      #   EXTRA_OPTIONS="--metrics-interval 10s" 
       ### This is *dynamic* config that will be applied by cri-resmgr-agent
-      default: |
-        policy:
-          Active: balloons
-          AvailableResources:
-            CPU: cpuset:1-15
-          ReservedResources:
-            CPU: cpuset:15
-          balloons:
-            BalloonTypes:
-              - Name: "smallBalloon"
-                MinCPUs: 2
-                MaxCPUs: 2
-                MinBalloons: 1
-        instrumentation:
-          HTTPEndpoint: :8891
-          PrometheusExport: true
-        # For furhter debugging
-        # dump:
-        #   Config: off:.*,full:((Create)|(Remove)|(Run)|(Update)|(Start)|(Stop)).*
+      # default: |
+      #   policy:
+      #     Active: balloons
+      #     AvailableResources:
+      #       CPU: cpuset:1-128
+      #     ReservedResources:
+      #       CPU: 1
+      #     balloons:
+      #       BalloonTypes:
+      #         - Name: "HP-balloon"
+      #           MinCPUs: 2
+      #           MaxCPUs: 2
+      #           MinBalloons: 1
+      #           Namespaces:
+      #           - nginx
+      #         - Name: "LP-balloon"
+      #           MinCPUs: 4
+      #           MaxCPUs: 4
+      #           MinBalloons: 1
+      #           Namespaces:
+      #           - stress
+      #   instrumentation:
+      #     HTTPEndpoint: :8891
+      #     PrometheusExport: true
+      #   logger:
+      #     Debug: resource-manager,cache,policy,config-server,cpuallocator
+      #     Klog:
+      #       # Enables nice logs with logger names that can be used in Debug
+      #       skip_headers: true
+      #   dump:
+      #     Debug: true
+
 ---
 apiVersion: core.gardener.cloud/v1beta1
 kind: ControllerRegistration
@@ -95,16 +95,15 @@ metadata:
   name: cri-resmgr-extension
 spec:
   deployment:
-    # For development purpose - deploy the extensions before even shoots are created (or enabled)
-    #policy: Always
+    # For demo/development purpose - deploy the extensions before even shoots are created (or enabled)
+    policy: Always
     deploymentRefs:
     - name: cri-resmgr-extension
   resources:
   - kind: Extension
     type: cri-resmgr-extension
     globallyEnabled: false
-    # we need to wait for kubelet readines and almost whole shoot ready - give it a pleanty of time 5 minutes
-    reconcileTimeout: "300s"
+    reconcileTimeout: "120s"
 EOT
 
 echo "Successfully generated ControllerRegistration and ControllerDeployment example to $OUT"

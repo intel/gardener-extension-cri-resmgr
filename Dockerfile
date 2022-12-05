@@ -22,8 +22,14 @@ RUN go mod download
 COPY cmd cmd
 COPY cmd/gardener-extension-cri-resmgr/app cmd/gardener-extension-cri-resmgr/app
 COPY pkg pkg
-COPY charts charts
-RUN go install ./cmd/gardener-extension-cri-resmgr/...
+# only those two are required for building golang extension
+COPY charts/images.go charts/images.go
+COPY charts/images.yaml charts/images.yaml
+ARG COMMIT=unset
+ARG VERSION=unset
+RUN go install -ldflags="-X github.com/intel/gardener-extension-cri-resmgr/pkg/consts.Commit=${COMMIT} -X github.com/intel/gardener-extension-cri-resmgr/pkg/consts.Version=${VERSION}" ./cmd/gardener-extension-cri-resmgr/... 
+# copying late saves time - no need to rebuild binary when only assest change
+#COPY charts charts
 
 ### extension
 FROM alpine:3.16.0 AS gardener-extension-cri-resmgr
@@ -37,3 +43,7 @@ FROM ubuntu:22.04 AS gardener-extension-cri-resmgr-installation
 RUN apt update -y && apt install -y make wget
 COPY Makefile .
 RUN make _install-binaries
+ARG COMMIT=unset
+ARG VERSION=unset
+RUN bash -c "echo ${VERSION} >/VERSION"
+RUN bash -c "echo ${COMMIT} >/COMMIT"

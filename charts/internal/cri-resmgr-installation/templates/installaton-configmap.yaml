@@ -26,6 +26,7 @@ data:
       exit 1
     fi
     function install() {
+      echo "*** Installation start ($(cat /VERSION)-$(cat /COMMIT))"
       echo Installing binaries from /opt/ to host /
       cp -v -r /cri-resmgr-installation/opt/ /var/host/
 
@@ -83,6 +84,12 @@ data:
         echo '         To fix just restart this pod or manually remove /var/lib/cri-resmgr on host.'
       fi
 
+      # Wait for agent to be ready and give 15 seconds for initilization.
+      while ! [ -S /var-run-cri-resmgr/cri-resmgr-agent.sock ]; do 
+          echo 'Waiting for agent socket...'; 
+          sleep 1; 
+      done 
+
       echo Enable and restart cri-resource-manager systemd unit.
       chroot /var/host bash -c "systemctl enable cri-resource-manager"
       chroot /var/host bash -c "systemctl restart cri-resource-manager"
@@ -114,27 +121,18 @@ data:
     }
 
     function uninstall() {
+      echo "*** Staring uninstallation procedure..." 
+
       # Remove cri-resmgr from kubelet configuration
       echo "Remove cri-resmgr from kubelet configuration"
       sed -i '/\[Unit\]/aAfter=containerd.service' /var/host/etc/systemd/system/kubelet.service
       sed -i 's/\/var\/run\/cri-resmgr\/cri-resmgr.sock/unix:\/\/\/run\/containerd\/containerd.sock/g' /var/host/etc/systemd/system/kubelet.service
 
-      # Stop and disable cri-resource-manager
-      echo 'Stop and disable cri-resource-manager'
-      chroot /var/host bash -c "systemctl disable cri-resource-manager"
-      chroot /var/host bash -c "systemctl stop cri-resource-manager"
-
-      # Remove files left after cri-resmgr
-      echo "Remove files left after cri-resmgr"
-      rm -rf /var/host/opt/intel
-      rm -rf /var/host/etc/cri-resmgr
-      rm -rf /var/host/etc/systemd/system/cri-resource-manager.service
-      rm -rf /var/host/etc/default/cri-resource-manager 
-
       echo "*** Restart kubelet with original configuration"
       sleep 2
       chroot /var/host bash -c "systemctl daemon-reload"
       chroot /var/host bash -c "systemctl restart kubelet"
+      sleep 5
 
       # Check if kubelet is active
       echo 'Check if kubelet is active'
@@ -145,8 +143,24 @@ data:
           fi
       done
 
+      # Stop and disable cri-resource-manager
+      echo 'Stop and disable cri-resource-manager'
+      chroot /var/host bash -c "systemctl disable cri-resource-manager"
+      chroot /var/host bash -c "systemctl stop cri-resource-manager"
+      echo 'cri-resource-manager --reset-policy'
+      chroot /var/host /opt/intel/bin/cri-resmgr --reset-policy
+
+      # Remove files left after cri-resmgr
+      echo "Remove files left after cri-resmgr"
+      rm -vrf /var/host/opt/intel
+      rm -vrf /var/host/etc/cri-resmgr
+      rm -vrf /var/host/etc/systemd/system/cri-resource-manager.service
+      rm -vrf /var/host/etc/default/cri-resource-manager 
+
       # Remove cache and state directory of cri-resmgr
-      rm -rf /var/lib/cri-resmgr
+      echo "Remove cri-resmgr cache"
+      rm -vrf /var/host/var/lib/cri-resmgr
+
 
       # Sleep after successful removal 
       echo '*** Uninstallation successful.'
@@ -155,8 +169,7 @@ data:
     function quit() {
       echo "Try to kill pid $child myself..."
       kill -KILL "$child" 2>/dev/null
-      # give 5 sec see logs 
-      sleep 5
+      sleep 1
       exit 0
     }
 
@@ -173,9 +186,32 @@ data:
 
     # Sleep after installation the task
     echo "cri-resource-manager installed. Run checks in a loop..."
-    # Just five seconds  before first check to allow kubelet/cri to go from activating to active state
+    # Wait five seconds before first check to allow kubelet/cri-resmgr to switch from activating to active state.
     sleep 5
     while true; do
+      # only where there is not force.cfg
+      if [[ ! -f /etc/cri-resmgr/force.cfg ]]; then
+          # Support switching policy if one requested from agent is different than active.
+          active_policy=$(chroot /var/host bash -c 'cat /var/lib/cri-resmgr/cache | jq .PolicyName -r')
+          cfg_data=$(chroot /var/host bash -c 'cat /var/lib/cri-resmgr/cache | jq .Cfg.Data -r')
+          if [[ "$cfg_data" == "null"  ]]; then
+              requested_policy="null"
+          else 
+              requested_policy=$(chroot /var/host bash -c 'cat /var/lib/cri-resmgr/cache | jq .Cfg.Data.policy -r | grep Active | cut -f 2 -d " "')
+          fi
+          if [[ "$requested_policyX" != "X" && "$active_policyX" != "X" && "$requested_policy" != "$active_policy" ]]; then
+              echo "*** [$(date --rfc-3339=seconds)] Policy update: requested policy from agent ($requested_policy) is different from active=$active_policy - reconfigure/reset daemon policy..."
+              chroot /var/host systemctl stop cri-resource-manager
+              sleep 5
+              chroot /var/host /opt/intel/bin/cri-resmgr --reset-policy
+              chroot /var/host systemctl start cri-resource-manager
+              sleep 5
+              continue
+          fi
+      else
+        active_policy="forced"
+      fi
+
       # Run checks and uninstall if there is any issues with kubelet or cri-rm or containerd
       criIsActive=$(chroot /var/host bash -c "systemctl is-active cri-resource-manager")
       kubeletIsActive=$(chroot /var/host bash -c "systemctl is-active kubelet")
@@ -233,13 +269,14 @@ data:
         echo "Note: sleep to give "human" a chance to fix config/state (then please restart this pod)..."
         sleep inf
       else
-        echo "*** [$(date --rfc-3339=seconds)] Checks OK (cri-resource-manager=${criIsActive} kubelet=${kubeletIsActive} containerd=${containerdIsActive})"
+        echo "*** [$(date --rfc-3339=seconds)] Checks OK (cri-resource-manager=${criIsActive} kubelet=${kubeletIsActive} containerd=${containerdIsActive} ActivePolicy=$active_policy)"
       fi
 
       # Put sleep in background and wait to allow bash to capture and handle signals
       # based on https://unix.stackexchange.com/questions/146756/forward-sigterm-to-child-in-bash
-      sleep 60 &
+      sleep 30 &
       child=$!
+      # echo "Wait for sleeping child: ${child}"
       wait $child
 
     done

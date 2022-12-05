@@ -28,8 +28,7 @@ spec:
   ## To enable mark it as disable=false or use globallyEnabled: true
   extensions:
   - type: cri-resmgr-extension
-    disabled: true
-
+    #disabled: false
   networking:
     type: calico
     providerConfig:
