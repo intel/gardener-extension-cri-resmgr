@@ -13,12 +13,21 @@
 // limitations under the License.
 package consts
 
-import _ "embed"
+import (
+	"embed"
+	_ "embed"
+)
 
 var Version string
 var Commit string
 
+// go embed requires files in package through security
+//
+//go:generate cp -r ../../charts .
 var (
+	//go:embed charts/*
+	Charts embed.FS
+
 	//go:embed monitoring.yaml
 	MonitoringYaml []byte
 )
@@ -31,15 +40,15 @@ const (
 	ActuatorName   = "cri-resmgr-actuator"
 	ConfigsSuffix  = "-configs" // used for logger name, finalizer and controller name
 
-	ManagedResourceName           = "extension-runtime-cri-resmgr"
+	ManagedResourceName      = "extension-runtime-cri-resmgr"
+	ConfigMapName            = "gardener-extension-cri-resmgr-configs"
+	ConfigMapNamespaceEnvKey = "EXTENSION_CONFIGMAP_NAMESPACE"
+	ConfigKey                = "config.yaml"
+	// Don't use "/"" on the end of the path! Func read from embed.FS don't see dir
+	ChartPath                     = "charts/internal/cri-resmgr-installation"
 	MonitoringManagedResourceName = "extension-monitoring-cri-resmgr"
-	ConfigMapName                 = "gardener-extension-cri-resmgr-configs"
-	ConfigMapNamespaceEnvKey      = "EXTENSION_CONFIGMAP_NAMESPACE"
-	ConfigKey                     = "config.yaml"
-
-	ChartPath               = "charts/internal/cri-resmgr-installation/"
-	InstallationImageName   = "gardener-extension-cri-resmgr-installation"
-	AgentImageName          = "gardener-extension-cri-resmgr-agent"
-	InstallationReleaseName = "cri-resmgr-installation"
-	InstallationSecretKey   = "installation_chart"
+	InstallationImageName         = "gardener-extension-cri-resmgr-installation"
+	AgentImageName                = "gardener-extension-cri-resmgr-agent"
+	InstallationReleaseName       = "cri-resmgr-installation"
+	InstallationSecretKey         = "installation_chart"
 )
