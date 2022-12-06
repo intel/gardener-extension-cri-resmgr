@@ -27,7 +27,7 @@ COPY charts/images.go charts/images.go
 COPY charts/images.yaml charts/images.yaml
 ARG COMMIT=unset
 ARG VERSION=unset
-RUN go install -ldflags="-X github.com/intel/gardener-extension-cri-resmgr/pkg/consts.Commit=${COMMIT} -X github.com/intel/gardener-extension-cri-resmgr/pkg/consts.Version=${VERSION}" ./cmd/gardener-extension-cri-resmgr/... 
+RUN go install -ldflags="-X github.com/intel/gardener-extension-cri-resmgr/pkg/consts.Commit=${COMMIT} -X github.com/intel/gardener-extension-cri-resmgr/pkg/consts.Version=${VERSION}" ./cmd/gardener-extension-cri-resmgr/...
 # copying late saves time - no need to rebuild binary when only assest change
 COPY charts charts
 
@@ -38,10 +38,14 @@ COPY charts/internal /charts/internal
 COPY --from=builder /go/bin/gardener-extension-cri-resmgr /gardener-extension-cri-resmgr
 ENTRYPOINT ["/gardener-extension-cri-resmgr"]
 
-### installation
-FROM ubuntu:22.04 AS gardener-extension-cri-resmgr-installation
-RUN apt update -y && apt install -y make wget
+
+### agnet and installation joined
+FROM golang:1.19.3-bullseye as gardener-extension-cri-resmgr-installation-and-agent
+# Please keep this in sync with CRI_RM_VERSION from Makefile!
+COPY --from=intel/cri-resmgr-agent:v0.7.2 /bin/* /bin/
 COPY Makefile .
+RUN apt update
+RUN apt install -y make wget
 RUN make _install-binaries
 ARG COMMIT=unset
 ARG VERSION=unset

@@ -26,6 +26,7 @@ data:
       exit 1
     fi
     function install() {
+
       echo "*** Installation start ($(cat /VERSION)-$(cat /COMMIT))"
       echo Installing binaries from /opt/ to host /
       cp -v -r /cri-resmgr-installation/opt/ /var/host/
@@ -37,28 +38,10 @@ data:
       mkdir -p /var/host/etc/default/
       cp -v /cri-resmgr-installation/etc/default/cri-resource-manager /var/host/etc/default/
 
-      echo 'Installing cri-resource-manager fallback.cfg (when mounted) otherwise copy sample included inside container image'
+      echo 'Installing cri-resource manager with null policy'
       mkdir -p /var/host/etc/cri-resmgr
-      if [[ -f /etc/cri-resmgr/fallback.cfg ]]; then
-        echo 'Installing mounted configuration file from /etc/cri-resmgr/fallback.cfg to host /etc/cri-resmgr'
-        cp -v /etc/cri-resmgr/fallback.cfg /var/host/etc/cri-resmgr/fallback.cfg
-      else 
-        echo 'Installing fallback configuration file from container image (from release tgz).'
-        cp -v /cri-resmgr-installation/etc/cri-resmgr/fallback.cfg.sample /var/host/etc/cri-resmgr/fallback.cfg
-      fi
-
-      # Handle force.cfg
-      if [[ -f /etc/cri-resmgr/force.cfg ]]; then
-        echo 'Installing mounted configuration file from /etc/cri-resmgr/force.cfg to host /etc/cri-resmgr/'
-        cp -v /etc/cri-resmgr/force.cfg /var/host/etc/cri-resmgr/force.cfg
-        sed -i 's!fallback!force!g' /var/host/etc/default/cri-resource-manager
-      else 
-        # check if force is used and remove if not mounted (from filesystem config systemd config
-        if [[ -f /var/host/etc/cri-resmgr/force.cfg ]]; then
-          rm -v /var/host/etc/cri-resmgr/force.cfg
-        fi
-        sed -i 's!force!fallback!g' /var/host/etc/default/cri-resource-manager
-      fi
+      cp -v /cri-resmgr-installation/etc/cri-resmgr/fallback.cfg.sample /var/host/etc/cri-resmgr/fallback.cfg
+      sed -i 's/topology-aware/null/g' /var/host/etc/cri-resmgr/fallback.cfg
 
       # Handle EXTRA_OPTIONS
       if [[ -f /etc/cri-resmgr/EXTRA_OPTIONS.cfg ]]; then
@@ -83,12 +66,6 @@ data:
         echo '         cri-resource-manager was not properly uninstalled, cached config will be used instead of fallback.cfg'
         echo '         To fix just restart this pod or manually remove /var/lib/cri-resmgr on host.'
       fi
-
-      # Wait for agent to be ready and give 15 seconds for initilization.
-      while ! [ -S /var-run-cri-resmgr/cri-resmgr-agent.sock ]; do 
-          echo 'Waiting for agent socket...'; 
-          sleep 1; 
-      done 
 
       echo Enable and restart cri-resource-manager systemd unit.
       chroot /var/host bash -c "systemctl enable cri-resource-manager"
@@ -118,6 +95,15 @@ data:
       chroot /var/host bash -c "systemctl daemon-reload"
       chroot /var/host bash -c "systemctl restart kubelet"
       # Don't wait for activation - we will run check at the of the script
+
+
+      # Check if agent config was mounted
+      if ! [[ -f "cri-resmgr-config.{{ $configName}}" ]]; then
+        echo "Dynamic configuration is required by the extension. Mount a configmap with the configuration for the agent."
+        exit 1
+      fi
+      echo "Start cri-resmgr-agent"
+      /bin/cri-resmgr-agent
     }
 
     function uninstall() {
@@ -280,5 +266,3 @@ data:
       wait $child
 
     done
-
-

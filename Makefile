@@ -15,9 +15,9 @@
 #
 .PHONY: build clean e2e-test test start _install-binaries _build-agent-image build-images push-images _build-extension-image _build-installation-image
 
-REGISTRY                         := localhost:5001/
-EXTENSION_IMAGE_NAME             := gardener-extension-cri-resmgr
-INSTALLATION_IMAGE_NAME          := gardener-extension-cri-resmgr-installation
+REGISTRY                         	:= localhost:5001/
+EXTENSION_IMAGE_NAME             	:= gardener-extension-cri-resmgr
+INSTALLATION_IMAGE_NAME          	:= gardener-extension-cri-resmgr-installation-and-agent
 TAG                              := latest
 
 # Please keep it up to date with agent image in charts/images.yaml

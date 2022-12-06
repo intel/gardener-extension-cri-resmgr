@@ -13,6 +13,7 @@
 # limitations under the License.
 
 {{/* dynamic configuration have different form than static configs - are read by cri-agent */}}
+{{ required "The dynamic config is required by the extension" .Values.configs.default }}
 {{- range $configName, $configContent := (.Values.configs | default dict).dynamic }}
 apiVersion: v1
 kind: ConfigMap

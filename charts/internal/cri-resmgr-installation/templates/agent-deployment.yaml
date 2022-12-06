@@ -69,6 +69,11 @@ spec:
         app: cri-resmgr-agent
         gardener.cloud/role: system-component
     spec:
+      hostPID: true
+      hostIPC: true
+      # give a 30 seconds to uninstall cri-resmgr from the host system
+      # this is the default
+      terminationGracePeriodSeconds: 30
       serviceAccount: cri-resmgr-agent
       # only install to nodes with containerd
       nodeSelector:
@@ -82,18 +87,36 @@ spec:
                 fieldPath: spec.nodeName
           image: {{ index .Values.images "gardener-extension-cri-resmgr-agent" }}
           imagePullPolicy: Always # for testing
+          command: ["/scripts/install-cri-resmgr.sh"]
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
               drop: ["ALL"]
+              add:
+              - SYS_CHROOT
+            resources:
+              requests:
+                cpu: 100m
             readOnlyRootFilesystem: true
           volumeMounts:
           - name: resmgrsockets
             mountPath: /var/run/cri-resmgr
+          - name: host-volume
+            mountPath: /var/host
+          - name: host-volume-var-run-cri-resmgr
+            mountPath: /var-run-cri-resmgr
+            path: /var/run/cri-resmgr/
+          - name: cri-resmgr-installation-script
+            mountPath: /scripts
           resources:
             limits:
               cpu: 100m
               memory: 512Mi
+          readinessProbe:
+            exec:
+              command: ["chroot", "/var/host", "bash", "-c", "systemctl status cri-resource-manager"]
+            failureThreshold: 1
+            initialDelaySeconds: 10
           livenessProbe:
             exec:
               command: ["/bin/cri-resmgr-agent-probe"]
@@ -103,3 +126,13 @@ spec:
       - name: resmgrsockets
         hostPath:
           path: /var/run/cri-resmgr
+      - name: host-volume
+        hostPath:
+          path: /
+      - name: host-volume-var-run-cri-resmgr
+        hostPath:
+          path: /var/run/cri-resmgr/
+      - name: cri-resmgr-installation-script
+        configMap:
+          name: cri-resmgr-installation-script
+          defaultMode: 0744
