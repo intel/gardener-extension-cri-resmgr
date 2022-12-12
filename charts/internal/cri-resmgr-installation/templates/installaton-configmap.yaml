@@ -96,12 +96,6 @@ data:
       chroot /var/host bash -c "systemctl restart kubelet"
       # Don't wait for activation - we will run check at the of the script
 
-
-      # Check if agent config was mounted
-      if ! [[ -f "cri-resmgr-config.{{ $configName}}" ]]; then
-        echo "Dynamic configuration is required by the extension. Mount a configmap with the configuration for the agent."
-        exit 1
-      fi
       echo "Start cri-resmgr-agent"
       /bin/cri-resmgr-agent
     }

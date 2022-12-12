@@ -13,19 +13,17 @@
 # limitations under the License.
 
 {{/* dynamic configuration have different form than static configs - are read by cri-agent */}}
-{{ required "The dynamic config is required by the extension" .Values.configs.default }}
-{{- range $configName, $configContent := (.Values.configs | default dict).dynamic }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   namespace: kube-system
-  name: "cri-resmgr-config.{{ $configName}}"
+  name: "cri-resmgr-config.{{ required "The dynamic config is required by the extension" .Values.configs.dynamic }}"
 data:
+{{- range $configName, $configContent := (.Values.configs | default dict).dynamic }}
 {{- $configObject := fromYaml $configContent }}
 {{- range $configKey, $configValue := $configObject }}
   {{ $configKey }}: |
     {{- $configValue | toYaml | nindent 4 }}
 {{- end }}
----
-
 {{- end }}
+---
