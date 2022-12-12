@@ -210,9 +210,9 @@ cd -
 ```sh
 make -C ~/work/gardener kind-up
 
-kubectl cluster-info --context kind-gardener-local --kubeconfig ./example/gardener-local/kind/local/kubeconfig
+kubectl cluster-info --context kind-gardener-local --kubeconfig ~/work/gardener/example/gardener-local/kind/local/kubeconfig
 # WARNING!: this overwrites your local kubeconfig
-cp ./example/gardener-local/kind/local/kubeconfig ~/.kube/config
+cp ~/work/gardener/example/gardener-local/kind/local/kubeconfig ~/.kube/config
 ```
 
 Check that kind cluster is ready:
