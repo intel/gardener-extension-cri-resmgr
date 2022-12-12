@@ -201,7 +201,7 @@ This is based on https://github.com/gardener/gardener/blob/master/docs/deploymen
 mkdir -p ~/work/
 git clone https://github.com/gardener/gardener ~/work/gardener
 cd ~/work/gardener
-git checkout v1.56.0
+git checkout v1.61.2
 cd -
 ```
 
@@ -210,9 +210,9 @@ cd -
 ```sh
 make -C ~/work/gardener kind-up
 
-kubectl cluster-info --context kind-gardener-local --kubeconfig ~/work/gardener/example/gardener-local/kind/kubeconfig
+kubectl cluster-info --context kind-gardener-local --kubeconfig ./example/gardener-local/kind/local/kubeconfig
 # WARNING!: this overwrites your local kubeconfig
-cp ~/work/gardener/example/gardener-local/kind/kubeconfig ~/.kube/config
+cp ./example/gardener-local/kind/local/kubeconfig ~/.kube/config
 ```
 
 Check that kind cluster is ready:
