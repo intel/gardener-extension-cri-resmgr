@@ -13,7 +13,7 @@
 # limitations under the License.
 
 ### builder
-FROM golang:1.18.3-alpine3.16 AS builder
+FROM golang:1.19.4-alpine3.16 AS builder
 
 WORKDIR /gardener-extension-cri-resmgr
 COPY go.mod .
