@@ -12,6 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+// TODO: debug the if clause that requires default config
+{{- if not (hasKey .Values.configs "default") }}
+{{- required "Dynamic config is expected" .Values.configs.default }}
+{{- end }}
+
 {{/* dynamic configuration have different form than static configs - are read by cri-agent */}}
 apiVersion: v1
 kind: ConfigMap
