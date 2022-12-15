@@ -26,50 +26,53 @@ spec:
   region: local
   ### In shoot local2 extension is required and not disabled with own config to test override.
   extensions:
-  - type: cri-resmgr-extension
-    disabled: false
-    providerConfig:
-      configs:
-        ### Those options are passed directly to cri-resmgr binary. 
-        ### Should be the same value in pkg/consts/monitoring.yaml for scrape_interval      
-        EXTRA_OPTIONS: | 
-          EXTRA_OPTIONS="--metrics-interval 5s" 
-        ### This is *dynamic* config that will be applied by cri-resmgr-agent
-        default: |
-          policy:
-            Active: balloons
-            AvailableResources:
-              CPU: cpuset:1-15
-            ReservedResources:
-              CPU: cpuset:1
-            balloons:
-              BalloonTypes:
-                - Name: "some-special-balloon-for-shoot2"
-                  MinCPUs: 3
-                  MaxCPUs: 3
-                  MinBalloons: 2
-          logger:
-            Debug: resource-manager,cache,policy,config-server
-            Klog:
-              skip_headers: true
-          instrumentation:
-            HTTPEndpoint: :8891
-            PrometheusExport: true
-        ### This is *static* initial configuration file that will be passed do systemd unit
-        fallback: |
-          policy:
-            Active: balloons
-            AvailableResources:
-              CPU: cpuset:1-15
-            ReservedResources:
-              CPU: 1
-          logger:
-            Debug: resource-manager,cache,policy,config-server
-            Klog:
-              skip_headers: true
-          instrumentation:
-            HTTPEndpoint: :8891
-            PrometheusExport: true
+    - type: cri-resmgr-extension
+      disabled: false
+      providerConfig:
+        ### NodeSelector limits on which group of workers the cri will be uploaded
+        nodeSelector:
+          # worker.gardener.cloud/pool: local
+        configs:
+          ### Those options are passed directly to cri-resmgr binary.
+          ### Should be the same value in pkg/consts/monitoring.yaml for scrape_interval
+          EXTRA_OPTIONS: |
+            EXTRA_OPTIONS="--metrics-interval 5s"
+          ### This is *dynamic* config that will be applied by cri-resmgr-agent
+          default: |
+            policy:
+              Active: balloons
+              AvailableResources:
+                CPU: cpuset:1-15
+              ReservedResources:
+                CPU: cpuset:1
+              balloons:
+                BalloonTypes:
+                  - Name: "some-special-balloon-for-shoot2"
+                    MinCPUs: 3
+                    MaxCPUs: 3
+                    MinBalloons: 2
+            logger:
+              Debug: resource-manager,cache,policy,config-server
+              Klog:
+                skip_headers: true
+            instrumentation:
+              HTTPEndpoint: :8891
+              PrometheusExport: true
+          ### This is *static* initial configuration file that will be passed do systemd unit
+          fallback: |
+            policy:
+              Active: balloons
+              AvailableResources:
+                CPU: cpuset:1-15
+              ReservedResources:
+                CPU: 1
+            logger:
+              Debug: resource-manager,cache,policy,config-server
+              Klog:
+                skip_headers: true
+            instrumentation:
+              HTTPEndpoint: :8891
+              PrometheusExport: true
 
   networking:
     type: calico
@@ -82,14 +85,14 @@ spec:
   provider:
     type: local
     workers:
-    - name: local
-      machine:
-        type: local
-      cri:
-        name: containerd
-      minimum: 1
-      maximum: 1
-      maxSurge: 1
-      maxUnavailable: 0
+      - name: local
+        machine:
+          type: local
+        cri:
+          name: containerd
+        minimum: 1
+        maximum: 1
+        maxSurge: 1
+        maxUnavailable: 0
   kubernetes:
     version: 1.25.4
