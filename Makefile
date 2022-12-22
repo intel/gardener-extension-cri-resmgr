@@ -36,6 +36,7 @@ COMMIT:=`git rev-parse HEAD`
 DIRTY:=`git diff --quiet || echo '-dirty'`
 VERSION:=`git tag | sort -V | tail -1`
 build:
+	rm -rf ./pkg/consts/charts
 	go generate ./...
 	echo "Building ${VERSION}-${COMMIT}${DIRTY}"
 	go build -ldflags="-X github.com/intel/gardener-extension-cri-resmgr/pkg/consts.Commit=${COMMIT}${DIRTY} -X github.com/intel/gardener-extension-cri-resmgr/pkg/consts.Version=${VERSION}" -v ./cmd/gardener-extension-cri-resmgr
@@ -81,9 +82,11 @@ _install-binaries:
 	rm /cri-resmgr-installation/$(CRI_RM_ARCHIVE_NAME)
 
 _build-extension-image:
+	rm -rf ./pkg/consts/charts
 	go generate ./...
 	docker build --build-arg COMMIT=${COMMIT}${DIRTY} --build-arg VERSION=${VERSION} -t $(REGISTRY)$(EXTENSION_IMAGE_NAME):$(TAG) -f Dockerfile --target $(EXTENSION_IMAGE_NAME) .
 _build-installation-image:
+	rm -rf ./pkg/consts/charts
 	go generate ./...
 	docker build --build-arg COMMIT=${COMMIT}${DIRTY} --build-arg VERSION=${VERSION} -t $(REGISTRY)$(INSTALLATION_IMAGE_NAME):$(TAG) -f Dockerfile --target $(INSTALLATION_IMAGE_NAME) .
 
