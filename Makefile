@@ -25,6 +25,9 @@ CRI_RM_VERSION                   := 0.7.2
 CRI_RM_ARCHIVE_NAME              := cri-resource-manager-$(CRI_RM_VERSION).x86_64.tar.gz
 CRI_RM_URL_RELEASE               := https://github.com/intel/cri-resource-manager/releases/download/v$(CRI_RM_VERSION)/$(CRI_RM_ARCHIVE_NAME)
 
+LEADER_ELECTION                  := true
+LEADER_ELECTION_NAMESPACE        := garden
+
 
 # make start options
 IGNORE_OPERATION_ANNOTATION 	 := false

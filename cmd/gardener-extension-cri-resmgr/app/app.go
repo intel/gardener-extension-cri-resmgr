@@ -17,25 +17,29 @@ package app
 import (
 	"context"
 	"fmt"
+	"os"
 
 	// Local
 
+	"github.com/intel/gardener-extension-cri-resmgr/pkg/consts"
 	"github.com/intel/gardener-extension-cri-resmgr/pkg/controller/healthcheck"
 	"github.com/intel/gardener-extension-cri-resmgr/pkg/controller/lifecycle"
 	"github.com/intel/gardener-extension-cri-resmgr/pkg/options"
 
 	// Gardener
+	controllercmd "github.com/gardener/gardener/extensions/pkg/controller/cmd"
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
 	resourcemanagerv1alpha1 "github.com/gardener/gardener/pkg/apis/resources/v1alpha1"
 
 	// Other
 	"github.com/spf13/cobra"
+	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
 func NewExtensionControllerCommand(ctx context.Context) *cobra.Command {
-
+   
 	options := options.NewOptions()
 
 	cmd := &cobra.Command{
@@ -48,7 +52,10 @@ func NewExtensionControllerCommand(ctx context.Context) *cobra.Command {
 			}
 
 			mgrOpts := manager.Options{
-				LeaderElection:     false,
+				LeaderElectionResourceLock: resourcelock.LeasesResourceLock,
+				LeaderElection:     true,
+				LeaderElectionID:   controllercmd.LeaderElectionNameID(consts.ExtensionName),
+				LeaderElectionNamespace: os.Getenv("LEADER_ELECTION_NAMESPACE"),
 				MetricsBindAddress: "0",
 			}
 
