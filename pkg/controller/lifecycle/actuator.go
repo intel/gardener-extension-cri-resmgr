@@ -200,7 +200,8 @@ func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extens
 	}
 
 	// Reconcile managedresource and secret for shoot.
-	if err := managedresources.CreateForShoot(ctx, a.client, namespace, consts.ManagedResourceName, false, secretData); err != nil {
+	origin := "gardener"
+	if err := managedresources.CreateForShoot(ctx, a.client, namespace, consts.ManagedResourceName, origin, false, secretData); err != nil {
 		return err
 	}
 
