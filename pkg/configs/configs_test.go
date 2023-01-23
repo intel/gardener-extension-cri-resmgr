@@ -15,19 +15,24 @@
 package configs_test
 
 import (
-
 	// Local
+	"context"
+	"os"
 
-	"github.com/go-logr/logr"
+	mock_client "github.com/intel/gardener-extension-cri-resmgr/mocks"
 	"github.com/intel/gardener-extension-cri-resmgr/pkg/configs"
+	"github.com/intel/gardener-extension-cri-resmgr/pkg/consts"
 
 	// Gardener
-
 	"github.com/gardener/gardener/pkg/logger"
 
 	// Other
+	"github.com/go-logr/logr"
+	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+
+	corev1 "k8s.io/api/core/v1"
 )
 
 var _ = Describe("cri-resource-manager extension configs reading", func() {
@@ -38,8 +43,13 @@ var _ = Describe("cri-resource-manager extension configs reading", func() {
 		log             logr.Logger
 	)
 	BeforeEach(func() {
-		log = logger.ZapLogger(true)
+		var err error
+		log, err = logger.NewZapLogger(logger.InfoLevel, logger.FormatText)
+		if err != nil {
+			log.Error(err, "error creating NewZapLogger")
+		}
 	})
+
 	It("non configs provided", func() {
 		configs, err := configs.PrepareConfigTypes(log, map[string]string{}, map[string]string{})
 		Expect(err).NotTo(HaveOccurred())
@@ -77,5 +87,53 @@ var _ = Describe("cri-resource-manager extension configs reading", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(configs).Should(Equal(map[string]map[string]string{"dynamic": {}, "static": {"fallback": "new", "EXTRA_OPTIONS": "baz", "force": "force"}}))
 		})
+	})
+
+	Describe("GetBaseConfigsFromConfigMap reads extension ConfigMap and get its configs as baseConfigs", func() {
+		var (
+			ctx           context.Context
+			log           logr.Logger
+			mockCtrl      *gomock.Controller
+			mockk8sClient *mock_client.MockClient
+		)
+		BeforeEach(func() {
+			ctx = context.TODO()
+
+			var err error
+			log, err = logger.NewZapLogger(logger.InfoLevel, logger.FormatText)
+			if err != nil {
+				log.Error(err, "error creating NewZapLogger")
+			}
+
+			mockCtrl = gomock.NewController(GinkgoT())
+			mockk8sClient = mock_client.NewMockClient(mockCtrl)
+		})
+		AfterEach(func() {
+			mockCtrl.Finish()
+		})
+
+		It("get empty config", func() {
+
+			configs, err := configs.GetBaseConfigsFromConfigMap(ctx, log, mockk8sClient)
+
+			Expect(err).NotTo(HaveOccurred())
+			Expect(configs).Should(Equal(map[string]string{}))
+		})
+
+		It("get not empty config", func() {
+			os.Setenv(consts.ConfigMapNamespaceEnvKey, "smoots")
+
+			mockk8sClient.
+				EXPECT().
+				Get(gomock.Any(), gomock.Any(), gomock.Any()).
+				SetArg(2, corev1.ConfigMap{Data: map[string]string{"test": "test"}}).
+				AnyTimes()
+
+			configs, err := configs.GetBaseConfigsFromConfigMap(ctx, log, mockk8sClient)
+
+			Expect(err).NotTo(HaveOccurred())
+			Expect(configs).Should(Equal(map[string]string{"test": "test"}))
+		})
+
 	})
 })
