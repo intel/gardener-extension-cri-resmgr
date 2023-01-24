@@ -1,0 +1,50 @@
+name: E2E tests
+
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+
+jobs:
+  e2e-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install k8s Kind Cluster
+        uses: helm/kind-action@v1.4.0
+        with:
+          install_only: true
+          #  config: ~/work/gardener/example/gardener-local/kind/local/kubeconfig
+
+      - name: Checkout gardener-extension-cri-resmgr
+        uses: actions/checkout@v3
+        with:
+          path: gardener-extension-cri-resmgr
+
+      - name: Checkout gardener repo
+        uses: actions/checkout@v3
+        with:
+          repository: gardener/gardener
+          path: gardener
+
+      - name: Create k8s Kind Cluster
+        run: make -C ./gardener kind-up
+
+      # cp ~/work/gardener/example/gardener-local/kind/local/kubeconfig ~/.kube/config
+
+      - name: Wait for Kind Cluster
+        run: sleep 5
+
+      - name: Create Gardener Cluster
+        run: make -C ./gardener gardener-up
+
+      # cache docker container, push to repo with action
+
+      - name: Build and push gardener-extension-cri-resmgr docker images 
+        run: make -C ./gardener-extension-cri-resmgr build-images push-images
+
+      - name: Create ctrldeploy and ctrlreg for gardener-extension-cri-resmgr in Gardner Cluster
+        run: kubectl apply -f ./gardener-extension-cri-resmgr/examples/ctrldeploy-ctrlreg.yaml
+
+      # tests
+            
