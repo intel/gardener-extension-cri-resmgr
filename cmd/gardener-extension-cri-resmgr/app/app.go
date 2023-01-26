@@ -43,6 +43,10 @@ import (
 func NewExtensionControllerCommand(ctx context.Context) *cobra.Command {
 
 	options := options.NewOptions()
+	restOpts := &controllercmd.RESTOptions{}
+	reconcileOpts := &controllercmd.ReconcilerOptions{
+		IgnoreOperationAnnotation: true,
+	}
 	mgrOpts := &controllercmd.ManagerOptions{
 		LeaderElection:     false,
 		MetricsBindAddress: "0",
@@ -64,6 +68,8 @@ func NewExtensionControllerCommand(ctx context.Context) *cobra.Command {
 		mgrOpts,
 		healthCheckOpts,
 		heartbeatOpts,
+		restOpts,
+		reconcileOpts,
 	)
 
 	cmd := &cobra.Command{
@@ -83,7 +89,7 @@ func NewExtensionControllerCommand(ctx context.Context) *cobra.Command {
 				return err
 			}
 
-			mgr, err := manager.New(options.RestOptions.Completed().Config, mgrOpts.Completed().Options())
+			mgr, err := manager.New(restOpts.Completed().Config, mgrOpts.Completed().Options())
 			if err != nil {
 				return fmt.Errorf("could not instantiate controller-manager: %s", err)
 			}
@@ -110,7 +116,7 @@ func NewExtensionControllerCommand(ctx context.Context) *cobra.Command {
 				return err
 			}
 
-			ignoreOperationAnnotation := options.ReconcileOptions.Completed().IgnoreOperationAnnotation
+			ignoreOperationAnnotation := reconcileOpts.Completed().IgnoreOperationAnnotation
 			// if true:
 			//		predicates: only observe "generation change" predicate (oldObject.generation != newObject.generation)
 			// 		watches:  watch Cluster (additionally and map to extensions) and Extension
@@ -139,7 +145,7 @@ func NewExtensionControllerCommand(ctx context.Context) *cobra.Command {
 		},
 	}
 
-	options.OptionAggregator.AddFlags(cmd.Flags())
+	allOpts.AddFlags(cmd.Flags())
 
 	return cmd
 }
