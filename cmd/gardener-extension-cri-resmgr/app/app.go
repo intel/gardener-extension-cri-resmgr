@@ -26,6 +26,7 @@ import (
 
 	// Gardener
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
+	"github.com/gardener/gardener/extensions/pkg/controller/heartbeat"
 	resourcemanagerv1alpha1 "github.com/gardener/gardener/pkg/apis/resources/v1alpha1"
 
 	// Other
@@ -47,12 +48,7 @@ func NewExtensionControllerCommand(ctx context.Context) *cobra.Command {
 				return fmt.Errorf("error completing options: %s", err)
 			}
 
-			mgrOpts := manager.Options{
-				LeaderElection:     false,
-				MetricsBindAddress: "0",
-			}
-
-			mgr, err := manager.New(options.RestOptions.Completed().Config, mgrOpts)
+			mgr, err := manager.New(options.RestOptions.Completed().Config, options.MgrOpts.Completed().Options())
 			if err != nil {
 				return fmt.Errorf("could not instantiate controller-manager: %s", err)
 			}
@@ -63,15 +59,24 @@ func NewExtensionControllerCommand(ctx context.Context) *cobra.Command {
 			if err := resourcemanagerv1alpha1.AddToScheme(scheme); err != nil {
 				return err
 			}
-
+			if err := options.OptionAggregator.Complete(); err != nil {
+				return err
+			}
+			if err := options.HeartbeatOpts.Validate(); err != nil {
+				return err
+			}
+			options.HeartbeatOpts.Completed().Apply(&heartbeat.DefaultAddOptions)
 			// mgrOpts.ClientDisableCacheFor = []client.Object{
 			// 	&corev1.ConfigMap{}, // applied for ManagedResources
 			// }
-
 			// Enable healthcheck.
 			// "Registration" adds additional controller that watches over Extension/Cluster.
 			// TODO: ENABLE before merging!!!
 			if err := healthcheck.RegisterHealthChecks(mgr); err != nil {
+				return err
+			}
+
+			if err := heartbeat.AddToManager(mgr); err != nil {
 				return err
 			}
 
