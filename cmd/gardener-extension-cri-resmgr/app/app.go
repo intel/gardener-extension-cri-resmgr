@@ -59,7 +59,13 @@ func NewExtensionControllerCommand(ctx context.Context) *cobra.Command {
 			if err := resourcemanagerv1alpha1.AddToScheme(scheme); err != nil {
 				return err
 			}
-
+			if err := options.OptionAggregator.Complete(); err != nil {
+				return err
+			}
+			if err := options.HeartbeatOpts.Validate(); err != nil {
+				return err
+			}
+			options.HeartbeatOpts.Completed().Apply(&heartbeat.DefaultAddOptions)
 			// mgrOpts.ClientDisableCacheFor = []client.Object{
 			// 	&corev1.ConfigMap{}, // applied for ManagedResources
 			// }
@@ -69,7 +75,7 @@ func NewExtensionControllerCommand(ctx context.Context) *cobra.Command {
 			if err := healthcheck.RegisterHealthChecks(mgr); err != nil {
 				return err
 			}
-			options.HeartbeatOpts.Completed().Apply(&heartbeat.DefaultAddOptions)
+
 			if err := heartbeat.AddToManager(mgr); err != nil {
 				return err
 			}
