@@ -69,7 +69,7 @@ func NewExtensionControllerCommand(ctx context.Context) *cobra.Command {
 			if err := healthcheck.RegisterHealthChecks(mgr); err != nil {
 				return err
 			}
-
+			options.HeartbeatOpts.Completed().Apply(&heartbeat.DefaultAddOptions)
 			if err := heartbeat.AddToManager(mgr); err != nil {
 				return err
 			}
