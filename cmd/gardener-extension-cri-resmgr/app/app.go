@@ -17,22 +17,17 @@ package app
 import (
 	"context"
 	"fmt"
-	"os"
 
 	// Local
 
-	"github.com/intel/gardener-extension-cri-resmgr/pkg/consts"
 	"github.com/intel/gardener-extension-cri-resmgr/pkg/controller/healthcheck"
 	"github.com/intel/gardener-extension-cri-resmgr/pkg/controller/lifecycle"
 	"github.com/intel/gardener-extension-cri-resmgr/pkg/options"
 
 	// Gardener
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
-	controllercmd "github.com/gardener/gardener/extensions/pkg/controller/cmd"
 	"github.com/gardener/gardener/extensions/pkg/controller/heartbeat"
-	heartbeatcmd "github.com/gardener/gardener/extensions/pkg/controller/heartbeat/cmd"
 	resourcemanagerv1alpha1 "github.com/gardener/gardener/pkg/apis/resources/v1alpha1"
-	"github.com/gardener/gardener/pkg/logger"
 
 	// Other
 	"github.com/spf13/cobra"
@@ -43,34 +38,6 @@ import (
 func NewExtensionControllerCommand(ctx context.Context) *cobra.Command {
 
 	options := options.NewOptions()
-	restOpts := &controllercmd.RESTOptions{}
-	reconcileOpts := &controllercmd.ReconcilerOptions{
-		IgnoreOperationAnnotation: true,
-	}
-	mgrOpts := &controllercmd.ManagerOptions{
-		LeaderElection:     false,
-		MetricsBindAddress: "0",
-		LogLevel:           logger.InfoLevel,
-		LogFormat:          logger.FormatText,
-	}
-
-	healthCheckOpts := &controllercmd.ControllerOptions{
-		MaxConcurrentReconciles: 5,
-	}
-
-	heartbeatOpts := &heartbeatcmd.Options{
-		ExtensionName:        consts.ExtensionName,
-		RenewIntervalSeconds: 30,
-		Namespace:            os.Getenv("EXTENSION_CONFIGMAP_NAMESPACE"),
-	}
-
-	allOpts := controllercmd.NewOptionAggregator(
-		mgrOpts,
-		healthCheckOpts,
-		heartbeatOpts,
-		restOpts,
-		reconcileOpts,
-	)
 
 	cmd := &cobra.Command{
 		Use:   "cri-resmgr-controller-manager",
@@ -81,15 +48,7 @@ func NewExtensionControllerCommand(ctx context.Context) *cobra.Command {
 				return fmt.Errorf("error completing options: %s", err)
 			}
 
-			if err := allOpts.Complete(); err != nil {
-				return err
-			}
-
-			if err := heartbeatOpts.Validate(); err != nil {
-				return err
-			}
-
-			mgr, err := manager.New(restOpts.Completed().Config, mgrOpts.Completed().Options())
+			mgr, err := manager.New(options.RestOptions.Completed().Config, options.MgrOpts.Completed().Options())
 			if err != nil {
 				return fmt.Errorf("could not instantiate controller-manager: %s", err)
 			}
@@ -104,7 +63,6 @@ func NewExtensionControllerCommand(ctx context.Context) *cobra.Command {
 			// mgrOpts.ClientDisableCacheFor = []client.Object{
 			// 	&corev1.ConfigMap{}, // applied for ManagedResources
 			// }
-			heartbeatOpts.Completed().Apply(&heartbeat.DefaultAddOptions)
 			// Enable healthcheck.
 			// "Registration" adds additional controller that watches over Extension/Cluster.
 			// TODO: ENABLE before merging!!!
@@ -116,7 +74,7 @@ func NewExtensionControllerCommand(ctx context.Context) *cobra.Command {
 				return err
 			}
 
-			ignoreOperationAnnotation := reconcileOpts.Completed().IgnoreOperationAnnotation
+			ignoreOperationAnnotation := options.ReconcileOptions.Completed().IgnoreOperationAnnotation
 			// if true:
 			//		predicates: only observe "generation change" predicate (oldObject.generation != newObject.generation)
 			// 		watches:  watch Cluster (additionally and map to extensions) and Extension
@@ -145,7 +103,7 @@ func NewExtensionControllerCommand(ctx context.Context) *cobra.Command {
 		},
 	}
 
-	allOpts.AddFlags(cmd.Flags())
+	options.OptionAggregator.AddFlags(cmd.Flags())
 
 	return cmd
 }
