@@ -82,6 +82,24 @@ rules:
   - patch
   - update
 - apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - create
+  - list
+  - watch
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  resourceNames:
+  - gardener-extension-heartbeat 
+  verbs:
+  - get
+  - update
+  - patch
+- apiGroups:
   - ""
   resources:
   - configmaps
