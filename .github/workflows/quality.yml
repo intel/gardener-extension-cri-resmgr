@@ -25,6 +25,9 @@ jobs:
           # default fetch-depth is insufficent to find previous coverage notes
           fetch-depth: 10
 
+      - name: dd
+        run: go generate ./...
+
       - uses: gwatts/go-coverage-action@v1
         id: coverage
         with:
@@ -33,7 +36,7 @@ jobs:
           coverage-threshold: 80
 
           # collect coverage for all packages beyond the one under test
-          cover-pkg: ./...
+          cover-pkg: ./pkg/...
 
       #     # Ignore code-generated files when calculating coverage totals
       #     ignore-pattern: |
