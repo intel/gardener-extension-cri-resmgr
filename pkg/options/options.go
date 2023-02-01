@@ -15,13 +15,21 @@
 package options
 
 import (
+	"os"
+
 	controllercmd "github.com/gardener/gardener/extensions/pkg/controller/cmd"
+	heartbeatcmd "github.com/gardener/gardener/extensions/pkg/controller/heartbeat/cmd"
+	"github.com/gardener/gardener/pkg/logger"
+	"github.com/intel/gardener-extension-cri-resmgr/pkg/consts"
 )
 
 type Options struct {
 	RestOptions       *controllercmd.RESTOptions       // kubeconfig / MasterURL
 	ControllerOptions *controllercmd.ControllerOptions // MaxConcurrentReconciles
 	ReconcileOptions  *controllercmd.ReconcilerOptions // IgnoreOperationAnnotation
+	MgrOpts           *controllercmd.ManagerOptions
+	HealthCheckOpts   *controllercmd.ControllerOptions
+	HeartbeatOpts     *heartbeatcmd.Options
 	OptionAggregator  controllercmd.OptionAggregator
 }
 
@@ -33,12 +41,30 @@ func NewOptions() *Options {
 			MaxConcurrentReconciles: 1,
 		},
 		ReconcileOptions: &controllercmd.ReconcilerOptions{},
+		MgrOpts: &controllercmd.ManagerOptions{
+			LeaderElection:     false,
+			MetricsBindAddress: "0",
+			LogLevel:           logger.InfoLevel,
+			LogFormat:          logger.FormatText,
+		},
+		HealthCheckOpts: &controllercmd.ControllerOptions{
+			MaxConcurrentReconciles: 5,
+		},
+		HeartbeatOpts: &heartbeatcmd.Options{
+			ExtensionName:        consts.ExtensionName,
+			RenewIntervalSeconds: 30,
+			Namespace:            os.Getenv("EXTENSION_CONFIGMAP_NAMESPACE"),
+		},
 	}
 
 	options.OptionAggregator = controllercmd.NewOptionAggregator(
 		options.RestOptions,
 		options.ControllerOptions,
 		options.ReconcileOptions,
+		options.MgrOpts,
+		controllercmd.PrefixOption("healthcheck-", options.HealthCheckOpts),
+		options.HeartbeatOpts,
 	)
+
 	return options
 }
