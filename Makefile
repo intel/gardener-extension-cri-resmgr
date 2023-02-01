@@ -50,6 +50,8 @@ build:
 
 test:
 	go generate ./...
+	mockgen -destination=mocks/actuator.go -package=mocks github.com/gardener/gardener/extensions/pkg/controller/extension Actuator
+	mockgen -destination=mocks/client.go -package=mocks sigs.k8s.io/controller-runtime/pkg/client Client
 	# Those tests (renders charts, uses env to read files) change CWD during execution (required because rely on charts and fixtures).
 	go test  -v ./pkg/...
 
@@ -100,3 +102,11 @@ push-images:
 	docker push $(REGISTRY)$(EXTENSION_IMAGE_NAME):$(TAG)
 	docker push $(REGISTRY)$(INSTALLATION_IMAGE_NAME):$(TAG)
 	echo "Images ${VERSION}-${COMMIT}${DIRTY} pushed."
+
+generate-mocks:
+	mockgen -destination=mocks/actuator.go -package=mocks github.com/gardener/gardener/extensions/pkg/controller/extension Actuator
+	mockgen -destination=mocks/client.go -package=mocks sigs.k8s.io/controller-runtime/pkg/client Client
+
+generate-coverage:
+	go test -coverprofile=coverage.out ./pkg/...
+	go tool cover -html=coverage.out -o coverage.html    
