@@ -33,9 +33,12 @@ jobs:
 
       - name: Fail Build if gofmt found errors
         if: failure()
-        uses: actions/failure@v1
+        uses: actions/upload-file@v1
         with:
-          message: gofmt found formatting errors
+          name: gofmt-error.txt
+          content: |
+            gofmt found formatting errors
+          path: .
 
       - name: Run golint
         run: |
@@ -51,9 +54,12 @@ jobs:
 
       - name: Fail Build if golint found errors
         if: steps.golint.outputs.exit-code != '0'
-        uses: actions/failure@v1
+        uses: actions/upload-file@v1
         with:
-          message: golint found linting errors
+          name: golint-error.txt
+          content: |
+            golint found linting errors
+          path: .
 
       - name: Run Tests and Generate Coverage Report
         run: |
