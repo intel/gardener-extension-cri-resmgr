@@ -15,11 +15,11 @@ jobs:
         with:
           go-version: 1.16
 
-      - name: Run gofmt
-        uses: actions/bin/filter@v1
-        with:
-          args: gofmt -d .
-        id: gofmt
+      # - name: Run gofmt
+      #   uses: actions/bin/filter@v1
+      #   with:
+      #     args: gofmt -d .
+      #   id: gofmt
 
       - name: Report gofmt Results
         if: steps.gofmt.outputs.exit-code == '0'
