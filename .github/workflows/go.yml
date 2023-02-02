@@ -15,21 +15,24 @@ jobs:
         with:
           go-version: 1.16
 
-      # - name: Run gofmt
-      #   uses: actions/bin/filter@v1
-      #   with:
-      #     args: gofmt -d .
-      #   id: gofmt
+      - name: Run gofmt
+        run: |
+          if [ "$(gofmt -l . | wc -l)" -ne "0" ]; then
+            gofmt -d .
+            echo "gofmt found formatting errors"
+            exit 1
+          fi
+        id: gofmt
 
       - name: Report gofmt Results
-        if: steps.gofmt.outputs.exit-code == '0'
+        if: success()
         uses: actions/upload-artifact@v1
         with:
           name: gofmt-report
           path: .
 
       - name: Fail Build if gofmt found errors
-        if: steps.gofmt.outputs.exit-code != '0'
+        if: failure()
         uses: actions/failure@v1
         with:
           message: gofmt found formatting errors
