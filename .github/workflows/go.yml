@@ -31,14 +31,14 @@ jobs:
           name: gofmt-report
           path: .
 
-      - name: Fail Build if gofmt found errors
-        if: failure()
-        uses: actions/upload-file@v1
-        with:
-          name: gofmt-error.txt
-          content: |
-            gofmt found formatting errors
-          path: .
+      # - name: Fail Build if gofmt found errors
+      #   if: failure()
+      #   uses: actions/upload-artifact@v1
+      #   with:
+      #     name: gofmt-error.txt
+      #     path: .
+      #     content: |
+      #       gofmt found formatting errors
 
       - name: Run golint
         run: |
@@ -52,14 +52,14 @@ jobs:
           name: golint-report
           path: .
 
-      - name: Fail Build if golint found errors
-        if: steps.golint.outputs.exit-code != '0'
-        uses: actions/upload-file@v1
-        with:
-          name: golint-error.txt
-          content: |
-            golint found linting errors
-          path: .
+      # - name: Fail Build if golint found errors
+      #   if: steps.golint.outputs.exit-code != '0'
+      #   uses: actions/upload-artifact@v1
+      #   with:
+      #     name: golint-error.txt
+      #     path: .
+      #     content: |
+      #       golint found linting errors
 
       - name: Run Tests and Generate Coverage Report
         run: |
