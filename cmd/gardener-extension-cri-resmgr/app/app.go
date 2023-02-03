@@ -17,24 +17,20 @@ package app
 import (
 	"context"
 	"fmt"
-	"os"
 
 	// Local
 
-	"github.com/intel/gardener-extension-cri-resmgr/pkg/consts"
 	"github.com/intel/gardener-extension-cri-resmgr/pkg/controller/healthcheck"
 	"github.com/intel/gardener-extension-cri-resmgr/pkg/controller/lifecycle"
 	"github.com/intel/gardener-extension-cri-resmgr/pkg/options"
 
 	// Gardener
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
-	controllercmd "github.com/gardener/gardener/extensions/pkg/controller/cmd"
 	"github.com/gardener/gardener/extensions/pkg/controller/heartbeat"
 	resourcemanagerv1alpha1 "github.com/gardener/gardener/pkg/apis/resources/v1alpha1"
 
 	// Other
 	"github.com/spf13/cobra"
-	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )

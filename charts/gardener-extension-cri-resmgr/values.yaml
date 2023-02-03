@@ -24,6 +24,15 @@ image:
   tag: latest
   pullPolicy: Always
 
+vpa:
+  enabled: true
+  resourcePolicy:
+    minAllowed:
+      cpu: 50m
+      memory: 64Mi
+  updatePolicy:
+    updateMode: "Auto"
+
 ### NOTE: The values provided here are only for development/testing purposes as an example.
 ### Default values, defined in charts.go package by embedding charts/images.yaml, are the "source of truth".
 ### Please do not uncomment those, unless you want to just try "helm template ." without extension.
