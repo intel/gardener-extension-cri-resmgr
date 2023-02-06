@@ -17,28 +17,34 @@ package lifecycle_test
 import (
 	"context"
 
-	// Local
+	"github.com/gardener/gardener/pkg/apis/core/v1beta1"
+	"github.com/gardener/gardener/pkg/logger"
+	"github.com/go-logr/logr"
+
+	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/intel/gardener-extension-cri-resmgr/pkg/consts"
 	actuator "github.com/intel/gardener-extension-cri-resmgr/pkg/controller/lifecycle"
-	"k8s.io/apimachinery/pkg/runtime"
 
-	// Gardener
-
-	"github.com/gardener/gardener/pkg/apis/core/v1beta1"
-	"github.com/gardener/gardener/pkg/logger"
-
-	// Other
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("cri-resource-manager extension actuator tests", func() {
+	var (
+		log logr.Logger
+	)
+	BeforeEach(func() {
+		var err error
+		log, err = logger.NewZapLogger(logger.InfoLevel, logger.FormatText)
+		if err != nil {
+			log.Error(err, "error creating NewZapLogger")
+		}
+	})
 
 	Describe("can extract data from providerConfig", func() {
 		It("when there is not extensions, should not be found", func() {
 			extensions := []v1beta1.Extension{}
-			log := logger.ZapLogger(true)
 			found, _, err := actuator.GetProviderConfig(log, extensions)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(found).To(BeFalse())
@@ -52,7 +58,6 @@ var _ = Describe("cri-resource-manager extension actuator tests", func() {
 					},
 				},
 			}
-			log := logger.ZapLogger(true)
 			found, _, err := actuator.GetProviderConfig(log, extensions)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(found).To(BeFalse())
@@ -67,7 +72,6 @@ var _ = Describe("cri-resource-manager extension actuator tests", func() {
 					},
 				},
 			}
-			log := logger.ZapLogger(true)
 			found, criResMgrConfig, err := actuator.GetProviderConfig(log, extensions)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(found).To(BeTrue())
@@ -83,7 +87,6 @@ var _ = Describe("cri-resource-manager extension actuator tests", func() {
 					},
 				},
 			}
-			log := logger.ZapLogger(true)
 			found, criResMgrConfig, err := actuator.GetProviderConfig(log, extensions)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(found).To(BeTrue())
@@ -116,7 +119,6 @@ var _ = Describe("cri-resource-manager extension actuator tests", func() {
 		// "github.com/golang/mock/gomock"
 		a := actuator.NewActuator("mock").(*actuator.Actuator)
 		ctx := context.TODO()
-		log := logger.ZapLogger(true)
 
 		It("generate properly with expected bodies inside", func() {
 			secret, err := a.GenerateSecretData(log, ctx, consts.Charts, consts.ChartPath, "foo_namespace", "v1.0.0", configTypes, nodeSelector)
@@ -136,4 +138,16 @@ var _ = Describe("cri-resource-manager extension actuator tests", func() {
 			Expect(string(secret[consts.InstallationSecretKey])).Should(ContainSubstring("CONFIG_BODY_OF_NODEFOO: |"))
 		})
 	})
+
+	Describe("rendering monitoring chart with GenerateSecretDataToMonitoringManagedResource", func() {
+		It("generate correct config with replaced namespace", func() {
+			a := actuator.NewActuator("mock").(*actuator.Actuator)
+
+			output := a.GenerateSecretDataToMonitoringManagedResource("test")
+
+			Expect(string(output["data"])).To(ContainSubstring("test"))
+			Expect(string(output["data"])).NotTo(ContainSubstring("{{ namespace }}"))
+		})
+	})
+
 })
