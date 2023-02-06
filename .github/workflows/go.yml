@@ -40,17 +40,15 @@ jobs:
       #     content: |
       #       gofmt found formatting errors
 
-      - name: Run golint
-        run: |
-          golint ./...
-        id: golint
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
 
-      - name: Report golint Results
-        if: steps.golint.outputs.exit-code == '0'
-        uses: actions/upload-artifact@v1
-        with:
-          name: golint-report
-          path: .
+      # - name: Report golint Results
+      #   if: steps.golint.outputs.exit-code == '0'
+      #   uses: actions/upload-artifact@v1
+      #   with:
+      #     name: golint-report
+      #     path: .
 
       # - name: Fail Build if golint found errors
       #   if: steps.golint.outputs.exit-code != '0'
