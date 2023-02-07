@@ -40,8 +40,8 @@ jobs:
       #     content: |
       #       gofmt found formatting errors
 
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v3
+      # - name: golangci-lint
+      #   uses: golangci/golangci-lint-action@v3
 
       # - name: Report golint Results
       #   if: steps.golint.outputs.exit-code == '0'

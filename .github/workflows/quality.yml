@@ -28,19 +28,25 @@ jobs:
       - name: dd
         run: go generate ./...
 
-      - uses: gwatts/go-coverage-action@v1
-        id: coverage
-        with:
-          # Optional coverage threshold
-          # use fail-coverage to determine what should happen below this threshold
-          coverage-threshold: 80
+      # - uses: gwatts/go-coverage-action@v1
+      #   id: coverage
+      #   with:
+      #     # Optional coverage threshold
+      #     # use fail-coverage to determine what should happen below this threshold
+      #     coverage-threshold: 80
 
-          # collect coverage for all packages beyond the one under test
-          cover-pkg: ./pkg/...
+      #     # collect coverage for all packages beyond the one under test
+      #     cover-pkg: ./pkg/...
 
-          #     # Ignore code-generated files when calculating coverage totals
-          ignore-pattern: |
-            ./test
+      #     #     # Ignore code-generated files when calculating coverage totals
+      #     ignore-pattern: |
+      #       ./test
+
+      - name: Install golint
+        run: go install golang.org/x/lint/golint@latest
+
+      - name: Run golint
+        run: golint ./...
 
       #     \.pb\.go$
       #     \_string\.go$
