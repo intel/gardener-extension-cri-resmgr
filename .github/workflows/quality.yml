@@ -42,11 +42,11 @@ jobs:
       #     ignore-pattern: |
       #       ./test
 
-      - name: Install golint
-        run: go install golang.org/x/lint/golint@latest
-
-      - name: Run golint
-        run: golint ./...
+      - name: golint
+        run: |
+          go env
+          go install golang.org/x/lint/golint
+          golint ./...
 
       #     \.pb\.go$
       #     \_string\.go$
