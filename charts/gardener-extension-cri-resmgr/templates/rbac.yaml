@@ -120,7 +120,7 @@ rules:
   resources:
   - leases
   resourceNames:
-  - {{ include "leaderelectionid" . }}
+  - cri-resmgr-leader-election
   verbs:
   - update
   - get
