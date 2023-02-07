@@ -36,6 +36,7 @@
             "env": {
                 // Comment/Uncomment if configMap cannot be read.
                 "EXTENSION_CONFIGMAP_NAMESPACE": "extension-cri-resmgr-extension-9htbx",
+                "LEADER_ELECTION_NAMESPACE": "garden",
             },
             "console": "internalConsole",
             // https://github.com/golang/vscode-go/blob/master/docs/debugging.md#configuration
