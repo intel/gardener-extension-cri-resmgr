@@ -45,7 +45,7 @@ jobs:
       - name: golint
         run: |
           go env
-          go install golang.org/x/lint/golint
+          go get golang.org/x/lint/golint
           golint ./...
 
       #     \.pb\.go$
