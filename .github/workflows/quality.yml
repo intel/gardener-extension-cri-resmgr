@@ -7,9 +7,15 @@ on:
     branches: ["master"]
 
 jobs:
-  build:
+  gofmt:
+    environment: testing
     runs-on: ubuntu-latest
     steps:
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.19
+
       - uses: actions/checkout@v3
 
       - uses: Jerome1337/gofmt-action@v1.0.5
@@ -17,9 +23,31 @@ jobs:
           gofmt-path: "./pkg"
           gofmt-flags: "-l -d"
 
-  coverage:
+      - name: Run gofmt
+        run: |
+          if [ "$(gofmt -l . | wc -l)" -ne "0" ]; then
+            gofmt -d .
+            echo "gofmt found formatting errors"
+            exit 1
+          fi
+        id: gofmt
+
+      - name: Report gofmt Results
+        if: success()
+        uses: actions/upload-artifact@v1
+        with:
+          name: gofmt-report
+          path: .
+
+  golint:
+    environment: testing
     runs-on: ubuntu-latest
     steps:
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.19
+
       - uses: actions/checkout@v3
         with:
           # default fetch-depth is insufficent to find previous coverage notes
@@ -60,3 +88,58 @@ jobs:
       #   if: always() && steps.coverage.outputs.report-pathname != ''
       #   run: |
       #     aws s3 cp ${{ steps.coverage.outputs.report-pathname }} s3://artifacts.example.com-bucket/go-coverage/${{ github.ref_name}}.html
+
+  coverage:
+    environment: testing
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.19
+
+      - name: Checkout Code
+        uses: actions/checkout@v2
+        with:
+          # default fetch-depth is insufficent to find previous coverage notes
+          fetch-depth: 10
+
+      - name: dd
+        run: go generate ./...
+      # - name: Fail Build if gofmt found errors
+      #   if: failure()
+      #   uses: actions/upload-artifact@v1
+      #   with:
+      #     name: gofmt-error.txt
+      #     path: .
+      #     content: |
+      #       gofmt found formatting errors
+      # - name: golangci-lint
+      #   uses: golangci/golangci-lint-action@v3
+      # - name: Report golint Results
+      #   if: steps.golint.outputs.exit-code == '0'
+      #   uses: actions/upload-artifact@v1
+      #   with:
+      #     name: golint-report
+      #     path: .
+      # - name: Fail Build if golint found errors
+      #   if: steps.golint.outputs.exit-code != '0'
+      #   uses: actions/upload-artifact@v1
+      #   with:
+      #     name: golint-error.txt
+      #     path: .
+      #     content: |
+      #       golint found linting errors
+      - name: Create upload description
+        run: mkdir ./upload/
+
+      - name: Run Tests and Generate Coverage Report
+        run: |
+          go test -coverprofile=coverage.out ./pkg/...
+          go tool cover -html=coverage.out -o ./upload/coverage.html
+
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v1
+        with:
+          name: coverage-report
+          path: ./upload/coverage.html
