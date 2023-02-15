@@ -7,6 +7,22 @@ on:
     branches: ["master"]
 
 jobs:
+  unittest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      - name: Install mockgen
+        run: go install github.com/golang/mock/mockgen@v1.6.0
+
+      - name: Test
+        run: make test
+
   gofmt:
     environment: testing
     runs-on: ubuntu-latest
@@ -69,12 +85,47 @@ jobs:
       #     #     # Ignore code-generated files when calculating coverage totals
       #     ignore-pattern: |
       #       ./test
-
-      - name: golint
+      - name: Install dependencies
         run: |
-          go env
-          go get golang.org/x/lint/golint
-          golint ./...
+          go version
+          go get -u golang.org/x/lint/golint
+      - name: Run vet & lint
+        run: |
+          go vet .
+          golint .
+
+      # Dont work
+      # - name: golint
+      #   run: |
+      #     go env
+      #     go get golang.org/x/lint/golint
+      #     golint ./...
+
+      # https://github.com/golangci/golangci-lint-action
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
+          version: v1.29
+
+          # Optional: working directory, useful for monorepos
+          # working-directory: somedir
+
+          # Optional: golangci-lint command line arguments.
+          # args: --issues-exit-code=0
+
+          # Optional: show only new issues if it's a pull request. The default value is `false`.
+          # only-new-issues: true
+
+          # Optional: if set to true then the all caching functionality will be complete disabled,
+          #           takes precedence over all other caching options.
+          # skip-cache: true
+
+          # Optional: if set to true then the action don't cache or restore ~/go/pkg.
+          # skip-pkg-cache: true
+
+          # Optional: if set to true then the action don't cache or restore ~/.cache/go-build.
+          # skip-build-cache: true
 
       #     \.pb\.go$
       #     \_string\.go$
