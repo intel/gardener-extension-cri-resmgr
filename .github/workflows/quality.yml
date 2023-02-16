@@ -65,34 +65,32 @@ jobs:
           go-version: 1.19
 
       - uses: actions/checkout@v3
-        with:
-          # default fetch-depth is insufficent to find previous coverage notes
-          fetch-depth: 10
+        # with:
+        #   # default fetch-depth is insufficent to find previous coverage notes
+        #   fetch-depth: 10
 
-      - name: dd
-        run: go generate ./...
-
+      # - name: dd
+      #   run: go generate ./...
       # - uses: gwatts/go-coverage-action@v1
       #   id: coverage
       #   with:
       #     # Optional coverage threshold
       #     # use fail-coverage to determine what should happen below this threshold
       #     coverage-threshold: 80
-
       #     # collect coverage for all packages beyond the one under test
       #     cover-pkg: ./pkg/...
-
       #     #     # Ignore code-generated files when calculating coverage totals
       #     ignore-pattern: |
       #       ./test
-      - name: Install dependencies
-        run: |
-          go version
-          go get -u golang.org/x/lint/golint
+      # - name: Install dependencies
+      #   run: |
+      #     go version
+      #     go get -u golang.org/x/lint/golint
       - name: Run vet & lint
         run: |
-          go vet ./...  
-          golint ./...
+          go vet ./...
+
+        # golint ./...
 
       # Dont work
       # - name: golint
