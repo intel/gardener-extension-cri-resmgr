@@ -103,6 +103,8 @@ jobs:
       #     go get golang.org/x/lint/golint
       #     golint ./...
 
+      # run: export GO111MODULE="off"
+
       # https://github.com/golangci/golangci-lint-action
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
@@ -115,6 +117,7 @@ jobs:
 
           # Optional: golangci-lint command line arguments.
           # args: --issues-exit-code=0
+          args: --timeout
 
           # Optional: show only new issues if it's a pull request. The default value is `false`.
           # only-new-issues: true
