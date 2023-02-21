@@ -15,7 +15,6 @@ package consts
 
 import (
 	"embed"
-	_ "embed"
 )
 
 var Version string
