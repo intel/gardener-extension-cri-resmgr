@@ -33,11 +33,11 @@ jobs:
       - name: Run gofmt
         run: gofmt -d -l .
 
-      - name: Install golint
-        run: go install golang.org/x/lint/golint@latest
+      # - name: Install golint
+      #   run: go install golang.org/x/lint/golint@latest
 
-      - name: Run golint
-        run: golint ./...
+      # - name: Run golint
+      #   run: golint ./...
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
