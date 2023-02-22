@@ -28,8 +28,8 @@ func init() {
 	var err error
 	imageVector, err = imagevector.Read(strings.NewReader(charts.ImagesYAML))
 	if err != nil {
-		err_message := fmt.Errorf("cannot read images.yaml: %s", err)
-		fmt.Println("An error message:", err_message)
+		errMessage := fmt.Errorf("cannot read images.yaml: %s", err)
+		fmt.Println("An error message:", errMessage)
 	}
 
 	imageVector, err = imagevector.WithEnvOverride(imageVector)

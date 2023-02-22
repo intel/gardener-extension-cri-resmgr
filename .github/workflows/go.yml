@@ -70,8 +70,9 @@ jobs:
         #   # default fetch-depth is insufficent to find previous coverage notes
         #   fetch-depth: 10
 
-      # - name: dd
-      #   run: go generate ./...
+      - name: Run go generate
+        run: go generate ./...
+
       # - uses: gwatts/go-coverage-action@v1
       #   id: coverage
       #   with:
