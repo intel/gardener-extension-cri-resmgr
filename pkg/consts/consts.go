@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 package consts
 
 import (
@@ -43,7 +44,7 @@ const (
 	ConfigMapName            = "gardener-extension-cri-resmgr-configs"
 	ConfigMapNamespaceEnvKey = "EXTENSION_CONFIGMAP_NAMESPACE"
 	ConfigKey                = "config.yaml"
-	// Don't use "/"" on the end of the path! Func read from embed.FS don't see dir
+	// ChartPath should not have used "/"" on the end of the path! Func read from embed.FS don't see dir
 	ChartPath                     = "charts/internal/cri-resmgr-installation"
 	MonitoringManagedResourceName = "extension-monitoring-cri-resmgr"
 	InstallationImageName         = "gardener-extension-cri-resmgr-installation"

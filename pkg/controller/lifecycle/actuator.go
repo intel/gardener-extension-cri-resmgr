@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -159,6 +159,7 @@ func (a *Actuator) GenerateSecretDataToMonitoringManagedResource(namespace strin
 	return map[string][]byte{"data": []byte(yamlStringConfigNameWithNamespace)}
 }
 
+// Reconcile the Extension resource.
 func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extensionsv1alpha1.Extension) error {
 	namespace := ex.GetNamespace()
 
@@ -216,6 +217,7 @@ func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extens
 	return nil
 }
 
+// Delete the Extension resource.
 func (a *Actuator) Delete(ctx context.Context, logger logr.Logger, ex *extensionsv1alpha1.Extension) error {
 	namespace := ex.GetNamespace()
 	cluster, err := extensionscontroller.GetCluster(ctx, a.client, namespace)
@@ -248,24 +250,29 @@ func (a *Actuator) Delete(ctx context.Context, logger logr.Logger, ex *extension
 	return nil
 }
 
+// Restore the Extension resource.
 func (a *Actuator) Restore(ctx context.Context, logger logr.Logger, ex *extensionsv1alpha1.Extension) error {
 	return a.Reconcile(ctx, logger, ex)
 }
 
+// Migrate the Extension resource.
 func (a *Actuator) Migrate(ctx context.Context, logger logr.Logger, ex *extensionsv1alpha1.Extension) error {
 	return a.Delete(ctx, logger, ex)
 }
 
+// InjectConfig the Extension resource.
 func (a *Actuator) InjectConfig(config *rest.Config) error {
 	a.config = config
 	return nil
 }
 
+// InjectClient the Extension resource.
 func (a *Actuator) InjectClient(client client.Client) error {
 	a.client = client
 	return nil
 }
 
+// InjectScheme the Extension resource.
 func (a *Actuator) InjectScheme(scheme *runtime.Scheme) error {
 	a.decoder = serializer.NewCodecFactory(scheme, serializer.EnableStrict).UniversalDecoder()
 	return nil
