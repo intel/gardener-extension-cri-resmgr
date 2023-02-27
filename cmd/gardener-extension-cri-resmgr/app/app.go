@@ -35,6 +35,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
+// NewExtensionControllerCommand creates Cobre command to handle starting the extension controler.
 func NewExtensionControllerCommand(ctx context.Context) *cobra.Command {
 
 	options := options.NewOptions()

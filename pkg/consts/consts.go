@@ -18,7 +18,10 @@ import (
 	"embed"
 )
 
+// Version is version of extension set during build time.
 var Version string
+
+// Commit is commit of extension set during build time.
 var Commit string
 
 // go embed requires files in package through security
@@ -33,6 +36,7 @@ var (
 )
 
 const (
+	// ExtensionName is extension name.
 	ExtensionName = "cri-resmgr"
 	ExtensionType = "cri-resmgr-extension"
 

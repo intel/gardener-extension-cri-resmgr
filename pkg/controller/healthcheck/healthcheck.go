@@ -33,6 +33,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
+// RegisterHealthChecks register health checks.
 func RegisterHealthChecks(mgr manager.Manager) error {
 	defaultSyncPeriod := time.Second * 30
 	opts := healthcheck.DefaultAddArgs{

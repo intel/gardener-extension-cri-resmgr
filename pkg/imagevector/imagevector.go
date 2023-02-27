@@ -30,6 +30,7 @@ func init() {
 	if err != nil {
 		errMessage := fmt.Errorf("cannot read images.yaml: %s", err)
 		fmt.Println("An error message:", errMessage)
+		return
 	}
 
 	imageVector, err = imagevector.WithEnvOverride(imageVector)

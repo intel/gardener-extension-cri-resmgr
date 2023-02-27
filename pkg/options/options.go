@@ -23,6 +23,7 @@ import (
 	"github.com/intel/gardener-extension-cri-resmgr/pkg/consts"
 )
 
+// Options type.
 type Options struct {
 	RestOptions       *controllercmd.RESTOptions       // kubeconfig / MasterURL
 	ControllerOptions *controllercmd.ControllerOptions // MaxConcurrentReconciles
@@ -33,6 +34,7 @@ type Options struct {
 	OptionAggregator  controllercmd.OptionAggregator
 }
 
+// NewOptions retrun new Options.
 func NewOptions() *Options {
 
 	options := &Options{
