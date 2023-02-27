@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package cri_resmgr_extension_test
+package e2etest
 
 import (
 	"flag"
