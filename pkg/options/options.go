@@ -24,6 +24,7 @@ import (
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
 )
 
+// Options type.
 type Options struct {
 	RestOptions       *controllercmd.RESTOptions       // kubeconfig / MasterURL
 	ControllerOptions *controllercmd.ControllerOptions // MaxConcurrentReconciles
@@ -34,6 +35,7 @@ type Options struct {
 	OptionAggregator  controllercmd.OptionAggregator
 }
 
+// NewOptions retrun new Options.
 func NewOptions() *Options {
 
 	options := &Options{

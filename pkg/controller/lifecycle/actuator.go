@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -53,6 +53,7 @@ type CriResMgrConfig struct {
 	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
 }
 
+// GetProviderConfig return CriResMgrConfig.
 func GetProviderConfig(logger logr.Logger, extensions []v1beta1.Extension) (bool, CriResMgrConfig, error) {
 	// Get and parse provideConfig data from Cluster.Extension (it is a copy from within Shoot.spec.extensions.providerConfig).
 	var providerConfig *runtime.RawExtension
@@ -79,6 +80,7 @@ func GetProviderConfig(logger logr.Logger, extensions []v1beta1.Extension) (bool
 // -                                        Actuator                                     -
 // ---------------------------------------------------------------------------------------
 
+// NewActuator return new Actuator.
 func NewActuator(name string) extension.Actuator {
 	return &Actuator{
 		ChartRendererFactory: extensionscontroller.ChartRendererFactoryFunc(util.NewChartRendererForShoot),
@@ -86,6 +88,7 @@ func NewActuator(name string) extension.Actuator {
 	}
 }
 
+// NewActuatorWithSuffix return new Actuator with suffix.
 func NewActuatorWithSuffix(nameSuffix string) extension.Actuator {
 	return &Actuator{
 		ChartRendererFactory: extensionscontroller.ChartRendererFactoryFunc(util.NewChartRendererForShoot),
@@ -93,6 +96,7 @@ func NewActuatorWithSuffix(nameSuffix string) extension.Actuator {
 	}
 }
 
+// Actuator type.
 type Actuator struct {
 	client               client.Client
 	config               *rest.Config
@@ -101,6 +105,7 @@ type Actuator struct {
 	logger               logr.Logger
 }
 
+// GenerateSecretData return byte map which is k8s secret with data.
 func (a *Actuator) GenerateSecretData(logger logr.Logger, ctx context.Context, charts embed.FS, chartPath string,
 	namespace string, k8sVersion string, configs map[string]map[string]string, nodeSelector map[string]string) (map[string][]byte, error) {
 	emptyMap := map[string][]byte{}
@@ -152,6 +157,7 @@ func (a *Actuator) GenerateSecretData(logger logr.Logger, ctx context.Context, c
 	return secretData, nil
 }
 
+// GenerateSecretDataToMonitoringManagedResource return byte map which is prepared config to monitoring.
 func (a *Actuator) GenerateSecretDataToMonitoringManagedResource(namespace string) map[string][]byte {
 	// Replace marker in namespace field to true namespace.
 	yamlStringConfigNameWithNamespace := regexp.MustCompile(`{{ namespace }}`).ReplaceAllString(string(consts.MonitoringYaml), namespace)
@@ -159,6 +165,7 @@ func (a *Actuator) GenerateSecretDataToMonitoringManagedResource(namespace strin
 	return map[string][]byte{"data": []byte(yamlStringConfigNameWithNamespace)}
 }
 
+// Reconcile the Extension resource.
 func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extensionsv1alpha1.Extension) error {
 	namespace := ex.GetNamespace()
 
@@ -216,6 +223,7 @@ func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extens
 	return nil
 }
 
+// Delete the Extension resource.
 func (a *Actuator) Delete(ctx context.Context, logger logr.Logger, ex *extensionsv1alpha1.Extension) error {
 	namespace := ex.GetNamespace()
 	cluster, err := extensionscontroller.GetCluster(ctx, a.client, namespace)
@@ -248,24 +256,29 @@ func (a *Actuator) Delete(ctx context.Context, logger logr.Logger, ex *extension
 	return nil
 }
 
+// Restore the Extension resource.
 func (a *Actuator) Restore(ctx context.Context, logger logr.Logger, ex *extensionsv1alpha1.Extension) error {
 	return a.Reconcile(ctx, logger, ex)
 }
 
+// Migrate the Extension resource.
 func (a *Actuator) Migrate(ctx context.Context, logger logr.Logger, ex *extensionsv1alpha1.Extension) error {
 	return a.Delete(ctx, logger, ex)
 }
 
+// InjectConfig the Extension resource.
 func (a *Actuator) InjectConfig(config *rest.Config) error {
 	a.config = config
 	return nil
 }
 
+// InjectClient the Extension resource.
 func (a *Actuator) InjectClient(client client.Client) error {
 	a.client = client
 	return nil
 }
 
+// InjectScheme the Extension resource.
 func (a *Actuator) InjectScheme(scheme *runtime.Scheme) error {
 	a.decoder = serializer.NewCodecFactory(scheme, serializer.EnableStrict).UniversalDecoder()
 	return nil
