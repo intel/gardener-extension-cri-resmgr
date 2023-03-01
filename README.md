@@ -1,5 +1,6 @@
 # CRI-Resource-Manager extension for Gardener*
 
+[![Go build and test](https://github.com/intel/gardener-extension-cri-resmgr/actions/workflows/go.yml/badge.svg?branch=master)](https://github.com/intel/gardener-extension-cri-resmgr/actions/workflows/go.yml)
 
 | **Warning** |
 | ---------------- |
