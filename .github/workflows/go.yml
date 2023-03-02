@@ -35,6 +35,16 @@ jobs:
     name: coverage
     runs-on: ubuntu-latest
     steps:
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      - uses: actions/checkout@v3
+        # with:
+        #   # default fetch-depth is insufficent to find previous coverage notes
+        #   fetch-depth: 10
+
       - name: Generate Coverage Report
         run: make generate-coverage
 
@@ -54,9 +64,6 @@ jobs:
           go-version: 1.19
 
       - uses: actions/checkout@v3
-        # with:
-        #   # default fetch-depth is insufficent to find previous coverage notes
-        #   fetch-depth: 10
 
       - name: Run go generate
         run: go generate ./...
