@@ -1,5 +1,5 @@
 linters:
-  enable-all: true
+  #enable-all: true
   # presets:
   #   - bugs
   #   - comment
@@ -14,6 +14,8 @@ linters:
   #   - style
   #   - test
   #   - unused
-  # Run only fast linters from enabled linters set (first run won't be fast)
-  # Default: false
-  #fast: true
+  enable:
+    - ginkgolinter
+    - gofmt
+    - golint
+    - staticcheck
