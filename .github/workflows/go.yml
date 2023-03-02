@@ -104,9 +104,10 @@ jobs:
           skip-cache: true
 
           # Optional: if set to true then the action don't cache or restore ~/go/pkg.
-          skip-pkg-cache: true
+          # skip-pkg-cache: true
 
           # Optional: if set to true then the action don't cache or restore ~/.cache/go-build.
           # skip-build-cache: true
 
-          skip-go-installation: true
+          # Not exists. Sugestion from forum
+          #skip-go-installation: true
