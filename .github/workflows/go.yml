@@ -45,6 +45,9 @@ jobs:
         #   # default fetch-depth is insufficent to find previous coverage notes
         #   fetch-depth: 10
 
+      - name: Run go generate
+        run: go generate ./...
+
       - name: Generate Coverage Report
         run: make generate-coverage
 
