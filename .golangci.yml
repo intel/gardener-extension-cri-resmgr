@@ -18,5 +18,6 @@ linters:
     - ginkgolinter
     - gofmt
     - golint
+    - govet
     - staticcheck
     - revive
