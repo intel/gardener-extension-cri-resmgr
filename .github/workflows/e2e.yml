@@ -31,7 +31,8 @@ jobs:
         run: make -C ./gardener kind-up
 
       - name: Copy kubeconfig
-        run: cp ~/work/gardener/example/gardener-local/kind/local/kubeconfig ~/.kube/config
+        run: cp /home/runner/work/gardener-extension-cri-resmgr/gardener-extension-cri-resmgr/gardener/example/provider-local/seed-kind/base/kubeconfig ~/.kube/config
+        #run: cp ~/work/gardener/example/gardener-local/kind/local/kubeconfig ~/.kube/config
 
       - name: Wait for Kind Cluster
         run: sleep 5
