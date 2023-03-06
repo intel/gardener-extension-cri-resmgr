@@ -108,3 +108,6 @@ generate-mocks:
 generate-coverage:
 	go test -coverprofile=coverage.out ./pkg/...
 	go tool cover -html=coverage.out -o coverage.html    
+
+lint:
+	golangci-lint run 
