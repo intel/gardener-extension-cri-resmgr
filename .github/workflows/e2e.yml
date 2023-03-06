@@ -16,6 +16,11 @@ jobs:
           install_only: true
           #  config: ~/work/gardener/example/gardener-local/kind/local/kubeconfig
 
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
       - name: Checkout gardener-extension-cri-resmgr
         uses: actions/checkout@v3
         with:
