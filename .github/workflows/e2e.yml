@@ -30,7 +30,8 @@ jobs:
       - name: Create k8s Kind Cluster
         run: make -C ./gardener kind-up
 
-      # cp ~/work/gardener/example/gardener-local/kind/local/kubeconfig ~/.kube/config
+      - name: Copy kubeconfig
+        run: cp ~/work/gardener/example/gardener-local/kind/local/kubeconfig ~/.kube/config
 
       - name: Wait for Kind Cluster
         run: sleep 5
@@ -40,11 +41,10 @@ jobs:
 
       # cache docker container, push to repo with action
 
-      - name: Build and push gardener-extension-cri-resmgr docker images 
+      - name: Build and push gardener-extension-cri-resmgr docker images
         run: make -C ./gardener-extension-cri-resmgr build-images push-images
 
       - name: Create ctrldeploy and ctrlreg for gardener-extension-cri-resmgr in Gardner Cluster
         run: kubectl apply -f ./gardener-extension-cri-resmgr/examples/ctrldeploy-ctrlreg.yaml
 
       # tests
-            
