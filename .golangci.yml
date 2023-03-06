@@ -1,23 +1,16 @@
+# https://golangci-lint.run/usage/configuration/#run-configuration
+# https://golangci-lint.run/usage/false-positives/
 linters:
-  #enable-all: true
-  # presets:
-  #   - bugs
-  #   - comment
-  #   - complexity
-  #   - error
-  #   - format
-  #   - import
-  #   - metalinter
-  #   - module
-  #   - performance
-  #   - sql
-  #   - style
-  #   - test
-  #   - unused
+  # https://golangci-lint.run/usage/linters/
   enable:
+    - errcheck
+    - gosimple
+    - ineffassign
+    - typecheck
+    - unused
     - ginkgolinter
     - gofmt
-    - golint
     - govet
     - staticcheck
     - revive
+    # - golint // Deprecated
