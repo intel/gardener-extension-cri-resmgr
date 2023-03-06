@@ -106,7 +106,7 @@ type Actuator struct {
 }
 
 // GenerateSecretData return byte map which is k8s secret with data.
-func (a *Actuator) GenerateSecretData(logger logr.Logger, ctx context.Context, charts embed.FS, chartPath string,
+func (a *Actuator) GenerateSecretData(ctx context.Context, logger logr.Logger, charts embed.FS, chartPath string,
 	namespace string, k8sVersion string, configs map[string]map[string]string, nodeSelector map[string]string) (map[string][]byte, error) {
 	emptyMap := map[string][]byte{}
 	// Depending on shoot, chartRenderer will have different capabilities based on K8s version.
@@ -201,7 +201,7 @@ func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extens
 	}
 
 	// Generate secret data that will be used by reference by ManagedResource to deploy.
-	secretData, err := a.GenerateSecretData(a.logger, ctx, consts.Charts, consts.ChartPath, namespace, cluster.Shoot.Spec.Kubernetes.Version, configTypes, nodeSelector)
+	secretData, err := a.GenerateSecretData(ctx, a.logger, consts.Charts, consts.ChartPath, namespace, cluster.Shoot.Spec.Kubernetes.Version, configTypes, nodeSelector)
 	if err != nil {
 		return err
 	}

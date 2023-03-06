@@ -121,7 +121,7 @@ var _ = Describe("cri-resource-manager extension actuator tests", func() {
 		ctx := context.TODO()
 
 		It("generate properly with expected bodies inside", func() {
-			secret, err := a.GenerateSecretData(log, ctx, consts.Charts, consts.ChartPath, "foo_namespace", "v1.0.0", configTypes, nodeSelector)
+			secret, err := a.GenerateSecretData(ctx, log, consts.Charts, consts.ChartPath, "foo_namespace", "v1.0.0", configTypes, nodeSelector)
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(secret).Should(HaveKey(consts.InstallationSecretKey))
