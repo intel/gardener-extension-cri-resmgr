@@ -28,7 +28,7 @@ jobs:
         with:
           path: gardener-extension-cri-resmgr
 
-      - name: Install  ginkgo
+      - name: Install ginkgo
         working-directory: gardener-extension-cri-resmgr
         run: |
           make build
@@ -67,4 +67,6 @@ jobs:
 
       - name: Run tests
         working-directory: gardener-extension-cri-resmgr
-        run: make e2e-test
+        run: |
+          env KUBECONFIG="~/.kube/config" 
+          make e2e-test
