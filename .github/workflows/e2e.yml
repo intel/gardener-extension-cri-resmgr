@@ -3,8 +3,6 @@ name: E2E tests
 on:
   push:
     branches: ["master"]
-    tags:
-      - "e2e"
   pull_request:
     branches: ["master"]
   schedule:
@@ -13,6 +11,7 @@ on:
 jobs:
   e2e-tests:
     runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'e2e')
     steps:
       - name: Install k8s Kind Cluster
         uses: helm/kind-action@v1.4.0
@@ -33,6 +32,7 @@ jobs:
         working-directory: gardener-extension-cri-resmgr
         run: |
           make build
+          go install github.com/onsi/ginkgo/v2/ginkgo@2.8.0
 
       - name: Checkout gardener repo
         uses: actions/checkout@v3
