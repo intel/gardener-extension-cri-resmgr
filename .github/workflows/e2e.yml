@@ -3,8 +3,12 @@ name: E2E tests
 on:
   push:
     branches: ["master"]
+    tags:
+      - "e2e"
   pull_request:
     branches: ["master"]
+  schedule:
+    - cron: "59 23 * * SAT"
 
 jobs:
   e2e-tests:
@@ -14,7 +18,6 @@ jobs:
         uses: helm/kind-action@v1.4.0
         with:
           install_only: true
-          #  config: ~/work/gardener/example/gardener-local/kind/local/kubeconfig
 
       - name: Set up Go
         uses: actions/setup-go@v3
@@ -52,11 +55,18 @@ jobs:
       - name: Create ctrldeploy and ctrlreg for gardener-extension-cri-resmgr in Gardner Cluster
         run: kubectl apply -f ./gardener-extension-cri-resmgr/examples/ctrldeploy-ctrlreg.yaml
 
-      # tests
       - name: Add hosts to /etc/hosts
         run: |
           sudo echo "127.0.0.1 api.e2e-default.local.external.local.gardener.cloud" | sudo tee -a /etc/hosts
           sudo echo "127.0.0.1 api.e2e-default.local.internal.local.gardener.cloud" | sudo tee -a /etc/hosts
 
+      - name: Change directory
+        run: cd ./gardener-extension-cri-resmgr
+
+      - name: Install ginkgo
+        run: |
+          go install github.com/onsi/ginkgo/v2/ginkgo
+          go get github.com/onsi/gomega/...
+
       - name: Run tests
-        run: make -C ./gardener-extension-cri-resmgr e2e-test
+        run: make e2e-test
