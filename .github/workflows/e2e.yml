@@ -32,7 +32,7 @@ jobs:
         working-directory: gardener-extension-cri-resmgr
         run: |
           make build
-          go install github.com/onsi/ginkgo/v2/ginkgo@2.8.0
+          go install github.com/onsi/ginkgo/v2/ginkgo@v2.8.0
 
       - name: Checkout gardener repo
         uses: actions/checkout@v3
