@@ -68,5 +68,5 @@ jobs:
       - name: Run tests
         working-directory: gardener-extension-cri-resmgr
         run: |
-          env KUBECONFIG="~/.kube/config" 
+          export KUBECONFIG="~/.kube/config" 
           make e2e-test
