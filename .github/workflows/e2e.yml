@@ -24,16 +24,16 @@ jobs:
         with:
           go-version: 1.19
 
+      - name: Checkout gardener-extension-cri-resmgr
+        uses: actions/checkout@v3
+        with:
+          path: gardener-extension-cri-resmgr
+
       - name: Install ginkgo
         working-directory: ./gardener-extension-cri-resmgr
         run: |
           go mod download
           go get .
-
-      - name: Checkout gardener-extension-cri-resmgr
-        uses: actions/checkout@v3
-        with:
-          path: gardener-extension-cri-resmgr
 
       - name: Checkout gardener repo
         uses: actions/checkout@v3
