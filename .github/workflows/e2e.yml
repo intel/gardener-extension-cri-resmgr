@@ -30,8 +30,10 @@ jobs:
           path: gardener-extension-cri-resmgr
 
       - name: Install ginkgo
-        working-directory: ./gardener-extension-cri-resmgr
+        working-directory: gardener-extension-cri-resmgr
         run: |
+          pwd
+          ls -la 
           go mod download
           go get .
 
