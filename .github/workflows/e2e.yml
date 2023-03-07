@@ -28,7 +28,7 @@ jobs:
         with:
           path: gardener-extension-cri-resmgr
 
-      - name: Install ginkgo
+      - name: Install  ginkgo
         working-directory: gardener-extension-cri-resmgr
         run: |
           make build
