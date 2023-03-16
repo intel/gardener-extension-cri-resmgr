@@ -114,9 +114,15 @@ spec:
               memory: 512Mi
           readinessProbe:
             exec:
-              command: ["chroot", "/var/host", "bash", "-c", "systemctl status cri-resource-manager"]
+              command: ["/bin/cri-resmgr-agent-probe", "-query", "config-status"]
+            initialDelaySeconds: 5
+            periodSeconds: 30
+          readinessProbe:
+            exec:
+              command: ["chroot", "/var/host", "bash", "-c", "systemctl status cri-resource-manager", "&&", "/bin/cri-resmgr-agent-probe", "-query", "config-status"]
             failureThreshold: 1
             initialDelaySeconds: 10
+            periodseconds: 30
           livenessProbe:
             exec:
               command: ["/bin/cri-resmgr-agent-probe"]
