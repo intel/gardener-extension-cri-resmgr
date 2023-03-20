@@ -30,7 +30,7 @@ import (
 var (
 	// commonLabel      = "cri-rm"
 	backgroundCtx   = context.Background()
-	fiveteenMinutes = 60 * time.Minute
+	fiveteenMinutes = 120 * time.Minute
 	ExtensionType   = "cri-resmgr-extension"
 
 	// Those options can be overridden with arguments like: -verbose, -disable-dump, -existing-shoot-name -kubecfg -project-namespace
