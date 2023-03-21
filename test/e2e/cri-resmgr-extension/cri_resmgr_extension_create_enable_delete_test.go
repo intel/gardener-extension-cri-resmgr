@@ -16,6 +16,8 @@ package cri_resmgr_extension
 
 import (
 	"context"
+	"fmt"
+	"os/exec"
 
 	"github.com/gardener/gardener/test/framework"
 	"github.com/onsi/ginkgo/v2"
@@ -44,6 +46,16 @@ var _ = ginkgo.Describe("cri-resmgr enable tests", ginkgo.Label("enable"), func(
 		ginkgo.By("Enable cri-resmgr extension")
 		ctx, cancel = context.WithTimeout(backgroundCtx, fiveteenMinutes)
 		defer cancel()
+
+		cmd := exec.Command("kubectl", "describe", "pod", "-l", "app.kubernetes.io/name=gardener-extension-cri-resmgr", "--all-namespaces")
+		//kubectl describe pod -l  app.kubernetes.io/name=gardener-extension-cri-resmgr --all-namespaces
+		stdout, err := cmd.Output()
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
+		fmt.Println(string(stdout))
+
 		gomega.Expect(f.UpdateShoot(ctx, f.Shoot, enableCriResmgr)).To(gomega.Succeed())
 
 		ginkgo.By("Delete Shoot")
