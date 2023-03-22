@@ -39,6 +39,7 @@ jobs:
         with:
           repository: gardener/gardener
           path: gardener
+          branches: v1.56.0
 
       - name: Create k8s Kind Cluster
         run: make -C ./gardener kind-up
