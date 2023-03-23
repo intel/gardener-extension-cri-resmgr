@@ -49,7 +49,7 @@ var _ = ginkgo.Describe("cri-resmgr enable tests", ginkgo.Label("enable"), func(
 		gomega.Expect(f.UpdateShoot(ctx, f.Shoot, enableCriResmgr)).To(gomega.Succeed())
 
 		cmd := exec.Command("kubectl", "describe", "pod", "-l", "app.kubernetes.io/name=gardener-extension-cri-resmgr", "--all-namespaces")
-		//kubectl describe pod -l  app.kubernetes.io/name=gardener-extension-cri-resmgr --all-namespaces
+		//kubectl describe pod -l  app.kubernetes.io/name=gardener-extension-cri-resmgr --all-namespaces //
 		stdout, err := cmd.Output()
 		if err != nil {
 			fmt.Println(err.Error())
