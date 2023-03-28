@@ -40,6 +40,17 @@ var _ = ginkgo.Describe("cri-resmgr enable tests", ginkgo.Label("enable"), func(
 		ginkgo.By("Create Shoot")
 		ctx, cancel := context.WithTimeout(backgroundCtx, fiveteenMinutes)
 		defer cancel()
+		///////////////////
+		cmd := exec.Command("kubectl", "describe", "pod", "-l", "app.kubernetes.io/name=gardener-extension-cri-resmgr", "--all-namespaces")
+		//kubectl describe pod -l  app.kubernetes.io/name=gardener-extension-cri-resmgr --all-namespaces //
+		stdout, err := cmd.Output()
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
+		fmt.Println("TEST111")
+		fmt.Println(string(stdout))
+		//////////////////////
 		gomega.Expect(f.CreateShootAndWaitForCreation(ctx, false)).To(gomega.Succeed())
 		f.Verify()
 
@@ -48,14 +59,17 @@ var _ = ginkgo.Describe("cri-resmgr enable tests", ginkgo.Label("enable"), func(
 		defer cancel()
 		gomega.Expect(f.UpdateShoot(ctx, f.Shoot, enableCriResmgr)).To(gomega.Succeed())
 
-		cmd := exec.Command("kubectl", "describe", "pod", "-l", "app.kubernetes.io/name=gardener-extension-cri-resmgr", "--all-namespaces")
+		///////////////////
+		cmd = exec.Command("kubectl", "describe", "pod", "-l", "app.kubernetes.io/name=gardener-extension-cri-resmgr", "--all-namespaces")
 		//kubectl describe pod -l  app.kubernetes.io/name=gardener-extension-cri-resmgr --all-namespaces //
-		stdout, err := cmd.Output()
+		stdout, err = cmd.Output()
 		if err != nil {
 			fmt.Println(err.Error())
 			return
 		}
+		fmt.Println("TEST222")
 		fmt.Println(string(stdout))
+		//////////////////////
 
 		ginkgo.By("Delete Shoot")
 		ctx, cancel = context.WithTimeout(backgroundCtx, fiveteenMinutes)
