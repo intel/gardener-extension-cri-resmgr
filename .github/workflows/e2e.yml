@@ -66,6 +66,9 @@ jobs:
           sudo echo "127.0.0.1 api.e2e-default.local.external.local.gardener.cloud" | sudo tee -a /etc/hosts
           sudo echo "127.0.0.1 api.e2e-default.local.internal.local.gardener.cloud" | sudo tee -a /etc/hosts
 
+      - name: Wait for Deploy extension
+        run: sleep 60
+
       - name: Run tests
         working-directory: gardener-extension-cri-resmgr
         run: |
