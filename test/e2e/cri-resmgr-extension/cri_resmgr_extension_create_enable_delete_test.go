@@ -18,11 +18,25 @@ import (
 	"context"
 	"fmt"
 	"os/exec"
+	"strings"
 
 	"github.com/gardener/gardener/test/framework"
 	"github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
 )
+
+func kubectl(command string) {
+	words := strings.Split(command, " ")
+	cmd := exec.Command("kubectl", words...)
+
+	stdout, err := cmd.Output()
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+	fmt.Println("TEST: " + command)
+	fmt.Println(string(stdout))
+}
 
 var _ = ginkgo.Describe("cri-resmgr enable tests", ginkgo.Label("enable"), func() {
 	f := framework.NewShootCreationFramework(&framework.ShootCreationConfig{
@@ -36,21 +50,20 @@ var _ = ginkgo.Describe("cri-resmgr enable tests", ginkgo.Label("enable"), func(
 	f.Shoot = getShoot()
 	f.Shoot.Name = "e2e-default"
 
+	var a = "get controllerregistrations.core.gardener.cloud cri-resmgr-extension"
+	var b = "get controllerdeployments.core.gardener.cloud cri-resmgr-extension"
+	var c = "get controllerinstallation.core.gardener.cloud"
+	var d = "describe pod -l  app.kubernetes.io/name=gardener-extension-cri-resmgr --all-namespaces"
+
 	ginkgo.It("Create Shoot, Enable cri-rm Extension, Delete Shoot", func() {
+		kubectl(a)
+		kubectl(b)
+		kubectl(c)
+
 		ginkgo.By("Create Shoot")
 		ctx, cancel := context.WithTimeout(backgroundCtx, fiveteenMinutes)
 		defer cancel()
-		///////////////////
-		cmd := exec.Command("kubectl", "describe", "pod", "-l", "app.kubernetes.io/name=gardener-extension-cri-resmgr", "--all-namespaces")
-		//kubectl describe pod -l  app.kubernetes.io/name=gardener-extension-cri-resmgr --all-namespaces //
-		stdout, err := cmd.Output()
-		if err != nil {
-			fmt.Println(err.Error())
-			return
-		}
-		fmt.Println("TEST111")
-		fmt.Println(string(stdout))
-		//////////////////////
+		kubectl(d)
 		gomega.Expect(f.CreateShootAndWaitForCreation(ctx, false)).To(gomega.Succeed())
 		f.Verify()
 
@@ -60,9 +73,9 @@ var _ = ginkgo.Describe("cri-resmgr enable tests", ginkgo.Label("enable"), func(
 		gomega.Expect(f.UpdateShoot(ctx, f.Shoot, enableCriResmgr)).To(gomega.Succeed())
 
 		///////////////////
-		cmd = exec.Command("kubectl", "describe", "pod", "-l", "app.kubernetes.io/name=gardener-extension-cri-resmgr", "--all-namespaces")
+		cmd := exec.Command("kubectl", "describe", "pod", "-l", "app.kubernetes.io/name=gardener-extension-cri-resmgr", "--all-namespaces")
 		//kubectl describe pod -l  app.kubernetes.io/name=gardener-extension-cri-resmgr --all-namespaces //
-		stdout, err = cmd.Output()
+		stdout, err := cmd.Output()
 		if err != nil {
 			fmt.Println(err.Error())
 			return
