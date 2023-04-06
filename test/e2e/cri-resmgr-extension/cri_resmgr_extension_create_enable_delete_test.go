@@ -16,27 +16,11 @@ package cri_resmgr_extension
 
 import (
 	"context"
-	"fmt"
-	"os/exec"
-	"strings"
 
 	"github.com/gardener/gardener/test/framework"
 	"github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
 )
-
-func kubectl(command string) {
-	words := strings.Split(command, " ")
-	cmd := exec.Command("kubectl", words...)
-
-	stdout, err := cmd.Output()
-	if err != nil {
-		fmt.Println(err.Error())
-		return
-	}
-	fmt.Println("TEST: " + command)
-	fmt.Println(string(stdout))
-}
 
 var _ = ginkgo.Describe("cri-resmgr enable tests", ginkgo.Label("enable"), func() {
 	f := framework.NewShootCreationFramework(&framework.ShootCreationConfig{
@@ -59,6 +43,7 @@ var _ = ginkgo.Describe("cri-resmgr enable tests", ginkgo.Label("enable"), func(
 		kubectl(a)
 		kubectl(b)
 		kubectl(c)
+		kubectl(d)
 
 		ginkgo.By("Create Shoot")
 		ctx, cancel := context.WithTimeout(backgroundCtx, fiveteenMinutes)
@@ -72,17 +57,7 @@ var _ = ginkgo.Describe("cri-resmgr enable tests", ginkgo.Label("enable"), func(
 		defer cancel()
 		gomega.Expect(f.UpdateShoot(ctx, f.Shoot, enableCriResmgr)).To(gomega.Succeed())
 
-		///////////////////
-		cmd := exec.Command("kubectl", "describe", "pod", "-l", "app.kubernetes.io/name=gardener-extension-cri-resmgr", "--all-namespaces")
-		//kubectl describe pod -l  app.kubernetes.io/name=gardener-extension-cri-resmgr --all-namespaces //
-		stdout, err := cmd.Output()
-		if err != nil {
-			fmt.Println(err.Error())
-			return
-		}
-		fmt.Println("TEST222")
-		fmt.Println(string(stdout))
-		//////////////////////
+		kubectl(d)
 
 		ginkgo.By("Delete Shoot")
 		ctx, cancel = context.WithTimeout(backgroundCtx, fiveteenMinutes)

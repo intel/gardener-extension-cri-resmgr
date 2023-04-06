@@ -16,7 +16,10 @@ package cri_resmgr_extension
 
 import (
 	"context"
+	"fmt"
 	"os"
+	"os/exec"
+	"strings"
 	"time"
 
 	gardencorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
@@ -41,6 +44,19 @@ var (
 
 	kubernetesVersion = "1.24.8"
 )
+
+func kubectl(command string) {
+	words := strings.Split(command, " ")
+	cmd := exec.Command("kubectl", words...)
+
+	stdout, err := cmd.Output()
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+	fmt.Println("TEST: " + command)
+	fmt.Println(string(stdout))
+}
 
 func enableOrDisableCriResmgr(shoot *gardencorev1beta1.Shoot, disabled bool) error {
 	for i, extension := range shoot.Spec.Extensions {

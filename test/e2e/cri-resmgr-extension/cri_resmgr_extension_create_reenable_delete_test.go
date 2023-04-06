@@ -34,7 +34,17 @@ var _ = ginkgo.Describe("cri-resmgr reenable tests", ginkgo.Label("reenable"), f
 	f.Shoot = getShoot()
 	f.Shoot.Name = "e2e-default"
 
+	var a = "get controllerregistrations.core.gardener.cloud cri-resmgr-extension"
+	var b = "get controllerdeployments.core.gardener.cloud cri-resmgr-extension"
+	var c = "get controllerinstallation.core.gardener.cloud"
+	var d = "describe pod -l  app.kubernetes.io/name=gardener-extension-cri-resmgr --all-namespaces"
+
 	ginkgo.It("Create Shoot, Enable cri-resmgr Extension, Disable cri-resmgr Extension, Enable cri-resmgr, Delete Shoot", func() {
+		kubectl(a)
+		kubectl(b)
+		kubectl(c)
+		kubectl(d)
+
 		ginkgo.By("Create Shoot")
 		ctx, cancel := context.WithTimeout(backgroundCtx, fiveteenMinutes)
 		defer cancel()
