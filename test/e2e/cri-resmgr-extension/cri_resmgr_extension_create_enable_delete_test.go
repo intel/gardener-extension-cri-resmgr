@@ -37,19 +37,23 @@ var _ = ginkgo.Describe("cri-resmgr enable tests", ginkgo.Label("enable"), func(
 	var a = "get controllerregistrations.core.gardener.cloud cri-resmgr-extension"
 	var b = "get controllerdeployments.core.gardener.cloud cri-resmgr-extension"
 	var c = "get controllerinstallation.core.gardener.cloud"
-	var d = "describe pod -l  app.kubernetes.io/name=gardener-extension-cri-resmgr --all-namespaces"
+	var d = "describe pod -l app.kubernetes.io/name=gardener-extension-cri-resmgr --all-namespaces"
+	var e = "describe pod --all-namespaces"
 
 	ginkgo.It("Create Shoot, Enable cri-rm Extension, Delete Shoot", func() {
 		kubectl(a)
 		kubectl(b)
 		kubectl(c)
 		kubectl(d)
+		kubectl(e)
 
 		ginkgo.By("Create Shoot")
 		ctx, cancel := context.WithTimeout(backgroundCtx, fiveteenMinutes)
 		defer cancel()
+		test := f.CreateShootAndWaitForCreation(ctx, false)
 		kubectl(d)
-		gomega.Expect(f.CreateShootAndWaitForCreation(ctx, false)).To(gomega.Succeed())
+		kubectl(e)
+		gomega.Expect(test).To(gomega.Succeed())
 		f.Verify()
 
 		ginkgo.By("Enable cri-resmgr extension")
