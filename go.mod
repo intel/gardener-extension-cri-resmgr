@@ -20,7 +20,7 @@ go 1.20
 // sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.12.1
 
 require (
-	github.com/gardener/gardener v1.69.1
+	github.com/gardener/gardener v1.65.3
 	github.com/go-logr/logr v1.2.4
 	github.com/golang/mock v1.6.0
 	github.com/onsi/ginkgo/v2 v2.9.2
@@ -75,7 +75,7 @@ require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/kubernetes-csi/external-snapshotter/client/v4 v4.2.0 // indirect
+	github.com/kubernetes-csi/external-snapshotter/v2 v2.1.4 // indirect
 	github.com/mailru/easyjson v0.7.6 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.2 // indirect
 	github.com/mholt/archiver v3.1.1+incompatible // indirect
