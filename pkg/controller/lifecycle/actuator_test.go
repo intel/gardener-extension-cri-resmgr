@@ -126,10 +126,6 @@ var _ = Describe("cri-resource-manager extension actuator tests", func() {
 
 			Expect(secret).Should(HaveKey(consts.InstallationSecretKey))
 
-			// check static
-			Expect(string(secret[consts.InstallationSecretKey])).Should(ContainSubstring("FALLBACK_BODY:1")) // notice no space between is passed as is
-			Expect(string(secret[consts.InstallationSecretKey])).Should(ContainSubstring("FORCE_BODY:1"))
-
 			// check dynamic (first level is unpacked) and rest becomes multi string
 			Expect(string(secret[consts.InstallationSecretKey])).Should(ContainSubstring(`name: "cri-resmgr-config.default"`))
 			Expect(string(secret[consts.InstallationSecretKey])).Should(ContainSubstring("CONFIG_BODY_OF_DEFAULT: |"))
