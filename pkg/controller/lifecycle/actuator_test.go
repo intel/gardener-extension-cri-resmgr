@@ -101,11 +101,7 @@ var _ = Describe("cri-resource-manager extension actuator tests", func() {
 	Describe("rendering charts installation chart with configs", func() {
 		nodeSelector := map[string]string{}
 		configTypes := map[string]map[string]string{
-			// this should generate one ConfigMap with two keys
-			"static": {
-				"fallback": "FALLBACK_BODY:1",
-				"force":    "FORCE_BODY:1",
-			},
+			// this should generate one ConfigMap with "dynamic" key
 			"dynamic": {
 				// this should generate
 				// ConfigMap with name "cri-resmgr-config.default"
