@@ -12,9 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-// TODO: debug the if clause that requires default config
-
-
 {{/* dynamic configuration have different form than static configs - are read by cri-agent */}}
 {{- range $configName, $configContent := (.Values.configs | default dict).dynamic }}
 apiVersion: v1

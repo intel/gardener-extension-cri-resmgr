@@ -71,9 +71,6 @@ spec:
     spec:
       hostPID: true
       hostIPC: true
-      # give a 30 seconds to uninstall cri-resmgr from the host system
-      # this is the default
-      terminationGracePeriodSeconds: 30
       serviceAccount: cri-resmgr-agent
       # only install to nodes with containerd
       nodeSelector:
