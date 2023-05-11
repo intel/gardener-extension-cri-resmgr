@@ -13,9 +13,7 @@
 # limitations under the License.
 
 // TODO: debug the if clause that requires default config
-{{- if not (hasKey .Values.configs "default") }}
-{{- required "Dynamic config is expected" .Values.configs.default }}
-{{- end }}
+
 
 {{/* dynamic configuration have different form than static configs - are read by cri-agent */}}
 {{- range $configName, $configContent := (.Values.configs | default dict).dynamic }}
