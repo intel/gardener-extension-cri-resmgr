@@ -11,14 +11,32 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 package consts
 
-import _ "embed"
+import (
+	"embed"
+)
 
+// Version is version of extension set during build time.
 var Version string
+
+// Commit is commit of extension set during build time.
 var Commit string
 
+// go embed requires files in package through security
+//
+//go:generate cp -r ../../charts .
+var (
+	//go:embed charts/*
+	Charts embed.FS
+
+	//go:embed monitoring.yaml
+	MonitoringYaml []byte
+)
+
 const (
+	// ExtensionName is extension name.
 	ExtensionName = "cri-resmgr"
 	ExtensionType = "cri-resmgr-extension"
 
@@ -30,10 +48,11 @@ const (
 	ConfigMapName            = "gardener-extension-cri-resmgr-configs"
 	ConfigMapNamespaceEnvKey = "EXTENSION_CONFIGMAP_NAMESPACE"
 	ConfigKey                = "config.yaml"
-
-	ChartPath               = "charts/internal/cri-resmgr-installation/"
-	InstallationImageName   = "gardener-extension-cri-resmgr-installation"
-	AgentImageName          = "gardener-extension-cri-resmgr-agent"
-	InstallationReleaseName = "cri-resmgr-installation"
-	InstallationSecretKey   = "installation_chart"
+	// ChartPath should not have used "/"" on the end of the path! Func read from embed.FS don't see dir
+	ChartPath                     = "charts/internal/cri-resmgr-installation"
+	MonitoringManagedResourceName = "extension-monitoring-cri-resmgr"
+	InstallationImageName         = "gardener-extension-cri-resmgr-installation"
+	AgentImageName                = "gardener-extension-cri-resmgr-agent"
+	InstallationReleaseName       = "cri-resmgr-installation"
+	InstallationSecretKey         = "installation_chart"
 )

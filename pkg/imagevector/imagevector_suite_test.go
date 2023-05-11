@@ -12,26 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package e2etest
+package imagevector_test
 
 import (
-	"flag"
-	"os"
 	"testing"
 
-	"github.com/gardener/gardener/test/framework"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
-func TestMain(m *testing.M) {
-	// Flags to be used against existing shoot in our dedicated infrastructure.
-	framework.RegisterGardenerFrameworkFlags()
-	flag.Parse()
-	os.Exit(m.Run())
-}
-
-func TestE2E(t *testing.T) {
+func TestCharts(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "E2E Suite")
+	RunSpecs(t, "CRI-resource-manager extension test suite")
 }

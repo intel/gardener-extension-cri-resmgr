@@ -13,7 +13,7 @@
 # limitations under the License.
 
 ### builder
-FROM golang:1.18.3-alpine3.16 AS builder
+FROM golang:1.19.4-alpine3.16 AS builder
 
 WORKDIR /gardener-extension-cri-resmgr
 COPY go.mod .
@@ -29,7 +29,7 @@ ARG COMMIT=unset
 ARG VERSION=unset
 RUN go install -ldflags="-X github.com/intel/gardener-extension-cri-resmgr/pkg/consts.Commit=${COMMIT} -X github.com/intel/gardener-extension-cri-resmgr/pkg/consts.Version=${VERSION}" ./cmd/gardener-extension-cri-resmgr/...
 # copying late saves time - no need to rebuild binary when only assest change
-COPY charts charts
+#COPY charts charts
 
 ### extension
 FROM alpine:3.16.0 AS gardener-extension-cri-resmgr

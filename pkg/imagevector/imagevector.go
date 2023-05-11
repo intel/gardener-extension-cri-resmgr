@@ -28,13 +28,15 @@ func init() {
 	var err error
 	imageVector, err = imagevector.Read(strings.NewReader(charts.ImagesYAML))
 	if err != nil {
-		fmt.Errorf("Cannot read images.yaml: %s", err)
+		errMessage := fmt.Errorf("cannot read images.yaml: %s", err)
+		fmt.Println("An error message:", errMessage)
 		return
 	}
 
 	imageVector, err = imagevector.WithEnvOverride(imageVector)
 	if err != nil {
-		fmt.Errorf("Could not override or read environment variable: %s", err)
+		err_message := fmt.Errorf("could not override or read environment variable: %s", err)
+		fmt.Println("An error message:", err_message)
 		return
 	}
 }

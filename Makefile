@@ -21,9 +21,12 @@ INSTALLATION_IMAGE_NAME          	:= gardener-extension-cri-resmgr-installation-
 TAG                              := latest
 
 # Please keep it up to date with agent image in charts/images.yaml
-CRI_RM_VERSION                   := 0.7.2
+CRI_RM_VERSION                   := 0.8.0
 CRI_RM_ARCHIVE_NAME              := cri-resource-manager-$(CRI_RM_VERSION).x86_64.tar.gz
 CRI_RM_URL_RELEASE               := https://github.com/intel/cri-resource-manager/releases/download/v$(CRI_RM_VERSION)/$(CRI_RM_ARCHIVE_NAME)
+
+LEADER_ELECTION                  := true
+LEADER_ELECTION_NAMESPACE        := garden
 
 
 # make start options
@@ -36,6 +39,8 @@ COMMIT:=`git rev-parse HEAD`
 DIRTY:=`git diff --quiet || echo '-dirty'`
 VERSION:=`git tag | sort -V | tail -1`
 build:
+	rm -rf ./pkg/consts/charts
+	go generate ./...
 	echo "Building ${VERSION}-${COMMIT}${DIRTY}"
 	go build -ldflags="-X github.com/intel/gardener-extension-cri-resmgr/pkg/consts.Commit=${COMMIT}${DIRTY} -X github.com/intel/gardener-extension-cri-resmgr/pkg/consts.Version=${VERSION}" -v ./cmd/gardener-extension-cri-resmgr
 
@@ -44,6 +49,9 @@ build:
 	go test -c -v ./pkg/configs -o ./gardener-extension-cri-resmgr.configs.test
 
 test:
+	go generate ./...
+	mockgen -destination=mocks/actuator.go -package=mocks github.com/gardener/gardener/extensions/pkg/controller/extension Actuator
+	mockgen -destination=mocks/client.go -package=mocks sigs.k8s.io/controller-runtime/pkg/client Client
 	# Those tests (renders charts, uses env to read files) change CWD during execution (required because rely on charts and fixtures).
 	go test  -v ./pkg/...
 
@@ -79,8 +87,12 @@ _install-binaries:
 	rm /cri-resmgr-installation/$(CRI_RM_ARCHIVE_NAME)
 
 _build-extension-image:
+	rm -rf ./pkg/consts/charts
+	go generate ./...
 	docker build --build-arg COMMIT=${COMMIT}${DIRTY} --build-arg VERSION=${VERSION} -t $(REGISTRY)$(EXTENSION_IMAGE_NAME):$(TAG) -f Dockerfile --target $(EXTENSION_IMAGE_NAME) .
 _build-installation-image:
+	rm -rf ./pkg/consts/charts
+	go generate ./...
 	docker build --build-arg COMMIT=${COMMIT}${DIRTY} --build-arg VERSION=${VERSION} -t $(REGISTRY)$(INSTALLATION_IMAGE_NAME):$(TAG) -f Dockerfile --target $(INSTALLATION_IMAGE_NAME) .
 
 build-images: _build-extension-image _build-installation-image
@@ -90,3 +102,11 @@ push-images:
 	docker push $(REGISTRY)$(EXTENSION_IMAGE_NAME):$(TAG)
 	docker push $(REGISTRY)$(INSTALLATION_IMAGE_NAME):$(TAG)
 	echo "Images ${VERSION}-${COMMIT}${DIRTY} pushed."
+
+generate-mocks:
+	mockgen -destination=mocks/actuator.go -package=mocks github.com/gardener/gardener/extensions/pkg/controller/extension Actuator
+	mockgen -destination=mocks/client.go -package=mocks sigs.k8s.io/controller-runtime/pkg/client Client
+
+generate-coverage:
+	go test -coverprofile=coverage.out ./pkg/...
+	go tool cover -html=coverage.out -o coverage.html    

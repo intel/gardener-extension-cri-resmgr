@@ -33,7 +33,12 @@ import (
 // ---------------------------------------------------------------------------------------
 
 func main() {
-	log.SetLogger(logger.ZapLogger(false))
+	zapLogger, err := logger.NewZapLogger(logger.InfoLevel, logger.FormatText)
+	if err != nil {
+		log.Log.Error(err, "error creating NewZapLogger")
+		os.Exit(1)
+	}
+	log.SetLogger(zapLogger)
 
 	ctx := signals.SetupSignalHandler()
 	log.Log.Info("Build", "Version", consts.Version, "Commit", consts.Commit)

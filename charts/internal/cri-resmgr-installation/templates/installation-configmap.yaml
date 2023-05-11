@@ -175,7 +175,7 @@ data:
           active_policy=$(chroot /var/host bash -c 'cat /var/lib/cri-resmgr/cache | jq .PolicyName -r')
           cfg_data=$(chroot /var/host bash -c 'cat /var/lib/cri-resmgr/cache | jq .Cfg.Data -r')
           if [[ "$cfg_data" == "null"  ]]; then
-              requested_policy="null"
+              requested_policy="none"
           else 
               requested_policy=$(chroot /var/host bash -c 'cat /var/lib/cri-resmgr/cache | jq .Cfg.Data.policy -r | grep Active | cut -f 2 -d " "')
           fi

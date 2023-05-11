@@ -14,12 +14,24 @@
 
 replicaCount: 1
 
+heartbeat: 
+    renewIntervalSeconds: 30 
+
 ### This is default value for extension image to be tested with kind-based provided local with Gardener above 1.55.0
 ### If you want to overwrite it, please provide values to ControllerDeployment providerConfig.values.
 image:
   repository: localhost:5001/gardener-extension-cri-resmgr
   tag: latest
   pullPolicy: Always
+
+vpa:
+  enabled: true
+  resourcePolicy:
+    minAllowed:
+      cpu: 10m
+      memory: 64Mi
+  updatePolicy:
+    updateMode: "Auto"
 
 ### NOTE: The values provided here are only for development/testing purposes as an example.
 ### Default values, defined in charts.go package by embedding charts/images.yaml, are the "source of truth".

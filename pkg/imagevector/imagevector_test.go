@@ -12,26 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package e2etest
+package imagevector_test
 
 import (
-	"flag"
-	"os"
-	"testing"
-
-	"github.com/gardener/gardener/test/framework"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+
+	"github.com/intel/gardener-extension-cri-resmgr/pkg/imagevector"
 )
 
-func TestMain(m *testing.M) {
-	// Flags to be used against existing shoot in our dedicated infrastructure.
-	framework.RegisterGardenerFrameworkFlags()
-	flag.Parse()
-	os.Exit(m.Run())
-}
+var _ = Describe("cri-resource-manager imagevector test", func() {
 
-func TestE2E(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "E2E Suite")
-}
+	It("imagevector has images", func() {
+
+		imageVector := imagevector.ImageVector()
+
+		Expect(imageVector).To(ContainElement(HaveField("Name", "gardener-extension-cri-resmgr-agent")))
+		Expect(imageVector).To(ContainElement(HaveField("Name", "gardener-extension-cri-resmgr-installation")))
+
+	})
+
+})

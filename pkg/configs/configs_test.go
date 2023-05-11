@@ -15,91 +15,125 @@
 package configs_test
 
 import (
-
 	// Local
+	"context"
+	"os"
 
-	"github.com/go-logr/logr"
+	mock_client "github.com/intel/gardener-extension-cri-resmgr/mocks"
 	"github.com/intel/gardener-extension-cri-resmgr/pkg/configs"
 	"github.com/intel/gardener-extension-cri-resmgr/pkg/consts"
 
 	// Gardener
-	"github.com/gardener/gardener/pkg/apis/core/v1beta1"
 	"github.com/gardener/gardener/pkg/logger"
 
 	// Other
+	"github.com/go-logr/logr"
+	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"k8s.io/apimachinery/pkg/runtime"
+
+	corev1 "k8s.io/api/core/v1"
 )
 
 var _ = Describe("cri-resource-manager extension configs reading", func() {
 
 	var (
-		extensions  []v1beta1.Extension
-		baseConfigs map[string]string
-		log         logr.Logger
+		baseConfigs     map[string]string
+		providerConfigs map[string]string
+		log             logr.Logger
 	)
 	BeforeEach(func() {
-		log = logger.ZapLogger(true)
+		var err error
+		log, err = logger.NewZapLogger(logger.InfoLevel, logger.FormatText)
+		if err != nil {
+			log.Error(err, "error creating NewZapLogger")
+		}
 	})
-	It("installation chart with zero configs provided", func() {
-		extensions := []v1beta1.Extension{}
-		configs, err := configs.MergeConfigs(log, map[string]string{}, extensions)
+
+	It("non configs provided", func() {
+		configs, err := configs.PrepareConfigTypes(log, map[string]string{}, map[string]string{})
 		Expect(err).NotTo(HaveOccurred())
-		Expect(configs).Should(Equal(map[string]string{}))
+		Expect(configs).Should(Equal(map[string]map[string]string{"static": {}, "dynamic": {}}))
 	})
 
-	Describe("with empty extensions and empty baseConfigs", func() {
-		BeforeEach(func() {
+	Describe("with not empty configs with all dynamics types", func() {
+		It("but just configs provided from shoot", func() {
+			baseConfigs = map[string]string{}
+			providerConfigs = map[string]string{"foo": "bar"}
+			configs, err := configs.PrepareConfigTypes(log, baseConfigs, providerConfigs)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(configs).Should(Equal(map[string]map[string]string{"dynamic": {"foo": "bar"}, "static": {}}))
+		})
+		Describe("but just configs from configmap (baseConfigs)", func() {
+			It("result in just dynamic from baseConfigs", func() {
+				baseConfigs = map[string]string{"bar": "baz"}
+				providerConfigs = map[string]string{}
+				configs, err := configs.PrepareConfigTypes(log, baseConfigs, providerConfigs)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(configs).Should(Equal(map[string]map[string]string{"dynamic": {"bar": "baz"}, "static": {}}))
+			})
+		})
+		It("with some baseConfigs from configMap and some providerConfigs", func() {
+			baseConfigs = map[string]string{"foo": "old", "bar": "baz"}
+			providerConfigs = map[string]string{"foo": "new"}
+			configs, err := configs.PrepareConfigTypes(log, baseConfigs, providerConfigs)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(configs).Should(Equal(map[string]map[string]string{"dynamic": {"foo": "new", "bar": "baz"}, "static": {}}))
+		})
+		It("with some baseConfigs from configMap and some providerConfigs but types of static", func() {
+			baseConfigs = map[string]string{"fallback": "old", "EXTRA_OPTIONS": "baz"}
+			providerConfigs = map[string]string{"fallback": "new", "force": "force"}
+			configs, err := configs.PrepareConfigTypes(log, baseConfigs, providerConfigs)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(configs).Should(Equal(map[string]map[string]string{"dynamic": {}, "static": {"fallback": "new", "EXTRA_OPTIONS": "baz", "force": "force"}}))
+		})
+	})
 
-			extensions = []v1beta1.Extension{
-				{
-					Type: consts.ExtensionType,
-					ProviderConfig: &runtime.RawExtension{
-						Raw: []byte("{}"),
-					},
-				},
+	Describe("GetBaseConfigsFromConfigMap reads extension ConfigMap and get its configs as baseConfigs", func() {
+		var (
+			ctx           context.Context
+			log           logr.Logger
+			mockCtrl      *gomock.Controller
+			mockk8sClient *mock_client.MockClient
+		)
+		BeforeEach(func() {
+			ctx = context.TODO()
+
+			var err error
+			log, err = logger.NewZapLogger(logger.InfoLevel, logger.FormatText)
+			if err != nil {
+				log.Error(err, "error creating NewZapLogger")
 			}
 
-			baseConfigs = map[string]string{}
+			mockCtrl = gomock.NewController(GinkgoT())
+			mockk8sClient = mock_client.NewMockClient(mockCtrl)
 		})
-		It("installation chart with just configs provided from shoot", func() {
-			configs, err := configs.MergeConfigs(log, baseConfigs, extensions)
+		AfterEach(func() {
+			mockCtrl.Finish()
+		})
+
+		It("get empty config", func() {
+
+			configs, err := configs.GetBaseConfigsFromConfigMap(ctx, log, mockk8sClient)
+
 			Expect(err).NotTo(HaveOccurred())
 			Expect(configs).Should(Equal(map[string]string{}))
 		})
-	})
 
-	Describe("with not empty extensions", func() {
-		BeforeEach(func() {
-			extensions = []v1beta1.Extension{
-				{
-					Type: consts.ExtensionType,
-					ProviderConfig: &runtime.RawExtension{
-						Raw: []byte(`{"configs": {"foo":"bar"}}`),
-					},
-				},
-			}
-			baseConfigs = map[string]string{}
-		})
-		It("installation chart with just configs provided from shoot", func() {
-			configs, err := configs.MergeConfigs(log, baseConfigs, extensions)
+		It("get not empty config", func() {
+			os.Setenv(consts.ConfigMapNamespaceEnvKey, "smoots")
+
+			mockk8sClient.
+				EXPECT().
+				Get(gomock.Any(), gomock.Any(), gomock.Any()).
+				SetArg(2, corev1.ConfigMap{Data: map[string]string{"test": "test"}}).
+				AnyTimes()
+
+			configs, err := configs.GetBaseConfigsFromConfigMap(ctx, log, mockk8sClient)
+
 			Expect(err).NotTo(HaveOccurred())
-			Expect(configs).Should(Equal(map[string]string{"foo": "bar"}))
+			Expect(configs).Should(Equal(map[string]string{"test": "test"}))
 		})
-		Describe("with some baseConfigs, merge but do not override", func() {
-			It("installation chart with just configs provided from shoot", func() {
-				configs, err := configs.MergeConfigs(log, map[string]string{"bar": "baz\n"}, extensions)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(configs).Should(Equal(map[string]string{"foo": "bar", "bar": "baz\n"}))
-			})
-		})
-		Describe("with some baseConfigs, merge and override", func() {
-			It("installation chart with just configs provided from shoot", func() {
-				configs, err := configs.MergeConfigs(log, map[string]string{"foo": "old"}, extensions)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(configs).Should(Equal(map[string]string{"foo": "bar"}))
-			})
-		})
+
 	})
 })

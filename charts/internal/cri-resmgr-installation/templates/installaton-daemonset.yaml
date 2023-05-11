@@ -1,0 +1,109 @@
+# Copyright 2022 Intel Corporation. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: cri-resmgr-installation
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: cri-resmgr-installation
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: cri-resmgr-installation
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: cri-resmgr-installation
+        gardener.cloud/role: system-component
+    spec:
+      hostPID: true
+      hostIPC: true
+      hostNetwork: true
+      # give a 30 seconds to uninstall cri-resmgr from the host system
+      # this is the default
+      terminationGracePeriodSeconds: 30
+      # only install to nodes with containerd
+      nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 8 }}
+      containers:
+      - name: installation
+        image: {{ index .Values.images "gardener-extension-cri-resmgr-installation" }}
+        command: ["/scripts/install-cri-resmgr.sh"]
+        securityContext:
+          capabilities:
+            add:
+            - SYS_CHROOT
+        # give it some CPU resources to allow healthcheck/readiness probe work under heavy load 
+        resources:
+          requests:
+            cpu: 100m
+        ports:
+        - containerPort: 8891
+        volumeMounts:
+        - name: host-volume
+          mountPath: /var/host
+        - name: host-volume-var-run-cri-resmgr
+          mountPath: /var-run-cri-resmgr
+          path: /var/run/cri-resmgr/
+        - name: cri-resmgr-installation-script
+          mountPath: /scripts
+        {{- if (.Values.configs | default dict).static }}
+        - name: static-configs
+          mountPath: /etc/cri-resmgr/
+        {{- end }}
+        readinessProbe:
+          exec:
+            command: ["chroot", "/var/host", "bash", "-c", "systemctl status cri-resource-manager"]
+          failureThreshold: 1
+          initialDelaySeconds: 10
+      ### HELPER CONTAINER to get output from cri-resmgr unit
+      #- name: logger
+      #  image: alpine
+      #  command: 
+      #  - chroot
+      #  - /var/host
+      #  - journalctl
+      #  - -f
+      #  - -u
+      #  - cri-resource-manager
+      #  - -n
+      #  - "1000"
+      #  - -o 
+      #  - short-iso 
+      #  - --no-hostname
+      #  securityContext:
+      #    capabilities:
+      #      add:
+      #      - SYS_CHROOT
+      #  volumeMounts:
+      #  - name: host-volume
+      #    mountPath: /var/host
+      volumes:
+      - name: host-volume
+        hostPath:
+          path: /
+      - name: host-volume-var-run-cri-resmgr
+        hostPath:
+          path: /var/run/cri-resmgr/
+      - name: cri-resmgr-installation-script
+        configMap:
+          name: cri-resmgr-installation-script
+          defaultMode: 0744
+      {{- if (.Values.configs | default dict).static }}
+      - name: static-configs
+        configMap:
+          name: cri-resmgr-static-configs
+      {{- end }}
