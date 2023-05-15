@@ -17,10 +17,9 @@
 images:
 - name: gardener-extension-cri-resmgr-installation
   sourceRepository: https://github.com/intel/gardener-extension-cri-resmgr
-  repository: localhost:5001/gardener-extension-cri-resmgr-installation
+  repository: localhost:5001/gardener-extension-cri-resmgr-installation-and-agent
   tag: latest
 - name: gardener-extension-cri-resmgr-agent
   sourceRepository: https://github.com/intel/cri-resource-manager
-  repository: docker.io/intel/cri-resmgr-agent
-  # Please keep this in sync with CRI_RM_VERSION from Makefile!
-  tag: v0.8.0
+  repository: localhost:5001/gardener-extension-cri-resmgr-installation-and-agent
+  tag: latest

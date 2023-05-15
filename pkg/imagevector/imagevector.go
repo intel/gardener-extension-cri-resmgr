@@ -16,7 +16,6 @@ package imagevector
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/gardener/gardener/pkg/utils/imagevector"
 	"github.com/intel/gardener-extension-cri-resmgr/charts"
@@ -26,7 +25,7 @@ var imageVector imagevector.ImageVector
 
 func init() {
 	var err error
-	imageVector, err = imagevector.Read(strings.NewReader(charts.ImagesYAML))
+	imageVector, err = imagevector.Read([]byte(charts.ImagesYAML))
 	if err != nil {
 		errMessage := fmt.Errorf("cannot read images.yaml: %s", err)
 		fmt.Println("An error message:", errMessage)
