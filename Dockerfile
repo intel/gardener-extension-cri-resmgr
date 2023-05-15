@@ -42,7 +42,7 @@ ENTRYPOINT ["/gardener-extension-cri-resmgr"]
 ### agnet and installation joined
 FROM golang:1.19.3-bullseye as gardener-extension-cri-resmgr-installation-and-agent
 # Please keep this in sync with CRI_RM_VERSION from Makefile!
-COPY --from=intel/cri-resmgr-agent:v0.8.1 /bin/* /bin/
+COPY --from=intel/cri-resmgr-agent:v0.8.3 /bin/* /bin/
 COPY Makefile .
 RUN apt update
 RUN apt install -y make wget
