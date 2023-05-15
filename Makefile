@@ -15,13 +15,13 @@
 #
 .PHONY: build clean e2e-test test start _install-binaries _build-agent-image build-images push-images _build-extension-image _build-installation-image
 
-REGISTRY                         := localhost:5001/
-EXTENSION_IMAGE_NAME             := gardener-extension-cri-resmgr
-INSTALLATION_IMAGE_NAME          := gardener-extension-cri-resmgr-installation
+REGISTRY                         	:= localhost:5001/
+EXTENSION_IMAGE_NAME             	:= gardener-extension-cri-resmgr
+INSTALLATION_IMAGE_NAME          	:= gardener-extension-cri-resmgr-installation-and-agent
 TAG                              := latest
 
 # Please keep it up to date with agent image in charts/images.yaml
-CRI_RM_VERSION                   := 0.8.0
+CRI_RM_VERSION                   := 0.8.1
 CRI_RM_ARCHIVE_NAME              := cri-resource-manager-$(CRI_RM_VERSION).x86_64.tar.gz
 CRI_RM_URL_RELEASE               := https://github.com/intel/cri-resource-manager/releases/download/v$(CRI_RM_VERSION)/$(CRI_RM_ARCHIVE_NAME)
 

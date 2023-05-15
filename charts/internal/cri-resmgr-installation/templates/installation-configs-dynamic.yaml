@@ -12,16 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-{{- if (.Values.configs | default dict).static }}
-{{/* static configuration is just one ConfigMap  with keys like falllback/force */}}
+{{/* dynamic configuration have different form than static configs - are read by cri-agent */}}
+{{- range $configName, $configContent := (.Values.configs | default dict).dynamic }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   namespace: kube-system
-  name: "cri-resmgr-static-configs"
+  name: "cri-resmgr-config.{{ $configName }}"
 data:
-{{- range $configName, $configContent := .Values.configs.static }}
-  {{ $configName }}.cfg: |+
-  {{- $configContent | nindent 4 }}
-{{- end}}
-{{- end}}
+{{- $configObject := fromYaml $configContent }}
+{{- range $configKey, $configValue := $configObject }}
+  {{ $configKey }}: |
+    {{- $configValue | toYaml | nindent 4 }}
+{{- end }}
+---
+
+{{- end }}

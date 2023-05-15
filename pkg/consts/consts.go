@@ -35,6 +35,7 @@ var (
 	MonitoringYaml []byte
 )
 
+// Extension related constants
 const (
 	// ExtensionName is extension name.
 	ExtensionName = "cri-resmgr"
