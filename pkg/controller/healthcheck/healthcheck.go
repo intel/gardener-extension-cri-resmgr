@@ -29,6 +29,7 @@ import (
 	// Other
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
@@ -53,6 +54,7 @@ func RegisterHealthChecks(mgr manager.Manager) error {
 				HealthCheck:   general.CheckManagedResource(consts.ManagedResourceName),
 			},
 		},
+		sets.New(gardenercorev1beta1.ShootSystemComponentsHealthy),
 	)
 }
 
