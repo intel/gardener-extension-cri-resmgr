@@ -15,8 +15,6 @@
 package lifecycle_test
 
 import (
-	"context"
-
 	"github.com/gardener/gardener/pkg/apis/core/v1beta1"
 	"github.com/gardener/gardener/pkg/logger"
 	"github.com/go-logr/logr"
@@ -114,10 +112,9 @@ var _ = Describe("cri-resource-manager extension actuator tests", func() {
 		// unused but useful for future
 		// "github.com/golang/mock/gomock"
 		a := actuator.NewActuator("mock").(*actuator.Actuator)
-		ctx := context.TODO()
 
 		It("generate properly with expected bodies inside", func() {
-			secret, err := a.GenerateSecretData(ctx, log, consts.Charts, consts.ChartPath, "foo_namespace", "v1.0.0", configTypes, nodeSelector)
+			secret, err := a.GenerateSecretData(log, consts.Charts, consts.ChartPath, "foo_namespace", "v1.0.0", configTypes, nodeSelector)
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(secret).Should(HaveKey(consts.InstallationSecretKey))
