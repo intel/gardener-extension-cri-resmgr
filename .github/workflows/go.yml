@@ -6,8 +6,12 @@ on:
   pull_request:
     branches: ["master"]
 
+permissions:
+  contents: read
+  # Optional: allow read access to pull request. Use with `only-new-issues` option.
+  # pull-requests: read
 jobs:
-  go:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -24,31 +28,25 @@ jobs:
       - name: Build
         run: make build
 
-      - name: Run go vet
-        run: go vet ./...
-
-      - name: Run gofmt
-        run: gofmt -d -l .
-
-      - name: Install golint
-        run: go install golang.org/x/lint/golint@latest
-
-      # Step does not cause an error during execution. It can be changed by '-set_exit_status'
-      - name: Run golint
-        run: golint -min_confidence 1.0 ./...
-
-      # Alternative linker for golint
-      - name: Install staticcheck
-        run: go install honnef.co/go/tools/cmd/staticcheck@latest
-
-      - name: Run staticcheck
-        run: staticcheck ./...
-
-      - name: Install mockgen
-        run: go install github.com/golang/mock/mockgen@v1.6.0
-
       - name: Run Unittest
         run: make test
+
+  coverage:
+    name: coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      - uses: actions/checkout@v3
+        # with:
+        #   # default fetch-depth is insufficent to find previous coverage notes
+        #   fetch-depth: 10
+
+      - name: Run go generate
+        run: go generate ./...
 
       - name: Generate Coverage Report
         run: make generate-coverage
@@ -58,3 +56,29 @@ jobs:
         with:
           name: coverage-report
           path: ./coverage.html
+
+  golangci-lint:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      - uses: actions/checkout@v3
+
+      - name: Run go generate
+        run: go generate ./...
+
+      # https://github.com/golangci/golangci-lint-action
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: latest
+          args: --timeout=5m
+          only-new-issues: true
+          # https://github.com/golangci/golangci-lint-action/issues/135
+          # Optional: if set to true then the all caching functionality will be complete disabled,
+          #           takes precedence over all other caching options.
+          skip-cache: true

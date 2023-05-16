@@ -1,0 +1,16 @@
+# https://golangci-lint.run/usage/configuration/#run-configuration
+# https://golangci-lint.run/usage/false-positives/
+linters:
+  # https://golangci-lint.run/usage/linters/
+  enable:
+    - errcheck
+    - gosimple
+    - ineffassign
+    - typecheck
+    - unused
+    - ginkgolinter
+    - gofmt
+    - govet
+    - staticcheck
+    - revive
+    # - golint // Deprecated

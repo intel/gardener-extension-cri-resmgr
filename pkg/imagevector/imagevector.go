@@ -34,8 +34,8 @@ func init() {
 
 	imageVector, err = imagevector.WithEnvOverride(imageVector)
 	if err != nil {
-		err_message := fmt.Errorf("could not override or read environment variable: %s", err)
-		fmt.Println("An error message:", err_message)
+		errMessage := fmt.Errorf("could not override or read environment variable: %s", err)
+		fmt.Println("An error message:", errMessage)
 		return
 	}
 }
