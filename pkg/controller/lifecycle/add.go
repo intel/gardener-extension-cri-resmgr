@@ -42,8 +42,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
-// configMapToAllExtensionsMapper maps creates reconciliation requests for extensions based on dedicate configMap of cri-resmgr extension.
-func configMapToAllExtensionMapper(ctx context.Context, log logr.Logger, reader client.Reader, obj client.Object) []reconcile.Request {
+// ConfigMapToAllExtensionMapper maps creates reconciliation requests for extensions based on dedicate configMap of cri-resmgr extension.
+func ConfigMapToAllExtensionMapper(ctx context.Context, log logr.Logger, reader client.Reader, obj client.Object) []reconcile.Request {
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
@@ -140,7 +140,7 @@ func AddConfigMapWatchingControllerToManager(mgr manager.Manager, options *optio
 	return ctrl.Watch(
 		&source.Kind{Type: &corev1.ConfigMap{}},
 		mapper.EnqueueRequestsFrom(
-			mapper.MapFunc(configMapToAllExtensionMapper),
+			mapper.MapFunc(ConfigMapToAllExtensionMapper),
 			mapper.UpdateWithNew,
 			mgr.GetLogger().WithName(controllerName),
 		),
