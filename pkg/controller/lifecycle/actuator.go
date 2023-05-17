@@ -107,7 +107,7 @@ type Actuator struct {
 
 // GenerateSecretData return byte map which is k8s secret with data.
 func (a *Actuator) GenerateSecretData(logger logr.Logger, charts embed.FS, chartPath string,
-	namespace string, k8sVersion string, configs map[string]map[string]string, nodeSelector map[string]string) (map[string][]byte, error) {
+	_ string, k8sVersion string, configs map[string]map[string]string, nodeSelector map[string]string) (map[string][]byte, error) {
 	emptyMap := map[string][]byte{}
 	// Depending on shoot, chartRenderer will have different capabilities based on K8s version.
 	chartRenderer, err := a.ChartRendererFactory.NewChartRendererForShoot(k8sVersion)
@@ -221,7 +221,7 @@ func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extens
 }
 
 // Delete the Extension resource.
-func (a *Actuator) Delete(ctx context.Context, logger logr.Logger, ex *extensionsv1alpha1.Extension) error {
+func (a *Actuator) Delete(ctx context.Context, _ logr.Logger, ex *extensionsv1alpha1.Extension) error {
 	namespace := ex.GetNamespace()
 	cluster, err := extensionscontroller.GetCluster(ctx, a.client, namespace)
 	if err != nil {
