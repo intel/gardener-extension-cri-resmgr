@@ -216,11 +216,8 @@ func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extens
 	secretDataForMonitoring := a.GenerateSecretDataToMonitoringManagedResource(namespace)
 
 	// Reconcile managedresource and secret for seed.
-	if err := managedresources.CreateForSeed(ctx, a.client, namespace, consts.MonitoringManagedResourceName, false, secretDataForMonitoring); err != nil {
-		return err
-	}
-
-	return nil
+	err = managedresources.CreateForSeed(ctx, a.client, namespace, consts.MonitoringManagedResourceName, false, secretDataForMonitoring)
+	return err
 }
 
 // Delete the Extension resource.
@@ -249,11 +246,8 @@ func (a *Actuator) Delete(ctx context.Context, logger logr.Logger, ex *extension
 		return err
 	}
 
-	if err := managedresources.WaitUntilDeleted(timeoutShootCtx, a.client, namespace, consts.MonitoringManagedResourceName); err != nil {
-		return err
-	}
-
-	return nil
+	err = managedresources.WaitUntilDeleted(timeoutShootCtx, a.client, namespace, consts.MonitoringManagedResourceName)
+	return err
 }
 
 // Restore the Extension resource.

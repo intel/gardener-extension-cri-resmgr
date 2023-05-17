@@ -58,7 +58,7 @@ var _ = Describe("ConfigMapToAllExtensionMapper tests", func() {
 			Return(nil)
 
 		requests = lifecycle.ConfigMapToAllExtensionMapper(ctx, log, reader, configMap)
-		Expect(requests).Should(HaveLen(0))
+		Expect(requests).Should(BeEmpty())
 	})
 
 	It("some Extension objects", func() {
