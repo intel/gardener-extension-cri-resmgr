@@ -27,8 +27,9 @@ require (
 	github.com/onsi/gomega v1.27.6
 	github.com/spf13/cobra v1.7.0
 	k8s.io/api v0.26.2
-	k8s.io/apimachinery v0.26.2
+	k8s.io/apimachinery v0.27.3
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
+	k8s.io/klog/v2 v2.90.1
 	k8s.io/utils v0.0.0-20230505201702-9f6742963106
 	sigs.k8s.io/controller-runtime v0.14.6
 // github.com/intel/gardener-extension-cri-resmgr/pkg/imagevector v0.0.0-00010101000000-000000000000
@@ -54,9 +55,9 @@ require (
 	github.com/gardener/machine-controller-manager v0.48.1 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-logr/zapr v1.2.3 // indirect
-	github.com/go-openapi/jsonpointer v0.19.5 // indirect
-	github.com/go-openapi/jsonreference v0.20.0 // indirect
-	github.com/go-openapi/swag v0.19.14 // indirect
+	github.com/go-openapi/jsonpointer v0.19.6 // indirect
+	github.com/go-openapi/jsonreference v0.20.1 // indirect
+	github.com/go-openapi/swag v0.22.3 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
@@ -67,7 +68,7 @@ require (
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/gofuzz v1.1.0 // indirect
 	github.com/google/pprof v0.0.0-20210720184732-4bb14d4b1be1 // indirect
-	github.com/google/uuid v1.1.2 // indirect
+	github.com/google/uuid v1.3.0 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/huandu/xstrings v1.3.2 // indirect
@@ -76,7 +77,7 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kubernetes-csi/external-snapshotter/v2 v2.1.4 // indirect
-	github.com/mailru/easyjson v0.7.6 // indirect
+	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.2 // indirect
 	github.com/mholt/archiver v3.1.1+incompatible // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
@@ -121,12 +122,11 @@ require (
 	k8s.io/autoscaler/vertical-pod-autoscaler v0.13.0 // indirect
 	k8s.io/component-base v0.26.2 // indirect
 	k8s.io/helm v2.16.1+incompatible // indirect
-	k8s.io/klog/v2 v2.80.1 // indirect
 	k8s.io/kube-aggregator v0.26.2 // indirect
-	k8s.io/kube-openapi v0.0.0-20221012153701-172d655c2280 // indirect
+	k8s.io/kube-openapi v0.0.0-20230501164219-8b0f38b5fd1f // indirect
 	k8s.io/kubelet v0.26.2 // indirect
 	k8s.io/metrics v0.26.2 // indirect
-	sigs.k8s.io/json v0.0.0-20220713155537-f223a00ba0e2 // indirect
+	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
