@@ -203,7 +203,7 @@ This is based on https://github.com/gardener/gardener/blob/master/docs/deploymen
 mkdir -p ~/work/
 git clone https://github.com/gardener/gardener ~/work/gardener
 cd ~/work/gardener
-git checkout v1.65.3
+git checkout v1.73.1
 cd -
 ```
 
@@ -314,7 +314,7 @@ kubectl get managedresource -n shoot--local--local | grep extension-runtime-cri-
 First get credentials to access shoot cluster:
 
 ```sh 
-kubectl -n garden-local get secret local.kubeconfig -o jsonpath={.data.kubeconfig} | base64 -d > /tmp/kubeconfig-shoot-local.yaml
+kubectl create -f kubeconfig-request.json --raw /apis/core.gardener.cloud/v1beta1/namespaces/garden-local/shoots/local/adminkubeconfig | jq -r ".status.kubeconfig" | base64 -d > /tmp/kubeconfig-shoot-local.yaml
 ```
 
 ... and check status of the node/pods:
