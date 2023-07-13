@@ -27,15 +27,15 @@ COPY charts/images.go charts/images.go
 COPY charts/images.yaml charts/images.yaml
 ARG COMMIT=unset
 ARG VERSION=unset
-RUN go install -ldflags="-X github.com/intel/gardener-extension-cri-resmgr/pkg/consts.Commit=${COMMIT} -X github.com/intel/gardener-extension-cri-resmgr/pkg/consts.Version=${VERSION}" ./cmd/gardener-extension-cri-resmgr/...
+RUN CGO_ENABLED=0 go install -ldflags="-X github.com/intel/gardener-extension-cri-resmgr/pkg/consts.Commit=${COMMIT} -X github.com/intel/gardener-extension-cri-resmgr/pkg/consts.Version=${VERSION}" ./cmd/gardener-extension-cri-resmgr/...
 # copying late saves time - no need to rebuild binary when only assest change
 #COPY charts charts
 
 ### extension
-FROM alpine:3.16.0 AS gardener-extension-cri-resmgr
+FROM gcr.io/distroless/base AS gardener-extension-cri-resmgr
 
 COPY charts/internal /charts/internal
-COPY --from=builder /go/bin/gardener-extension-cri-resmgr /gardener-extension-cri-resmgr
+COPY --from=builder /go/bin/gardener-extension-cri-resmgr /
 ENTRYPOINT ["/gardener-extension-cri-resmgr"]
 
 
