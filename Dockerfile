@@ -13,7 +13,7 @@
 # limitations under the License.
 
 ### builder
-FROM golang:1.19.4-alpine3.16 AS builder
+FROM golang:1.20.6-alpine3.18 AS builder
 
 WORKDIR /gardener-extension-cri-resmgr
 COPY go.mod .
@@ -40,14 +40,14 @@ ENTRYPOINT ["/gardener-extension-cri-resmgr"]
 
 
 ### agnet and installation joined
-FROM debian:latest as gardener-extension-cri-resmgr-installation-and-agent
+FROM debian:12.0 as gardener-extension-cri-resmgr-installation-and-agent
+
+WORKDIR /gardener-extension-cri-resmgr-installation-and-agent
 # Please keep this in sync with CRI_RM_VERSION from Makefile!
 COPY --from=intel/cri-resmgr-agent:v0.8.3 /bin/* /bin/
 COPY Makefile .
-RUN apt update
-RUN apt install -y make wget
+RUN apt-get update && apt-get --no-install-recommends -y install make wget ca-certificates libpsl5 libssl3 openssl publicsuffix && apt-get clean && rm -rf /var/lib/apt/lists/*
 RUN make _install-binaries
 ARG COMMIT=unset
 ARG VERSION=unset
-RUN bash -c "echo ${VERSION} >/VERSION"
-RUN bash -c "echo ${COMMIT} >/COMMIT"
+RUN bash -c "echo ${VERSION} >/VERSION" && bash -c "echo ${COMMIT} >/COMMIT"
