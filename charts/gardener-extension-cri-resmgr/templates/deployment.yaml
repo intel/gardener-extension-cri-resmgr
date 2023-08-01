@@ -32,6 +32,7 @@ spec:
         checksum/gardener-extension-cri-resmgr-imagevector-overwrite: {{ include (print $.Template.BasePath "/configmap-imagevector-overwrite.yaml") . | sha256sum }}
         {{- end }}
       labels:
+        networking.gardener.cloud/to-runtime-apiserver: allowed
         app.kubernetes.io/name: gardener-extension-cri-resmgr
     spec:
       priorityClassName: gardener-extension-cri-resmgr
