@@ -20,7 +20,7 @@ go 1.20
 // sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.12.1
 
 require (
-	github.com/gardener/gardener v1.65.3
+	github.com/gardener/gardener v1.72.2
 	github.com/go-logr/logr v1.2.4
 	github.com/golang/mock v1.6.0
 	github.com/onsi/ginkgo/v2 v2.11.0
@@ -48,6 +48,7 @@ require (
 	github.com/dsnet/compress v0.0.1 // indirect
 	github.com/emicklei/go-restful/v3 v3.9.0 // indirect
 	github.com/evanphx/json-patch/v5 v5.6.0 // indirect
+	github.com/fluent/fluent-operator/v2 v2.2.0 // indirect
 	github.com/frankban/quicktest v1.14.5 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/gardener/etcd-druid v0.18.1 // indirect
@@ -55,6 +56,7 @@ require (
 	github.com/gardener/machine-controller-manager v0.48.1 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-logr/zapr v1.2.3 // indirect
+	github.com/go-openapi/errors v0.20.3 // indirect
 	github.com/go-openapi/jsonpointer v0.19.6 // indirect
 	github.com/go-openapi/jsonreference v0.20.1 // indirect
 	github.com/go-openapi/swag v0.22.3 // indirect
@@ -76,7 +78,7 @@ require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/kubernetes-csi/external-snapshotter/v2 v2.1.4 // indirect
+	github.com/kubernetes-csi/external-snapshotter/client/v4 v4.2.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.2 // indirect
 	github.com/mholt/archiver v3.1.1+incompatible // indirect
