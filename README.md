@@ -14,7 +14,7 @@ This Gardener extension will deploy and manage lifecycle of [CRI-Resource-Manage
 
 - `container-runtime` of shoot nodes must be configured to **containerd**, 
 - for production usage: provide **docker image registry** where installation and extension images can be pushed (until #47 is resolved)
-- for local development: tested with Gardener v1.74.1
+- for local development: tested with Gardener v1.74.2
 
 ### Features
 
@@ -202,7 +202,7 @@ This is based on https://github.com/gardener/gardener/blob/master/docs/deploymen
 mkdir -p ~/work/
 git clone https://github.com/gardener/gardener ~/work/gardener
 cd ~/work/gardener
-git checkout v1.74.1
+git checkout v1.74.2
 cd -
 ```
 
