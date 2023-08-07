@@ -67,6 +67,12 @@ func disableCriResmgr(shoot *gardencorev1beta1.Shoot) error {
 }
 
 func getShoot() *gardencorev1beta1.Shoot {
+	secretBindingName := "local"
+	networkingType := "calico"
+	networking := gardencorev1beta1.Networking{
+		Type:           &networkingType,
+		ProviderConfig: &runtime.RawExtension{Raw: []byte(`{"apiVersion":"calico.networking.extensions.gardener.cloud/v1alpha1","kind":"NetworkConfig","typha":{"enabled":false},"backend":"none"}`)},
+	}
 	return &gardencorev1beta1.Shoot{
 		ObjectMeta: metav1.ObjectMeta{
 			GenerateName: "", // will be overridden anyway
@@ -79,16 +85,13 @@ func getShoot() *gardencorev1beta1.Shoot {
 		},
 		Spec: gardencorev1beta1.ShootSpec{
 			Region:            "local",
-			SecretBindingName: "local",
+			SecretBindingName: &secretBindingName,
 			CloudProfileName:  "local",
 			SeedName:          pointer.String("local"),
 			Kubernetes: gardencorev1beta1.Kubernetes{
 				Version: kubernetesVersion,
 			},
-			Networking: gardencorev1beta1.Networking{
-				Type:           "calico",
-				ProviderConfig: &runtime.RawExtension{Raw: []byte(`{"apiVersion":"calico.networking.extensions.gardener.cloud/v1alpha1","kind":"NetworkConfig","typha":{"enabled":false},"backend":"none"}`)},
-			},
+			Networking: &networking,
 			Provider: gardencorev1beta1.Provider{
 				Type: "local",
 				Workers: []gardencorev1beta1.Worker{{
