@@ -20,7 +20,7 @@ go 1.20
 // sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.12.1
 
 require (
-	github.com/gardener/gardener v1.74.2
+	github.com/gardener/gardener v1.78.0
 	github.com/go-logr/logr v1.2.4
 	github.com/golang/mock v1.6.0
 	github.com/onsi/ginkgo/v2 v2.11.0
@@ -42,16 +42,16 @@ require (
 	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/Masterminds/sprig v2.22.0+incompatible // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/cespare/xxhash/v2 v2.1.2 // indirect
+	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/cyphar/filepath-securejoin v0.2.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dsnet/compress v0.0.1 // indirect
-	github.com/emicklei/go-restful/v3 v3.9.0 // indirect
+	github.com/emicklei/go-restful/v3 v3.10.1 // indirect
 	github.com/evanphx/json-patch/v5 v5.6.0 // indirect
 	github.com/fluent/fluent-operator/v2 v2.2.0 // indirect
 	github.com/frankban/quicktest v1.14.5 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
-	github.com/gardener/etcd-druid v0.18.1 // indirect
+	github.com/gardener/etcd-druid v0.19.2 // indirect
 	github.com/gardener/hvpa-controller/api v0.5.0 // indirect
 	github.com/gardener/machine-controller-manager v0.48.1 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
@@ -104,7 +104,7 @@ require (
 	go.uber.org/zap v1.24.0 // indirect
 	golang.org/x/crypto v0.11.0 // indirect
 	golang.org/x/net v0.12.0 // indirect
-	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5 // indirect
+	golang.org/x/oauth2 v0.4.0 // indirect
 	golang.org/x/sys v0.10.0 // indirect
 	golang.org/x/term v0.10.0 // indirect
 	golang.org/x/text v0.11.0 // indirect
@@ -112,7 +112,7 @@ require (
 	golang.org/x/tools v0.9.3 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/genproto v0.0.0-20221018160656-63c7b68cfc55 // indirect
+	google.golang.org/genproto v0.0.0-20230110181048-76db0878b65f // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
@@ -120,7 +120,7 @@ require (
 	istio.io/api v0.0.0-20230217221049-9d422bf48675 // indirect
 	istio.io/client-go v1.17.1 // indirect
 	k8s.io/apiextensions-apiserver v0.26.3 // indirect
-	k8s.io/autoscaler/vertical-pod-autoscaler v0.13.0 // indirect
+	k8s.io/autoscaler/vertical-pod-autoscaler v0.14.0 // indirect
 	k8s.io/component-base v0.26.3 // indirect
 	k8s.io/helm v2.16.1+incompatible // indirect
 	k8s.io/kube-aggregator v0.26.3 // indirect
