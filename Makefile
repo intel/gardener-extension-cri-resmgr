@@ -65,12 +65,10 @@ e2e-test:
 	@echo "127.0.0.1 api.e2e-default.local.internal.local.gardener.cloud"
 	@echo ""
 	@echo "Note2:"
-	@echo "KUBECONFIG should point to kind-local gardener cluster."
-	@echo "Make sure env KUBECONFIG exists"
-	@echo "example: export KUBECONFIG=~/.kube/config"
+	@echo 'KUBECONFIG should point to kind-local gardener cluster e.g KUBECONFIG=$HOME/.kube/config'
 	@echo ""
 	@echo "Note3:"
-	@echo "ControllerRegistration and ControllerDeployment CRDs must be already deployed to cluster"
+	@echo "ControllerRegistration and ControllerDeployment CRDs must be already deployed to cluster (with globallyEnabled=False)"
 	@echo 
 	@echo "Note4:"
 	@echo "Following labels are available: enable, reenable, disable"

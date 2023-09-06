@@ -89,14 +89,14 @@ func ConfigMapToAllExtensionMapper(ctx context.Context, log logr.Logger, reader 
 // AddToManager creates controller that watches Extension object and deploys necessary objects to Shoot cluster.
 func AddToManager(mgr manager.Manager, options *options.Options, ignoreOperationAnnotation bool) error {
 
-	return extension.Add(mgr, extension.AddArgs{
+	return extension.Add(context.TODO(), mgr, extension.AddArgs{
 		Actuator:                  NewActuator(consts.ActuatorName),
 		ControllerOptions:         options.ControllerOptions.Completed().Options(),
 		Name:                      consts.ControllerName,
 		FinalizerSuffix:           consts.ExtensionType,
 		Resync:                    60 * time.Minute,
 		Type:                      consts.ExtensionType, // to be used for TypePredicate
-		Predicates:                extension.DefaultPredicates(ignoreOperationAnnotation),
+		Predicates:                extension.DefaultPredicates(context.TODO(), mgr, ignoreOperationAnnotation),
 		IgnoreOperationAnnotation: ignoreOperationAnnotation,
 	})
 }
@@ -111,7 +111,7 @@ func AddConfigMapWatchingControllerToManager(mgr manager.Manager, options *optio
 		Resync:          60 * time.Minute,
 		FinalizerSuffix: consts.ExtensionType, // We're using the same finalizer as the original controller on purpose to "delete" only once without a need to wait for another "configs" controller
 	}
-	controllerOptions.Reconciler = extension.NewReconciler(configReconcilerArgs)
+	controllerOptions.Reconciler = extension.NewReconciler(mgr, configReconcilerArgs)
 	recoverPanic := true
 	controllerOptions.RecoverPanic = &recoverPanic
 
@@ -140,6 +140,8 @@ func AddConfigMapWatchingControllerToManager(mgr manager.Manager, options *optio
 	return ctrl.Watch(
 		&source.Kind{Type: &corev1.ConfigMap{}},
 		mapper.EnqueueRequestsFrom(
+			context.TODO(),
+			nil, // TODO cache.Cache?!?
 			mapper.MapFunc(ConfigMapToAllExtensionMapper),
 			mapper.UpdateWithNew,
 			mgr.GetLogger().WithName(controllerName),

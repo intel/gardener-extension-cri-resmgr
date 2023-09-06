@@ -14,7 +14,7 @@ This Gardener extension will deploy and manage lifecycle of [CRI-Resource-Manage
 
 - `container-runtime` of shoot nodes must be configured to **containerd**, 
 - for production usage: provide **docker image registry** where installation and extension images can be pushed (until #47 is resolved)
-- for local development: tested with Gardener v1.74.2
+- for local development: tested with Gardener v1.78.2
 
 ### Features
 
@@ -187,6 +187,7 @@ This is based on https://github.com/gardener/gardener/blob/master/docs/deploymen
 
 #### Prerequisites
 
+- *golang* 1.21+
 - *kubectl* 1.20+
 - working dir for `mkdir ~/work`
 - *gardener-extension-cri-resmgr* is cloned to ~/work path like this:
@@ -202,7 +203,7 @@ This is based on https://github.com/gardener/gardener/blob/master/docs/deploymen
 mkdir -p ~/work/
 git clone https://github.com/gardener/gardener ~/work/gardener
 cd ~/work/gardener
-git checkout v1.74.2
+git checkout v1.78.2
 cd -
 ```
 
@@ -316,12 +317,16 @@ First get credentials to access shoot cluster:
 kubectl create -f kubeconfig-request.json --raw /apis/core.gardener.cloud/v1beta1/namespaces/garden-local/shoots/local/adminkubeconfig | jq -r ".status.kubeconfig" | base64 -d > /tmp/kubeconfig-shoot-local.yaml
 ```
 
+Please follow [this guide](https://gardener.cloud/docs/gardener/deployment/getting_started_locally/#accessing-the-shoot-cluster) to get access to local shoot cluster.
+
 ... and check status of the node/pods:
 
 ```sh
 kubectl --kubeconfig=/tmp/kubeconfig-shoot-local.yaml get nodes
 kubectl --kubeconfig=/tmp/kubeconfig-shoot-local.yaml get pods -A
 ```
+
+
 
 ##### 7. Check CRI-resource-manager is installed properly as proxy
 
@@ -588,11 +593,10 @@ and already set /etc/hosts properly with following entries:
 then:
 ```
 make -C ~/work/gardener kind-up
-cp ~/work/gardener/example/gardener-local/kind/kubeconfig ~/.kube/config
-./hacks/kind-load-images.sh
+cp ~/work/gardener/example/gardener-local/kind/local/kubeconfig ~/.kube/config
 make -C ~/work/gardener gardener-up
 kubectl apply -f ./examples/ctrldeploy-ctrlreg.yaml
-make e2e-tests KUBECONFIG=$HOME/.kube/config
+make e2e-test KUBECONFIG=$HOME/.kube/config
 ```
 
 Additional options available provided by test framework:

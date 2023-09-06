@@ -77,7 +77,7 @@ func NewExtensionControllerCommand(ctx context.Context) *cobra.Command {
 				return err
 			}
 
-			if err := heartbeat.AddToManager(mgr); err != nil {
+			if err := heartbeat.AddToManager(context.TODO(), mgr); err != nil {
 				return err
 			}
 
