@@ -331,7 +331,7 @@ kubectl --kubeconfig=/tmp/kubeconfig-shoot-local.yaml get pods -A
 ##### 7. Check CRI-resource-manager is installed properly as proxy
 
 ```sh
-kubectl exec -n shoot--local--local `kubectl get pod -n shoot--local--local --no-headers G machine-shoot | awk '{print $1}'` -- systemctl status cri-resource-manager kubelet -n 0
+kubectl exec -n shoot--local--local `kubectl get pod -n shoot--local--local --no-headers | grep machine-shoot | awk '{print $1}'` -- systemctl status cri-resource-manager kubelet -n 0
 ```
 
 We should observe that:
