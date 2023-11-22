@@ -14,3 +14,9 @@ linters:
     - staticcheck
     - revive
     # - golint // Deprecated
+  issues:
+    exclude-rules:
+    - path: pkg/imagevector/imagevector_suite_test.go
+      text: "should not use dot imports (revive)"
+    - path: pkg/imagevector/imagevector_test.go
+      text: "should not use dot imports (revive)"
