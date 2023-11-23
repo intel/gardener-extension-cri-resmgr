@@ -12,27 +12,17 @@ linters:
     - gofmt
     - govet
     - staticcheck
-    - revive #dotimport
+    - revive
     # - golint // Deprecated
 
 issues:
   exclude-rules:
     - path: '(.+)_test\.go'
-      source: "dot-import"
+      #source: "dot-import"
+      text: '.*not.*'
+      #   text: "dot-imports: should not use dot imports (revive)"
       linters:
         - revive
-
-# issues:
-#   exclude-rules:
-#     - path-except: '(.+)_test\.go'
-#       linters:
-#         - revive
-#     - path: 'pkg/imagevector/imagevector_test.go'
-#       text: '.*not.*'
-
-  # - path: '(.+)_test\.go'
-  #   text: "dot-imports: should not use dot imports (revive)"
-
 
 linters-settings:
   revive:
