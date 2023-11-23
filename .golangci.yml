@@ -17,11 +17,17 @@ linters:
 
 issues:
   exclude-rules:
-    - path-except: '(.+)_test\.go'
+    - path: _test\.go
       linters:
         - revive
-    - path: 'pkg/imagevector/imagevector_test.go'
-      text: '.*not.*'
+
+# issues:
+#   exclude-rules:
+#     - path-except: '(.+)_test\.go'
+#       linters:
+#         - revive
+#     - path: 'pkg/imagevector/imagevector_test.go'
+#       text: '.*not.*'
 
   # - path: '(.+)_test\.go'
   #   text: "dot-imports: should not use dot imports (revive)"
