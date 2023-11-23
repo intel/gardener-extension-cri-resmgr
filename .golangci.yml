@@ -26,10 +26,10 @@ issues:
   # - path: 'pkg/imagevector/imagevector_test.go'
   #   text: "dot-imports: should not use dot imports (revive)"
 
-# linters-settings:
-#   revive:
-#     rules:
-#       # https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#dot-imports
-#       - name: dot-imports
-#         severity: warning
-#         disabled: true #default for golangci - false 
+linters-settings:
+  revive:
+    rules:
+      # https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#dot-imports
+      - name: dot-imports
+        severity: error
+        disabled: false #default for golangci - false 
