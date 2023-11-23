@@ -23,3 +23,11 @@ linters:
     - path-except: '(.+)_test\.go'
       linters:
         - dot-import
+
+linters-settings:
+  revive:
+    rules:
+      # https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#dot-imports
+      - name: dot-imports
+        severity: warning
+        disabled: true #default for golangci - false 
