@@ -20,3 +20,6 @@ linters:
       text: "dot-imports: should not use dot imports (revive)"
     - path: 'pkg/imagevector/imagevector_test.go'
       text: "dot-imports: should not use dot imports (revive)"
+    - path-except: '(.+)_test\.go'
+      linters:
+        - dot-import
