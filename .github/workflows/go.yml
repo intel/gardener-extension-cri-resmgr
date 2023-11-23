@@ -77,7 +77,7 @@ jobs:
         with:
           version: latest
           args: --timeout=5m
-          only-new-issues: true 
+          only-new-issues: true
           # https://github.com/golangci/golangci-lint-action/issues/135
           # Optional: if set to true then the all caching functionality will be complete disabled,
           #           takes precedence over all other caching options.
