@@ -18,7 +18,7 @@ linters:
 issues:
   exclude-rules:
     - path: '(.+)_test\.go'
-      source: "dot-imports:"
+      source: "dot-import"
       linters:
         - revive
 
