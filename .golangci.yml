@@ -14,7 +14,13 @@ linters:
     - staticcheck
     - revive
     # - golint // Deprecated
-  issues:
-    exclude-rules:
+
+issues:
+  exclude-rules:
+  # There were problems when the master didn't pass the linter checks
+  # because the check was a warning.
+  # dot imports are used just for tests - ginko and gomega.
     - path: '(.+)_test\.go'
-      text: "should not use dot imports (revive)"
+      text: '.*should not use dot imports.*'
+      linters:
+        - revive
