@@ -14,15 +14,17 @@ linters:
     - staticcheck
     - revive #dotimport
     # - golint // Deprecated
+
 issues:
   exclude-rules:
-  - path: '(.+)_test\.go'
-    text: "dot-imports: should not use dot imports (revive)"
-  - path: 'pkg/imagevector/imagevector_test.go'
-    text: "dot-imports: should not use dot imports (revive)"
-  - path-except: '(.+)_test\.go'
-    linters:
-      - revive
+    - path-except: '(.+)_test\.go'
+      linters:
+        - revive
+
+  # - path: '(.+)_test\.go'
+  #   text: "dot-imports: should not use dot imports (revive)"
+  # - path: 'pkg/imagevector/imagevector_test.go'
+  #   text: "dot-imports: should not use dot imports (revive)"
 
 # linters-settings:
 #   revive:
