@@ -18,8 +18,6 @@ linters:
 issues:
   exclude-rules:
     - path: '(.+)_test\.go'
-      #source: "dot-import"
-      #   text: '.*not.*'
       text: '.*should not use dot imports.*'
       linters:
         - revive
