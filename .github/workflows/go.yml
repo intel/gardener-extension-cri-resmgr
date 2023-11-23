@@ -82,4 +82,4 @@ jobs:
           # https://github.com/golangci/golangci-lint-action/issues/135
           # Optional: if set to true then the all caching functionality will be complete disabled,
           #           takes precedence over all other caching options.
-          skip-cache: false
+          skip-cache: true
