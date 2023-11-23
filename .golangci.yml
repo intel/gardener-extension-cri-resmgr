@@ -12,7 +12,7 @@ linters:
     - gofmt
     - govet
     - staticcheck
-    - revive
+    - revive #dotimport
     # - golint // Deprecated
   issues:
     exclude-rules:
@@ -22,12 +22,12 @@ linters:
       text: "dot-imports: should not use dot imports (revive)"
     - path-except: '(.+)_test\.go'
       linters:
-        - dot-import
+        - revive
 
-linters-settings:
-  revive:
-    rules:
-      # https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#dot-imports
-      - name: dot-imports
-        severity: warning
-        disabled: true #default for golangci - false 
+# linters-settings:
+#   revive:
+#     rules:
+#       # https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#dot-imports
+#       - name: dot-imports
+#         severity: warning
+#         disabled: true #default for golangci - false 
