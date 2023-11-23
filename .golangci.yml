@@ -20,7 +20,7 @@ issues:
     - path: '(.+)_test\.go'
       #source: "dot-import"
       #   text: '.*not.*'
-      text: '.*dot-imports: should not use dot imports \(revive\).*'
+      text: '.*should not use dot imports \(revive\).*'
       linters:
         - revive
 
