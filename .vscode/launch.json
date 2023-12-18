@@ -5,17 +5,6 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "unittests-actuator",
-            "type": "go",
-            "request": "launch",
-            "mode": "test",
-            "program": "./pkg/controller/lifecycle",
-            // "cwd": "./pkg/controller/lifecycle",
-            "showGlobalVariables": true,
-            "args": [],
-            "preLaunchTask": "generate",
-        },
-        {
             "name": "unittests-configs",
             "type": "go",
             "request": "launch",

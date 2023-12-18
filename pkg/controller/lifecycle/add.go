@@ -136,9 +136,9 @@ func AddConfigMapWatchingControllerToManager(mgr manager.Manager, options *optio
 
 	// Predicates to watch over my configMap
 	predicates := []predicate.Predicate{matchingLabelSelectorPredicate, predicate.ResourceVersionChangedPredicate{}}
-
+	src := source.Kind(mgr.GetCache(), &corev1.ConfigMap{})
 	return ctrl.Watch(
-		&source.Kind{Type: &corev1.ConfigMap{}},
+		src,
 		mapper.EnqueueRequestsFrom(
 			context.TODO(),
 			nil, // TODO cache.Cache?!?

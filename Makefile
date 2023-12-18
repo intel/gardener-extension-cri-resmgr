@@ -102,8 +102,10 @@ push-images:
 	echo "Images ${VERSION}-${COMMIT}${DIRTY} pushed."
 
 generate-mocks:
+	# go install go.uber.org/mock/mockgen@latest
 	mockgen -destination=mocks/actuator.go -package=mocks github.com/gardener/gardener/extensions/pkg/controller/extension Actuator
 	mockgen -destination=mocks/client.go -package=mocks sigs.k8s.io/controller-runtime/pkg/client Client,Reader,Object
+	mockgen -destination=mocks/manager.go -package=mocks sigs.k8s.io/controller-runtime/pkg/manager Manager
 
 generate-coverage:
 	go test -coverprofile=coverage.out ./pkg/...
