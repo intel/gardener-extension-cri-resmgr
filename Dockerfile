@@ -13,7 +13,7 @@
 # limitations under the License.
 
 ### builder
-FROM golang:1.21.1-alpine3.18 AS builder
+FROM golang:1.21.5-alpine3.19 AS builder
 
 WORKDIR /gardener-extension-cri-resmgr
 COPY go.mod .
@@ -40,7 +40,7 @@ ENTRYPOINT ["/gardener-extension-cri-resmgr"]
 
 
 ### agnet and installation joined
-FROM debian:12.0 as gardener-extension-cri-resmgr-installation-and-agent
+FROM debian:12.2 as gardener-extension-cri-resmgr-installation-and-agent
 
 WORKDIR /gardener-extension-cri-resmgr-installation-and-agent
 # Please keep this in sync with CRI_RM_VERSION from Makefile!
