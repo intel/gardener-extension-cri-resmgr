@@ -87,22 +87,22 @@ func ConfigMapToAllExtensionMapper(ctx context.Context, log logr.Logger, reader 
 }
 
 // AddToManager creates controller that watches Extension object and deploys necessary objects to Shoot cluster.
-func AddToManager(mgr manager.Manager, options *options.Options, ignoreOperationAnnotation bool) error {
+func AddToManager(ctx context.Context, mgr manager.Manager, options *options.Options, ignoreOperationAnnotation bool) error {
 
-	return extension.Add(context.TODO(), mgr, extension.AddArgs{
+	return extension.Add(ctx, mgr, extension.AddArgs{
 		Actuator:                  NewActuator(consts.ActuatorName),
 		ControllerOptions:         options.ControllerOptions.Completed().Options(),
 		Name:                      consts.ControllerName,
 		FinalizerSuffix:           consts.ExtensionType,
 		Resync:                    60 * time.Minute,
 		Type:                      consts.ExtensionType, // to be used for TypePredicate
-		Predicates:                extension.DefaultPredicates(context.TODO(), mgr, ignoreOperationAnnotation),
+		Predicates:                extension.DefaultPredicates(ctx, mgr, ignoreOperationAnnotation),
 		IgnoreOperationAnnotation: ignoreOperationAnnotation,
 	})
 }
 
 // AddConfigMapWatchingControllerToManager creates controller that watches cri-resmgr-extension ConfigMap object and reconciles everything on Shoot clusters.
-func AddConfigMapWatchingControllerToManager(mgr manager.Manager, options *options.Options) error {
+func AddConfigMapWatchingControllerToManager(ctx context.Context, mgr manager.Manager, options *options.Options) error {
 
 	// Create another instance of options - this time for "configMap2Extensions reconciler"
 	controllerOptions := options.ControllerOptions.Completed().Options()
@@ -140,8 +140,8 @@ func AddConfigMapWatchingControllerToManager(mgr manager.Manager, options *optio
 	return ctrl.Watch(
 		src,
 		mapper.EnqueueRequestsFrom(
-			context.TODO(),
-			nil, // TODO cache.Cache?!?
+			ctx,
+			mgr.GetCache(),
 			mapper.MapFunc(ConfigMapToAllExtensionMapper),
 			mapper.UpdateWithNew,
 			mgr.GetLogger().WithName(controllerName),

@@ -34,7 +34,7 @@ var _ = Describe("ConfigMapToAllExtensionMapper tests", func() {
 	)
 
 	BeforeEach(func() {
-		ctx = context.TODO()
+		ctx = context.Background()
 
 		buffer = bytes.NewBuffer(nil)
 		klog.SetOutput(buffer)

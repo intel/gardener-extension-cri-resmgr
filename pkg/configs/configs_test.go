@@ -97,7 +97,7 @@ var _ = Describe("cri-resource-manager extension configs reading", func() {
 			mockk8sClient *mock_client.MockClient
 		)
 		BeforeEach(func() {
-			ctx = context.TODO()
+			ctx = context.Background()
 
 			var err error
 			log, err = logger.NewZapLogger(logger.InfoLevel, logger.FormatText)
