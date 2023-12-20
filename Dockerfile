@@ -32,7 +32,9 @@ RUN CGO_ENABLED=0 go install -ldflags="-X github.com/intel/gardener-extension-cr
 #COPY charts charts
 
 ### extension
-FROM gcr.io/distroless/base AS gardener-extension-cri-resmgr
+# use latest from https://console.cloud.google.com/gcr/images/distroless/GLOBAL/base
+#FROM gcr.io/distroless/base
+FROM gcr.io/distroless/base@sha256:6c1e34e2f084fe6df17b8bceb1416f1e11af0fcdb1cef11ee4ac8ae127cb507c AS gardener-extension-cri-resmgr
 
 COPY charts/internal /charts/internal
 COPY --from=builder /go/bin/gardener-extension-cri-resmgr /
@@ -44,9 +46,9 @@ FROM debian:12.2 as gardener-extension-cri-resmgr-installation-and-agent
 
 WORKDIR /gardener-extension-cri-resmgr-installation-and-agent
 # Please keep this in sync with CRI_RM_VERSION from Makefile!
-COPY --from=intel/cri-resmgr-agent:v0.8.3 /bin/* /bin/
+COPY --from=intel/cri-resmgr-agent:v0.8.4 /bin/* /bin/
 COPY Makefile .
-RUN apt-get update && apt-get --no-install-recommends -y install make wget  && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get --no-install-recommends -y install make=4.3-4.1 wget=1.21.3-1+b2  && apt-get clean && rm -rf /var/lib/apt/lists/*
 RUN make _install-binaries
 ARG COMMIT=unset
 ARG VERSION=unset
