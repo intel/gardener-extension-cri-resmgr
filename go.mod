@@ -34,8 +34,8 @@ go 1.21
 
 require (
 	github.com/gardener/gardener v1.85.0
-	github.com/go-logr/logr v1.2.4
-	github.com/onsi/ginkgo/v2 v2.13.0
+	github.com/go-logr/logr v1.3.0
+	github.com/onsi/ginkgo/v2 v2.13.2
 	github.com/onsi/gomega v1.29.0
 	github.com/spf13/cobra v1.7.0
 	go.uber.org/mock v0.3.0
@@ -117,7 +117,7 @@ require (
 	golang.org/x/term v0.15.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
-	golang.org/x/tools v0.13.0 // indirect
+	golang.org/x/tools v0.14.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20230526161137-0005af68ea54 // indirect
