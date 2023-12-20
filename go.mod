@@ -33,7 +33,7 @@ go 1.21
 // github.com/intel/gardener-extension-cri-resmgr/charts v0.0.0-00010101000000-000000000000 // indirect
 
 require (
-	github.com/gardener/gardener v1.85.0
+	github.com/gardener/gardener v1.86.0
 	github.com/go-logr/logr v1.2.4
 	github.com/onsi/ginkgo/v2 v2.13.0
 	github.com/onsi/gomega v1.29.0
