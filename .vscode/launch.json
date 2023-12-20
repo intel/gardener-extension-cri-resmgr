@@ -5,17 +5,6 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "unittests-actuator",
-            "type": "go",
-            "request": "launch",
-            "mode": "test",
-            "program": "./pkg/controller/lifecycle",
-            // "cwd": "./pkg/controller/lifecycle",
-            "showGlobalVariables": true,
-            "args": [],
-            "preLaunchTask": "generate",
-        },
-        {
             "name": "unittests-configs",
             "type": "go",
             "request": "launch",
@@ -23,7 +12,8 @@
             "program": "./pkg/configs",
             "cwd": "./pkg/configs",
             "showGlobalVariables": true,
-            "args": []
+            "args": [
+            ]
         },
         {
             "name": "cri-resmgr",
@@ -51,6 +41,9 @@
             // "debugAdapter": "legacy", // ERROR
             //"dlvFlags": ["-r", "stderr:output.log"], // IGNORED - work from command live dlv debug -r but not for dlv dap
             // "logDest": "/home/root/gardener-extension-cri-resmgr/output.log", // ERROR
+            "args": [
+                "--leader-election=false"
+            ]
         }
     ]
 }

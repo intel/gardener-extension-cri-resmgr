@@ -21,7 +21,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestCharts(t *testing.T) {
+func TestConfigs(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "CRI-resource-manager extension test suite")
 }

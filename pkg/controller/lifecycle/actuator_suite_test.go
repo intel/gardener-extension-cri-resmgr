@@ -24,7 +24,7 @@ import (
 	"github.com/onsi/gomega/format"
 )
 
-func TestCharts(t *testing.T) {
+func TestLifecycle(t *testing.T) {
 	// because we output very large charts
 	format.MaxLength = 0
 	RegisterFailHandler(Fail)

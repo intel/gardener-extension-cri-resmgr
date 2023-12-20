@@ -65,12 +65,10 @@ e2e-test:
 	@echo "127.0.0.1 api.e2e-default.local.internal.local.gardener.cloud"
 	@echo ""
 	@echo "Note2:"
-	@echo "KUBECONFIG should point to kind-local gardener cluster."
-	@echo "Make sure env KUBECONFIG exists"
-	@echo "example: export KUBECONFIG=~/.kube/config"
+	@echo 'KUBECONFIG should point to kind-local gardener cluster e.g KUBECONFIG=$HOME/.kube/config'
 	@echo ""
 	@echo "Note3:"
-	@echo "ControllerRegistration and ControllerDeployment CRDs must be already deployed to cluster"
+	@echo "ControllerRegistration and ControllerDeployment CRDs must be already deployed to cluster (with globallyEnabled=False)"
 	@echo 
 	@echo "Note4:"
 	@echo "Following labels are available: enable, reenable, disable"
@@ -82,18 +80,22 @@ start:
 
 _install-binaries:
 	# WARNING: this should be run in container
-	wget --directory-prefix=/cri-resmgr-installation $(CRI_RM_URL_RELEASE)
+	wget --no-check-certificate --directory-prefix=/cri-resmgr-installation $(CRI_RM_URL_RELEASE)
 	tar -xvf /cri-resmgr-installation/$(CRI_RM_ARCHIVE_NAME) --directory /cri-resmgr-installation
 	rm /cri-resmgr-installation/$(CRI_RM_ARCHIVE_NAME)
 
 _build-extension-image:
+	@echo "Building extension image: commit=${COMMIT}${DIRTY} version=${VERSION} target=$(REGISTRY)$(EXTENSION_IMAGE_NAME):$(TAG)"
 	rm -rf ./pkg/consts/charts
 	go generate ./...
 	docker build --build-arg COMMIT=${COMMIT}${DIRTY} --build-arg VERSION=${VERSION} -t $(REGISTRY)$(EXTENSION_IMAGE_NAME):$(TAG) -f Dockerfile --target $(EXTENSION_IMAGE_NAME) .
 _build-installation-image:
+	@echo "Building installation image: commit=${COMMIT}${DIRTY} version=${VERSION} target=$(REGISTRY)$(INSTALLATION_IMAGE_NAME):$(TAG)"
 	rm -rf ./pkg/consts/charts
 	go generate ./...
 	docker build --build-arg COMMIT=${COMMIT}${DIRTY} --build-arg VERSION=${VERSION} -t $(REGISTRY)$(INSTALLATION_IMAGE_NAME):$(TAG) -f Dockerfile --target $(INSTALLATION_IMAGE_NAME) .
+
+dist: build build-images
 
 build-images: _build-extension-image _build-installation-image
 	echo "Building ${VERSION}-${COMMIT}${DIRTY} done."
@@ -104,8 +106,10 @@ push-images:
 	echo "Images ${VERSION}-${COMMIT}${DIRTY} pushed."
 
 generate-mocks:
+	# go install go.uber.org/mock/mockgen@latest
 	mockgen -destination=mocks/actuator.go -package=mocks github.com/gardener/gardener/extensions/pkg/controller/extension Actuator
 	mockgen -destination=mocks/client.go -package=mocks sigs.k8s.io/controller-runtime/pkg/client Client,Reader,Object
+	mockgen -destination=mocks/manager.go -package=mocks sigs.k8s.io/controller-runtime/pkg/manager Manager
 
 generate-coverage:
 	go test -coverprofile=coverage.out ./pkg/...

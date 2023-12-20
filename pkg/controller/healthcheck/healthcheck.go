@@ -15,6 +15,7 @@
 package healthcheck
 
 import (
+	"context"
 	"time"
 
 	"github.com/intel/gardener-extension-cri-resmgr/pkg/consts"
@@ -35,12 +36,13 @@ import (
 )
 
 // RegisterHealthChecks register health checks.
-func RegisterHealthChecks(mgr manager.Manager) error {
+func RegisterHealthChecks(ctx context.Context, mgr manager.Manager) error {
 	defaultSyncPeriod := time.Second * 30
 	opts := healthcheck.DefaultAddArgs{
 		HealthCheckConfig: extensionsconfig.HealthCheckConfig{SyncPeriod: metav1.Duration{Duration: defaultSyncPeriod}},
 	}
 	return healthcheck.DefaultRegistration(
+		ctx,
 		consts.ExtensionType,
 		extensionsv1alpha1.SchemeGroupVersion.WithKind(extensionsv1alpha1.ExtensionResource),
 		func() client.ObjectList { return &extensionsv1alpha1.ExtensionList{} },
@@ -59,6 +61,6 @@ func RegisterHealthChecks(mgr manager.Manager) error {
 }
 
 // AddToManager adds a controller with the default Options.
-func AddToManager(mgr manager.Manager) error {
-	return RegisterHealthChecks(mgr)
+func AddToManager(ctx context.Context, mgr manager.Manager) error {
+	return RegisterHealthChecks(ctx, mgr)
 }

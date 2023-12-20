@@ -73,11 +73,11 @@ func NewExtensionControllerCommand(ctx context.Context) *cobra.Command {
 			// Enable healthcheck.
 			// "Registration" adds additional controller that watches over Extension/Cluster.
 			// TODO: ENABLE before merging!!!
-			if err := healthcheck.RegisterHealthChecks(mgr); err != nil {
+			if err := healthcheck.RegisterHealthChecks(ctx, mgr); err != nil {
 				return err
 			}
 
-			if err := heartbeat.AddToManager(mgr); err != nil {
+			if err := heartbeat.AddToManager(ctx, mgr); err != nil {
 				return err
 			}
 
@@ -93,12 +93,12 @@ func NewExtensionControllerCommand(ctx context.Context) *cobra.Command {
 			log.Log.Info("Reconciler options", "ignoreOperationAnnotation", ignoreOperationAnnotation)
 
 			// I. This is the primary controller that watches over Extension (and possible Cluster based on ignoreOperationAnnotation)
-			if err := lifecycle.AddToManager(mgr, options, ignoreOperationAnnotation); err != nil {
+			if err := lifecycle.AddToManager(ctx, mgr, options, ignoreOperationAnnotation); err != nil {
 				return fmt.Errorf("error configuring controller with extensions actuator: %s", err)
 			}
 			// II. Create another controller for watching over specific configMap and
 			// reconciling all Extensions that all only in Succeeded state to prevent race over Extension reconciliation
-			if err := lifecycle.AddConfigMapWatchingControllerToManager(mgr, options); err != nil {
+			if err := lifecycle.AddConfigMapWatchingControllerToManager(ctx, mgr, options); err != nil {
 				return fmt.Errorf("error configuring configMap controller with extensions actuator: %s", err)
 			}
 

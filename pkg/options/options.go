@@ -21,7 +21,6 @@ import (
 	heartbeatcmd "github.com/gardener/gardener/extensions/pkg/controller/heartbeat/cmd"
 	"github.com/gardener/gardener/pkg/logger"
 	"github.com/intel/gardener-extension-cri-resmgr/pkg/consts"
-	"k8s.io/client-go/tools/leaderelection/resourcelock"
 )
 
 // Options type.
@@ -45,13 +44,13 @@ func NewOptions() *Options {
 		},
 		ReconcileOptions: &controllercmd.ReconcilerOptions{},
 		MgrOpts: &controllercmd.ManagerOptions{
-			MetricsBindAddress:         "0",
-			LogLevel:                   logger.InfoLevel,
-			LogFormat:                  logger.FormatText,
-			LeaderElectionResourceLock: resourcelock.LeasesResourceLock,
-			LeaderElection:             true,
-			LeaderElectionID:           controllercmd.LeaderElectionNameID(consts.ExtensionName),
-			LeaderElectionNamespace:    os.Getenv("LEADER_ELECTION_NAMESPACE"),
+			MetricsBindAddress: "0",
+			LogLevel:           logger.InfoLevel,
+			LogFormat:          logger.FormatText,
+			//LeaderElectionResourceLock: resourcelock.LeasesResourceLock,
+			LeaderElection:          true,
+			LeaderElectionID:        controllercmd.LeaderElectionNameID(consts.ExtensionName),
+			LeaderElectionNamespace: os.Getenv("LEADER_ELECTION_NAMESPACE"),
 		},
 		HealthCheckOpts: &controllercmd.ControllerOptions{
 			MaxConcurrentReconciles: 5,

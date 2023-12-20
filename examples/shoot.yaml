@@ -28,7 +28,7 @@ spec:
   ## To enable mark it as disable=false or use globallyEnabled: true
   extensions:
   - type: cri-resmgr-extension
-    #disabled: false
+    disabled: true
   networking:
     type: calico
     providerConfig:
@@ -50,4 +50,4 @@ spec:
       maxSurge: 1
       maxUnavailable: 0
   kubernetes:
-    version: 1.27.1
+    version: 1.27.1 # please keep that in sync with test/e2e/cri-resmgr-extension/common_test.go "kubernetesVersion" 1

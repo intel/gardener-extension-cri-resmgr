@@ -39,7 +39,7 @@ var (
 	skipAccessingShoot = true // if set to true then the test does not try to access the shoot via its kubeconfig
 	commonConfig       = &framework.CommonConfig{}
 
-	kubernetesVersion = "1.24.8"
+	kubernetesVersion = "1.27.1"
 )
 
 func enableOrDisableCriResmgr(shoot *gardencorev1beta1.Shoot, disabled bool) error {

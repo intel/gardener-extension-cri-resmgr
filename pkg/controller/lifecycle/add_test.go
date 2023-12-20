@@ -9,7 +9,7 @@ import (
 	"github.com/intel/gardener-extension-cri-resmgr/pkg/controller/lifecycle"
 
 	"github.com/go-logr/logr"
-	"github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
@@ -34,7 +34,7 @@ var _ = Describe("ConfigMapToAllExtensionMapper tests", func() {
 	)
 
 	BeforeEach(func() {
-		ctx = context.TODO()
+		ctx = context.Background()
 
 		buffer = bytes.NewBuffer(nil)
 		klog.SetOutput(buffer)

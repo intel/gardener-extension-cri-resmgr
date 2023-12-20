@@ -220,6 +220,11 @@ func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extens
 	return err
 }
 
+// ForceDelete forcefully deletes the Extension resource.
+func (a *Actuator) ForceDelete(ctx context.Context, logger logr.Logger, ex *extensionsv1alpha1.Extension) error {
+	return a.Delete(ctx, logger, ex)
+}
+
 // Delete the Extension resource.
 func (a *Actuator) Delete(ctx context.Context, _ logr.Logger, ex *extensionsv1alpha1.Extension) error {
 	namespace := ex.GetNamespace()
