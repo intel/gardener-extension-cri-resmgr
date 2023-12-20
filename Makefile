@@ -25,10 +25,6 @@ CRI_RM_VERSION                   := 0.8.4
 CRI_RM_ARCHIVE_NAME              := cri-resource-manager-$(CRI_RM_VERSION).x86_64.tar.gz
 CRI_RM_URL_RELEASE               := https://github.com/intel/cri-resource-manager/releases/download/v$(CRI_RM_VERSION)/$(CRI_RM_ARCHIVE_NAME)
 
-LEADER_ELECTION                  := true
-LEADER_ELECTION_NAMESPACE        := garden
-
-
 # make start options
 IGNORE_OPERATION_ANNOTATION 	 := false
 # overwrite it if you want "make start" to read "configs" ConfigMap from Kubernetes
@@ -76,13 +72,17 @@ e2e-test:
 	ginkgo run -v --progress --seed 1 --slow-spec-threshold 2h --timeout 2h ./test/e2e/cri-resmgr-extension
 
 start:
-	go run ./cmd/gardener-extension-cri-resmgr --ignore-operation-annotation=$(IGNORE_OPERATION_ANNOTATION)
+	go run ./cmd/gardener-extension-cri-resmgr --ignore-operation-annotation=$(IGNORE_OPERATION_ANNOTATION) --leader-election=false
 
 _install-binaries:
 	# WARNING: this should be run in container
 	wget --no-check-certificate --directory-prefix=/cri-resmgr-installation $(CRI_RM_URL_RELEASE)
 	tar -xvf /cri-resmgr-installation/$(CRI_RM_ARCHIVE_NAME) --directory /cri-resmgr-installation
 	rm /cri-resmgr-installation/$(CRI_RM_ARCHIVE_NAME)
+
+clean-images: 
+	docker image rm $(REGISTRY)$(EXTENSION_IMAGE_NAME):$(TAG)
+	docker image rm $(REGISTRY)$(INSTALLATION_IMAGE_NAME):$(TAG)
 
 _build-extension-image:
 	@echo "Building extension image: commit=${COMMIT}${DIRTY} version=${VERSION} target=$(REGISTRY)$(EXTENSION_IMAGE_NAME):$(TAG)"
@@ -99,6 +99,7 @@ dist: build build-images
 
 build-images: _build-extension-image _build-installation-image
 	echo "Building ${VERSION}-${COMMIT}${DIRTY} done."
+
 
 push-images:
 	docker push $(REGISTRY)$(EXTENSION_IMAGE_NAME):$(TAG)
