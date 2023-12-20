@@ -80,15 +80,17 @@ start:
 
 _install-binaries:
 	# WARNING: this should be run in container
-	wget --directory-prefix=/cri-resmgr-installation $(CRI_RM_URL_RELEASE)
+	wget --no-check-certificate --directory-prefix=/cri-resmgr-installation $(CRI_RM_URL_RELEASE)
 	tar -xvf /cri-resmgr-installation/$(CRI_RM_ARCHIVE_NAME) --directory /cri-resmgr-installation
 	rm /cri-resmgr-installation/$(CRI_RM_ARCHIVE_NAME)
 
 _build-extension-image:
+	@echo "Building extension image: commit=${COMMIT}${DIRTY} version=${VERSION} target=$(REGISTRY)$(EXTENSION_IMAGE_NAME):$(TAG)"
 	rm -rf ./pkg/consts/charts
 	go generate ./...
 	docker build --build-arg COMMIT=${COMMIT}${DIRTY} --build-arg VERSION=${VERSION} -t $(REGISTRY)$(EXTENSION_IMAGE_NAME):$(TAG) -f Dockerfile --target $(EXTENSION_IMAGE_NAME) .
 _build-installation-image:
+	@echo "Building installation image: commit=${COMMIT}${DIRTY} version=${VERSION} target=$(REGISTRY)$(INSTALLATION_IMAGE_NAME):$(TAG)"
 	rm -rf ./pkg/consts/charts
 	go generate ./...
 	docker build --build-arg COMMIT=${COMMIT}${DIRTY} --build-arg VERSION=${VERSION} -t $(REGISTRY)$(INSTALLATION_IMAGE_NAME):$(TAG) -f Dockerfile --target $(INSTALLATION_IMAGE_NAME) .
