@@ -1,0 +1,27 @@
+{
+    "IngredientName": "gardener-extension-cri-resmgr",
+    "Description": "Gardener extension controller for the https://github.com/intel/cri-resource-manager container runtime proxy.",
+    "BuildInfo": {
+        "Name": "ge-crirm",
+        "FullName": "gardener-extension-cri-resmgr",
+        "SDL": [
+            {
+                "ID": "19289",
+                "URL": "https://sdl-e.app.intel.com/project?id=628822ec-155a-4ecb-b181-773d3fc0a324",
+                "Submitter": "sys_owrscan"
+            }
+        ],
+        "ServerURL": "https://onebkc.intel.com",
+        "Type": "onebkc"
+    },
+    "BinaryScan": {
+        "ServerURL": "https://bdba001.icloud.intel.com",
+        "ServerGroup": "57"
+    },
+    "Protex": [
+        {
+            "Server": "https://gerprotex012.devtools.intel.com/",
+            "ProjectID": "c_gardener-extension-cri-rm_31307"
+        }
+    ]
+}
