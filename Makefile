@@ -93,6 +93,8 @@ _build-installation-image:
 	go generate ./...
 	docker build --build-arg COMMIT=${COMMIT}${DIRTY} --build-arg VERSION=${VERSION} -t $(REGISTRY)$(INSTALLATION_IMAGE_NAME):$(TAG) -f Dockerfile --target $(INSTALLATION_IMAGE_NAME) .
 
+dist: build build-images
+
 build-images: _build-extension-image _build-installation-image
 	echo "Building ${VERSION}-${COMMIT}${DIRTY} done."
 
