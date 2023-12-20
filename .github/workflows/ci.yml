@@ -1,0 +1,38 @@
+name: Hello World Example Using reusable workflow
+
+# Add your triggers here
+# https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows
+on:
+  workflow_dispatch:
+
+  push:
+    branches: [ master ]
+
+  pull_request:
+    branches: [ master ]
+
+  release:
+    types:
+      - prereleased
+      - edited
+
+jobs:
+  call-ci-workflow:
+    uses: intel-innersource/frameworks.devops.celine.celine/.github/workflows/makefile_ci.yml@v2
+    with:
+      project_name:           gardener-extension-cri-resmgr
+      makefile_path:          Makefile
+      runner_group_name:      celine
+      image:                  amr-registry.caas.intel.com/celine/gecrirm:latest
+      buildconfig_path:       BuildConfig.json
+      build_artifacts_path:   gecrirm/build
+      artifactory_repository: celine-or-local
+      wiki:                   frameworks.devops.celine.celine.wiki
+      report_template_name:   report.j2
+      mail_recipients:        pawel.palucki@intel.com
+    secrets:
+      artifactory_api_token:  ${{ secrets.ARTIFACTORY_API_TOKEN }}
+      jenkins_user:           ${{ secrets.JENKINS_USER }}
+      jenkins_api_token:      ${{ secrets.JENKINS_API_TOKEN }}
+      celine_ctx_address:     ${{ secrets.CELINE_CTX_ADDRESS }}
+      celine_access_token:    ${{ secrets.CELINE_ACCESS_TOKEN }}
