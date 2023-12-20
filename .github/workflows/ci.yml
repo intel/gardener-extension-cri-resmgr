@@ -1,4 +1,4 @@
-name: Hello World Example Using reusable workflow
+name: ge-crirm-celine-makefile-workflow
 
 # Add your triggers here
 # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows
