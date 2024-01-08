@@ -203,7 +203,7 @@ This is based on https://github.com/gardener/gardener/blob/master/docs/deploymen
 mkdir -p ~/work/
 git clone https://github.com/gardener/gardener ~/work/gardener
 cd ~/work/gardener
-git checkout v1.78.2
+git checkout v1.86.0
 cd -
 ```
 
@@ -266,7 +266,7 @@ kubectl get controllerdeployments.core.gardener.cloud cri-resmgr-extension
 
 There should be 'cri-resmgr-extension   Extension/cri-resmgr-extension' resources visible alongside cri-resmgr-extension deployment.
 
-Remember that "controller installation" should not be yet available - there is not shoot cluster deployed yet and extension is disabled by default.
+Remember that "controller installation" should not be yet available - there is not shoot cluster deployed yet and extension is disabled by default (**TODO**, BUG?!?!)?!?!? - is visible
 
 ```sh
 kubectl get controllerinstallation.core.gardener.cloud 

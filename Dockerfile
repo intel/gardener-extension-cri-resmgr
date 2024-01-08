@@ -48,8 +48,10 @@ WORKDIR /gardener-extension-cri-resmgr-installation-and-agent
 # Please keep this in sync with CRI_RM_VERSION from Makefile!
 COPY --from=intel/cri-resmgr-agent:v0.8.4 /bin/* /bin/
 COPY Makefile .
-RUN apt-get update && apt-get upgrade && apt-get --no-install-recommends -y install make=4.3-4.1 wget=1.21.3-1+b2  && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt update && apt upgrade && apt --no-install-recommends -y install make=4.3-4.1 wget=1.21.3-1+b2  && apt-get clean && rm -rf /var/lib/apt/lists/*
 RUN make _install-binaries
+RUN apt remove -y make wget && apt -y autoremove
+
 ARG COMMIT=unset
 ARG VERSION=unset
 RUN bash -c "echo ${VERSION} >/VERSION" && bash -c "echo ${COMMIT} >/COMMIT"
