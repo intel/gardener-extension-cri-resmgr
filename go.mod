@@ -35,7 +35,7 @@ go 1.21
 require (
 	github.com/gardener/gardener v1.86.1
 	github.com/go-logr/logr v1.4.1
-	github.com/onsi/ginkgo/v2 v2.14.0
+	github.com/onsi/ginkgo/v2 v2.15.0
 	github.com/onsi/gomega v1.30.0
 	github.com/spf13/cobra v1.8.0
 	go.uber.org/mock v0.4.0
