@@ -13,7 +13,7 @@
 # limitations under the License.
 
 ### builder
-FROM golang:1.21.5-alpine3.19 AS builder
+FROM golang:1.22.1-alpine3.19 AS builder
 
 WORKDIR /gardener-extension-cri-resmgr
 COPY go.mod .
@@ -25,9 +25,13 @@ COPY pkg pkg
 # only those two are required for building golang extension
 COPY charts/images.go charts/images.go
 COPY charts/images.yaml charts/images.yaml
+COPY LICENSE charts/LICENSE
+COPY LICENSE cmd/gardener-extension-cri-resmgr/
 ARG COMMIT=unset
 ARG VERSION=unset
 RUN CGO_ENABLED=0 go install -ldflags="-X github.com/intel/gardener-extension-cri-resmgr/pkg/consts.Commit=${COMMIT} -X github.com/intel/gardener-extension-cri-resmgr/pkg/consts.Version=${VERSION}" ./cmd/gardener-extension-cri-resmgr/...
+RUN go install github.com/google/go-licenses@latest
+RUN go-licenses save ./cmd/ --ignore github.com/intel/gardener-extesion-cri-resmgr --save_path /gardener-extension-cri-resmgr/licenses
 # copying late saves time - no need to rebuild binary when only assest change
 #COPY charts charts
 
@@ -38,17 +42,17 @@ FROM gcr.io/distroless/base@sha256:6c1e34e2f084fe6df17b8bceb1416f1e11af0fcdb1cef
 
 COPY charts/internal /charts/internal
 COPY --from=builder /go/bin/gardener-extension-cri-resmgr /
+COPY --from=builder /gardener-extension-cri-resmgr/licenses /licenses
 ENTRYPOINT ["/gardener-extension-cri-resmgr"]
 
-
 ### agnet and installation joined
-FROM debian:12.4 as gardener-extension-cri-resmgr-installation-and-agent
+FROM debian:12.5 as gardener-extension-cri-resmgr-installation-and-agent
 
 WORKDIR /gardener-extension-cri-resmgr-installation-and-agent
 # Please keep this in sync with CRI_RM_VERSION from Makefile!
-COPY --from=intel/cri-resmgr-agent:v0.8.4 /bin/* /bin/
+COPY --from=intel/cri-resmgr-agent:v0.9.0 /bin/* /bin/
 COPY Makefile .
-RUN apt update && apt upgrade && apt --no-install-recommends -y install make=4.3-4.1 wget=1.21.3-1+b2  && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt update -y && apt upgrade -y && apt --no-install-recommends -y install make=4.3-4.1 wget=1.21.3-1+b2  && apt-get clean && rm -rf /var/lib/apt/lists/*
 RUN make _install-binaries
 RUN apt remove -y make wget && apt -y autoremove
 

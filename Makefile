@@ -21,7 +21,7 @@ INSTALLATION_IMAGE_NAME          	:= gardener-extension-cri-resmgr-installation-
 TAG                              := latest
 
 # Please keep it up to date with agent image in charts/images.yaml
-CRI_RM_VERSION                   := 0.8.4
+CRI_RM_VERSION                   := 0.9.0
 CRI_RM_ARCHIVE_NAME              := cri-resource-manager-$(CRI_RM_VERSION).x86_64.tar.gz
 CRI_RM_URL_RELEASE               := https://github.com/intel/cri-resource-manager/releases/download/v$(CRI_RM_VERSION)/$(CRI_RM_ARCHIVE_NAME)
 
@@ -89,6 +89,18 @@ _build-extension-image:
 	rm -rf ./pkg/consts/charts
 	go generate ./...
 	docker build --build-arg COMMIT=${COMMIT}${DIRTY} --build-arg VERSION=${VERSION} -t $(REGISTRY)$(EXTENSION_IMAGE_NAME):$(TAG) -f Dockerfile --target $(EXTENSION_IMAGE_NAME) .
+
+install-licenses:
+	# go install github.com/google/go-licenses@latest
+	# to be called from Docker image
+	install -D LICENSE $(DESTDIR)/licenses/$$cmd/LICENSE
+	go-licenses save ./cmd/ --ignore github.com/intel/gardener-extesion-cri-resmgr --save_path licenses
+
+gen-licenses-csv:
+	# go install github.com/google/go-licenses@latest
+	go-licenses report ./cmd/gardener-extension-cri-resmgr >licenses.csv
+
+
 _build-installation-image:
 	@echo "Building installation image: commit=${COMMIT}${DIRTY} version=${VERSION} target=$(REGISTRY)$(INSTALLATION_IMAGE_NAME):$(TAG)"
 	rm -rf ./pkg/consts/charts
