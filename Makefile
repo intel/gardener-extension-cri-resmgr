@@ -21,7 +21,7 @@ INSTALLATION_IMAGE_NAME          	:= gardener-extension-cri-resmgr-installation-
 TAG                              := latest
 
 # Please keep it up to date with agent image in charts/images.yaml
-CRI_RM_VERSION                   := 0.8.4
+CRI_RM_VERSION                   := 0.9.0
 CRI_RM_ARCHIVE_NAME              := cri-resource-manager-$(CRI_RM_VERSION).x86_64.tar.gz
 CRI_RM_URL_RELEASE               := https://github.com/intel/cri-resource-manager/releases/download/v$(CRI_RM_VERSION)/$(CRI_RM_ARCHIVE_NAME)
 
