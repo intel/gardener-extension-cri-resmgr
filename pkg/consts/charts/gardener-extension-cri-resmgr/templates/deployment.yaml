@@ -1,0 +1,65 @@
+# Copyright 2022 Intel Corporation. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gardener-extension-cri-resmgr
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: gardener-extension-cri-resmgr
+spec:
+  revisionHistoryLimit: 0
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: gardener-extension-cri-resmgr
+  template:
+    metadata:
+      annotations:
+        {{- if .Values.imageVectorOverwrite }}
+        checksum/gardener-extension-cri-resmgr-imagevector-overwrite: {{ include (print $.Template.BasePath "/configmap-imagevector-overwrite.yaml") . | sha256sum }}
+        {{- end }}
+      labels:
+        networking.gardener.cloud/to-runtime-apiserver: allowed
+        app.kubernetes.io/name: gardener-extension-cri-resmgr
+    spec:
+      priorityClassName: gardener-extension-cri-resmgr
+      serviceAccountName: gardener-extension-cri-resmgr
+      containers:
+      - name: gardener-extension-cri-resmgr
+        image: {{ include "image" . }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command:
+        - /gardener-extension-cri-resmgr
+        env:
+        - name: EXTENSION_CONFIGMAP_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: LEADER_ELECTION_NAMESPACE
+          value: garden
+{{- if .Values.imageVectorOverwrite }}
+        - name: IMAGEVECTOR_OVERWRITE
+          value: /charts_overwrite/images_overwrite.yaml
+        volumeMounts:
+        - name: imagevector-overwrite
+          mountPath: /charts_overwrite/
+          readOnly: true
+      volumes:
+      - name: imagevector-overwrite
+        configMap:
+          name: gardener-extension-cri-resmgr-imagevector-overwrite
+          defaultMode: 420
+{{- end }}

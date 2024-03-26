@@ -1,0 +1,104 @@
+# Copyright 2022 Intel Corporation. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cri-resmgr-installation-script
+  namespace: kube-system
+data:
+  install-cri-resmgr.sh: |-
+    #!/bin/bash
+    # check if kubelet service file is a symlink
+    if [[ -L "/var/host/etc/systemd/system/kubelet.service" ]]; then
+      echo "err: kubelet.service file is a symlink"
+      exit 1
+    fi
+    function install() {
+
+      echo "*** Installation start ($(cat /VERSION)-$(cat /COMMIT))"
+      echo Installing binaries from /opt/ to host /
+      cp -v -r /cri-resmgr-installation/opt/ /var/host/
+
+      echo Installing systemd unit
+      cp -v /cri-resmgr-installation/etc/systemd/system/cri-resource-manager.service  /var/host/etc/systemd/system/cri-resource-manager.service
+
+      echo 'Installing systemd unit config file (contains POLICY_OPTIONS and CONFIG_OPTIONS variables - pointing to fallback.cfg)'
+      mkdir -p /var/host/etc/default/
+      cp -v /cri-resmgr-installation/etc/default/cri-resource-manager /var/host/etc/default/
+
+      echo 'Installing cri-resource manager with null policy'
+      mkdir -p /var/host/etc/cri-resmgr
+      cp -v /cri-resmgr-installation/etc/cri-resmgr/fallback.cfg.sample /var/host/etc/cri-resmgr/fallback.cfg
+      sed -i 's/topology-aware/null/g' /var/host/etc/cri-resmgr/fallback.cfg
+
+      # Handle EXTRA_OPTIONS
+      if [[ -f /etc/cri-resmgr/EXTRA_OPTIONS.cfg ]]; then
+        echo 'Installing EXTRA_OPTIONS configuration file from /etc/cri-resmgr/EXTRA_OPTIONS to host /etc/cri-resmgr/'
+        cp -v /etc/cri-resmgr/EXTRA_OPTIONS.cfg /var/host/etc/cri-resmgr/EXTRA_OPTIONS.cfg
+        echo 'Modify cri-resource-manager.service to include EXTRA_OPTIONS when starting cri-resmgr binary!'
+        sed -i 's!\$POLICY_OPTIONS$!\$POLICY_OPTIONS \$EXTRA_OPTIONS!' /var/host/etc/systemd/system/cri-resource-manager.service
+        sed -z -i 's!EnvironmentFile=/etc/default/cri-resource-manager\nExecStart!EnvironmentFile=/etc/default/cri-resource-manager\nEnvironmentFile=/etc/cri-resmgr/EXTRA_OPTIONS.cfg\nExecStart!' /var/host/etc/systemd/system/cri-resource-manager.service
+      else 
+        if [[ -f /var/host/etc/cri-resmgr/EXTRA_OPTIONS ]]; then
+          echo 'Remove EXTRA_OPTIONS.cfg file from host'
+          rm -v /var/host/etc/cri-resmgr/EXTRA_OPTIONS.cfg
+        fi
+        echo 'Modify cri-resource-manager.service to remove EXTRA_OPTIONS when starting cri-resmgr binary!'
+        sed -z -i 's!EnvironmentFile=/etc/default/cri-resource-manager\nEnvironmentFile=/etc/cri-resmgr/EXTRA_OPTIONS.cfg\n!EnvironmentFile=/etc/default/cri-resource-manager\n!' /var/host/etc/systemd/system/cri-resource-manager.service
+        sed -i 's!\$POLICY_OPTIONS \$EXTRA_OPTIONS$!\$POLICY_OPTIONS!' /var/host/etc/systemd/system/cri-resource-manager.service
+      fi
+
+      # Warning if previous state exists
+      if [[ -d /var/host/var/lib/cri-resmgr ]]; then
+        echo 'WARNING! previous state of cri-resmgr still exists in hosts /var/lib/cri-resmgr!'
+        echo '         cri-resource-manager was not properly uninstalled, cached config will be used instead of fallback.cfg'
+        echo '         To fix just restart this pod or manually remove /var/lib/cri-resmgr on host.'
+      fi
+
+      echo Enable and restart cri-resource-manager systemd unit.
+      chroot /var/host bash -c "systemctl enable cri-resource-manager"
+      chroot /var/host bash -c "systemctl restart cri-resource-manager"
+
+      echo Reconfigure kubelet.service to use connect to cri-resmgr.sock as container-runtime
+      sed -i  '/containerd/d' /var/host/etc/systemd/system/kubelet.service
+      if ! grep -q container-runtime-endpoint  "/var/host/etc/systemd/system/kubelet.service"; then
+        # matches GardenLinux kubelet config
+        sed '/KUBELET_EXTRA_ARGS \\/ s!$!\n    --container-runtime-endpoint=/var/run/cri-resmgr/cri-resmgr.sock\\!' -i /var/host/etc/systemd/system/kubelet.service
+        # matches kind-node kubelet config
+        sed '/KUBELET_EXTRA_ARGS$/ s!$! \\\n    --container-runtime-endpoint=/var/run/cri-resmgr/cri-resmgr.sock\\!' -i /var/host/etc/systemd/system/kubelet.service
+      fi
+      echo Wait for cri-resource-manager, container and kubelet services to be active
+      # Check if cri-resource-manager, containerd and kubelet is active
+      while true; do
+          criIsActive=$(chroot /var/host bash -c "systemctl is-active cri-resource-manager")
+          containerdIsActive=$(chroot /var/host bash -c "systemctl is-active containerd")
+          kubeletIsActive=$(chroot /var/host bash -c "systemctl is-active kubelet")
+          if [ "$criIsActive" == "active" ] && [ "$containerdIsActive" == "active" ] && [ "$kubeletIsActive" == "active" ];then
+              break
+          fi
+          sleep 1
+      done
+      echo "*** Restart kubelet with new configuration"
+      sleep 2
+      chroot /var/host bash -c "systemctl daemon-reload"
+      chroot /var/host bash -c "systemctl restart kubelet"
+      # Don't wait for activation - we will run check at the of the script
+
+      echo "Start cri-resmgr-agent"
+      /bin/cri-resmgr-agent
+    }
+
+    # Install cri-rm and run the agent
+    install

@@ -84,20 +84,20 @@ clean-images:
 	docker image rm $(REGISTRY)$(EXTENSION_IMAGE_NAME):$(TAG)
 	docker image rm $(REGISTRY)$(INSTALLATION_IMAGE_NAME):$(TAG)
 
-_build-extension-image:
-	@echo "Building extension image: commit=${COMMIT}${DIRTY} version=${VERSION} target=$(REGISTRY)$(EXTENSION_IMAGE_NAME):$(TAG)"
+regenerate-charts:
 	rm -rf ./pkg/consts/charts
 	go generate ./...
+
+_build-extension-image:
+	@echo "Building extension image: commit=${COMMIT}${DIRTY} version=${VERSION} target=$(REGISTRY)$(EXTENSION_IMAGE_NAME):$(TAG)"
 	docker build --build-arg COMMIT=${COMMIT}${DIRTY} --build-arg VERSION=${VERSION} -t $(REGISTRY)$(EXTENSION_IMAGE_NAME):$(TAG) -f Dockerfile --target $(EXTENSION_IMAGE_NAME) .
 _build-installation-image:
 	@echo "Building installation image: commit=${COMMIT}${DIRTY} version=${VERSION} target=$(REGISTRY)$(INSTALLATION_IMAGE_NAME):$(TAG)"
-	rm -rf ./pkg/consts/charts
-	go generate ./...
 	docker build --build-arg COMMIT=${COMMIT}${DIRTY} --build-arg VERSION=${VERSION} -t $(REGISTRY)$(INSTALLATION_IMAGE_NAME):$(TAG) -f Dockerfile --target $(INSTALLATION_IMAGE_NAME) .
 
 dist: build build-images
 
-build-images: _build-extension-image _build-installation-image
+build-images: regenerate-charts _build-extension-image _build-installation-image
 	echo "Building ${VERSION}-${COMMIT}${DIRTY} done."
 
 
