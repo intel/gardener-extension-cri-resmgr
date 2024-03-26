@@ -8,5 +8,4 @@ cri-resource-manager-0.6.0.x86_64.tar.gz
 /gardener-extension-cri-resmgr.actuator.test
 /gardener-extension-cri-resmgr.configs.test
 /cmd/gardener-extension-cri-resmgr/__debug_bin
-/pkg/consts/charts
 coverage.*
