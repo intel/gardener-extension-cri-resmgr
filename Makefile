@@ -109,6 +109,10 @@ gen-licenses-csv:
 	@echo "WARNING: go-licenses require installed golang runtime matching one from go.mod go directive version!"
 	go-licenses report ./cmd/gardener-extension-cri-resmgr >hacks/scans/licenses.csv
 
+download-licenses-csv:
+	# go install github.com/google/go-licenses@latest
+	@echo "WARNING: go-licenses require installed golang runtime matching one from go.mod go directive version!"
+	go-licenses save --save_path licenses ./...
 
 _build-installation-image:
 	@echo "Building installation image: commit=${COMMIT}${DIRTY} version=${VERSION} target=$(REGISTRY)$(INSTALLATION_IMAGE_NAME):$(TAG)"
