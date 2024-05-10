@@ -33,9 +33,10 @@ RUN CGO_ENABLED=0 go install -ldflags="-X github.com/intel/gardener-extension-cr
 #COPY charts charts
 
 ### extension
-# use latest from https://console.cloud.google.com/gcr/images/distroless/GLOBAL/base
-#FROM gcr.io/distroless/base
-FROM gcr.io/distroless/base@sha256:6c1e34e2f084fe6df17b8bceb1416f1e11af0fcdb1cef11ee4ac8ae127cb507c AS gardener-extension-cri-resmgr
+# use latest from https://console.cloud.google.com/gcr/images/distroless/GLOBAL/static
+#FROM gcr.io/distroless/static
+# sha256:262ae336f8e9291f8edc9a71a61d5d568466edc1ea4818752d4af3d230a7f9ef Created Jan 1, 1, 1:24:00 AM
+FROM gcr.io/distroless/static@sha256:262ae336f8e9291f8edc9a71a61d5d568466edc1ea4818752d4af3d230a7f9ef AS gardener-extension-cri-resmgr
 
 COPY charts/internal /charts/internal
 COPY --from=builder /go/bin/gardener-extension-cri-resmgr /
