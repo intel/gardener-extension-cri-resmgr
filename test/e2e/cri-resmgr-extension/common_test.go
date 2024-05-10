@@ -79,8 +79,7 @@ func getShoot() *gardencorev1beta1.Shoot {
 			Namespace:    projectNamespace,
 			Annotations: map[string]string{
 				// Should speed up shoot cleanup: https://github.com/gardener/gardener/blob/5f62609530c035caa4115f80ae16d0e52f7b0d14/pkg/apis/core/v1beta1/constants/types_constants.go#L533
-				v1beta1constants.AnnotationShootInfrastructureCleanupWaitPeriodSeconds: "0",
-				v1beta1constants.AnnotationShootCloudConfigExecutionMaxDelaySeconds:    "0",
+				v1beta1constants.AnnotationShootCloudConfigExecutionMaxDelaySeconds: "0",
 			},
 		},
 		Spec: gardencorev1beta1.ShootSpec{

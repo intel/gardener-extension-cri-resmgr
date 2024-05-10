@@ -13,7 +13,8 @@
 # limitations under the License.
 
 ### builder
-FROM golang:1.22.1-alpine3.19 AS builder
+# https://hub.docker.com/_/golang
+FROM golang:1.22.3-alpine3.19 AS builder
 
 WORKDIR /gardener-extension-cri-resmgr
 COPY go.mod .
@@ -32,9 +33,10 @@ RUN CGO_ENABLED=0 go install -ldflags="-X github.com/intel/gardener-extension-cr
 #COPY charts charts
 
 ### extension
-# use latest from https://console.cloud.google.com/gcr/images/distroless/GLOBAL/base
-#FROM gcr.io/distroless/base
-FROM gcr.io/distroless/base@sha256:6c1e34e2f084fe6df17b8bceb1416f1e11af0fcdb1cef11ee4ac8ae127cb507c AS gardener-extension-cri-resmgr
+# use latest from https://console.cloud.google.com/gcr/images/distroless/GLOBAL/static
+#FROM gcr.io/distroless/static
+# sha256:262ae336f8e9291f8edc9a71a61d5d568466edc1ea4818752d4af3d230a7f9ef Created Jan 1, 1, 1:24:00 AM
+FROM gcr.io/distroless/static@sha256:262ae336f8e9291f8edc9a71a61d5d568466edc1ea4818752d4af3d230a7f9ef AS gardener-extension-cri-resmgr
 
 COPY charts/internal /charts/internal
 COPY --from=builder /go/bin/gardener-extension-cri-resmgr /
@@ -48,9 +50,7 @@ WORKDIR /gardener-extension-cri-resmgr-installation-and-agent
 # Please keep this in sync with CRI_RM_VERSION from Makefile!
 COPY --from=intel/cri-resmgr-agent:v0.9.0 /bin/* /bin/
 COPY Makefile .
-RUN apt update -y && apt upgrade -y && apt --no-install-recommends -y install make=4.3-4.1 wget=1.21.3-1+b2  && apt-get clean && rm -rf /var/lib/apt/lists/*
-RUN make _install-binaries
-RUN apt remove -y make wget && apt -y autoremove
+RUN apt update -y && apt upgrade -y && apt --no-install-recommends -y install make=4.3-4.1 wget=1.21.3-1+b2  && apt-get clean && rm -rf /var/lib/apt/lists/* && make _install-binaries && apt remove -y make wget && apt -y autoremove
 
 ARG COMMIT=unset
 ARG VERSION=unset
