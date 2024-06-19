@@ -14,7 +14,7 @@
 
 ### builder
 # https://hub.docker.com/_/golang
-FROM golang:1.22.3-alpine3.19 AS builder
+FROM golang:1.22.4-alpine3.20 AS builder
 
 WORKDIR /gardener-extension-cri-resmgr
 COPY go.mod .
