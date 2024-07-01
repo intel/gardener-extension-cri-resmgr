@@ -36,6 +36,7 @@ DIRTY:=`git diff --quiet || echo '-dirty'`
 VERSION:=`git tag | sort -V | tail -1`
 
 _go_generate:
+	@echo 'Remember "git submodule update --init --recursive" to init "cri-plugins" submodule.'
 	rm -rf ./pkg/consts/charts
 	go generate ./...
 
