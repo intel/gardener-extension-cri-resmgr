@@ -26,7 +26,7 @@ var Commit string
 
 // go embed requires files in package through security
 //
-//go:generate cp -r ../../charts .
+//go:generate cp -vLr ../../charts .
 var (
 	//go:embed charts/*
 	Charts embed.FS
@@ -49,11 +49,12 @@ const (
 	ConfigMapName            = "gardener-extension-cri-resmgr-configs"
 	ConfigMapNamespaceEnvKey = "EXTENSION_CONFIGMAP_NAMESPACE"
 	ConfigKey                = "config.yaml"
+
 	// ChartPath should not have used "/"" on the end of the path! Func read from embed.FS don't see dir
-	ChartPath                     = "charts/internal/cri-resmgr-installation"
+	ChartPath = "charts/internal/balloons"
+
 	MonitoringManagedResourceName = "extension-monitoring-cri-resmgr"
-	InstallationImageName         = "gardener-extension-cri-resmgr-installation"
-	AgentImageName                = "gardener-extension-cri-resmgr-agent"
-	InstallationReleaseName       = "cri-resmgr-installation"
-	InstallationSecretKey         = "installation_chart"
+	BalloonsImageName             = "balloons"
+	InstallationReleaseName       = "balloons"
+	InstallationSecretKey         = "balloons_chart"
 )

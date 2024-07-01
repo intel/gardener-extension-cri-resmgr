@@ -130,18 +130,13 @@ func (a *Actuator) GenerateSecretData(logger logr.Logger, charts embed.FS, chart
 	}
 	// TODO k8sVersion can be used to extend FindImage FindOptions(targetVersion)
 	// to choose different version of image depending of target shoot Kubernetes. Not needed for now.
-	installationImage, err := imageVector.FindImage(consts.InstallationImageName)
-	if err != nil {
-		return emptyMap, err
-	}
-	agentImage, err := imageVector.FindImage(consts.AgentImageName)
+	balloonsImage, err := imageVector.FindImage(consts.InstallationImageName)
 	if err != nil {
 		return emptyMap, err
 	}
 	chartValues := map[string]interface{}{
 		"images": map[string]string{
-			consts.InstallationImageName: installationImage.String(),
-			consts.AgentImageName:        agentImage.String(),
+			consts.BalloonsImageName: balloonsImage.String(),
 		},
 		"configs":      configs,
 		"nodeSelector": nodeSelector,
