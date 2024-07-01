@@ -38,12 +38,9 @@ vpa:
 ### Please do not uncomment those, unless you want to just try "helm template ." without extension.
 # imageVectorOverwrite: |
 #   images:
-#   - name: gardener-extension-cri-resmgr-installation
+#   - name: balloons
 #     tag: latest
-#     repository: localhost:5001/gardener-extension-cri-resmgr-installation
-#   - name: gardener-extension-cri-resmgr-agent
-#     tag: latest
-#     repository: localhost:5001/gardener-extension-cri-resmgr-agent
+#     repository: ghcr.io/containers/nri-plugins/nri-resource-policy-balloons
 # configs:
 #   fallback: |
 #     policy:

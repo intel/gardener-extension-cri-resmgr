@@ -34,9 +34,12 @@ EXTENSION_CONFIGMAP_NAMESPACE    := ""
 COMMIT:=`git rev-parse HEAD`
 DIRTY:=`git diff --quiet || echo '-dirty'`
 VERSION:=`git tag | sort -V | tail -1`
-build:
+
+_go_generate:
 	rm -rf ./pkg/consts/charts
 	go generate ./...
+
+build: _go_generate
 	echo "Building ${VERSION}-${COMMIT}${DIRTY}"
 	CGO_ENABLED=0 go build -ldflags="-X github.com/intel/gardener-extension-cri-resmgr/pkg/consts.Commit=${COMMIT}${DIRTY} -X github.com/intel/gardener-extension-cri-resmgr/pkg/consts.Version=${VERSION}" -v ./cmd/gardener-extension-cri-resmgr
 
