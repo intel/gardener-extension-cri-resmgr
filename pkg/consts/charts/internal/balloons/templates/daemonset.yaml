@@ -1,0 +1,139 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    {{- include "nri-plugin.labels" . | nindent 4 }}
+  name: nri-resource-policy-balloons
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    matchLabels:
+    {{- include "nri-plugin.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+      {{- include "nri-plugin.labels" . | nindent 8 }}
+    spec:
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      serviceAccount: nri-resource-policy-balloons
+      nodeSelector:
+        kubernetes.io/os: "linux"
+    {{- with .Values.nodeSelector }}
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      {{- if .Values.nri.runtime.patchConfig }}
+      initContainers:
+      - name: patch-runtime
+        {{- if (not (or (eq .Values.nri.runtime.config nil) (eq .Values.nri.runtime.config.pluginRegistrationTimeout ""))) }}
+        args:
+          - -nri-plugin-registration-timeout
+          - {{ .Values.nri.runtime.config.pluginRegistrationTimeout }}
+          - -nri-plugin-request-timeout
+          - {{ .Values.nri.runtime.config.pluginRequestTimeout }}
+        {{- end }}
+        image: {{ .Values.initContainerImage.name }}:{{ .Values.initContainerImage.tag | default .Chart.AppVersion }}
+        imagePullPolicy: {{ .Values.initContainerImage.pullPolicy }}
+        volumeMounts:
+        - name: containerd-config
+          mountPath: /etc/containerd
+        - name: crio-config
+          mountPath: /etc/crio/crio.conf.d
+        - name: dbus-socket
+          mountPath: /var/run/dbus/system_bus_socket
+        securityContext:
+          privileged: true
+      {{- end }}
+      containers:
+        - name: nri-resource-policy-balloons
+          args:
+            - --host-root
+            - /host
+            - --config-namespace
+            - {{ .Release.Namespace }}
+            - --pid-file
+            - /tmp/nri-resource-policy.pid
+            - -metrics-interval
+            - 5s
+            - --nri-plugin-index
+            - "{{ .Values.nri.plugin.index | int | printf "%02d"  }}"
+            {{- if .Values.configGroupLabel }}
+            - --config-group-label
+            - {{ .Values.configGroupLabel }}
+            {{- end }}
+          ports:
+            - containerPort: 8891
+              protocol: TCP
+              hostPort: {{ .Values.hostPort }}
+              name: metrics
+          env:
+          - name: NODE_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+          {{- range $name, $value := .Values.extraEnv }}
+          - name: {{ $name }}
+            value: {{ $value }}
+          {{- end }}
+          {{- if ".Values.plugin-test.enableAPIs" }}
+          - name: ENABLE_TEST_APIS
+            value: "1"
+          {{- end }}
+          image: {{ .Values.image.name }}:{{ .Values.image.tag | default .Chart.AppVersion }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: {{ .Values.resources.cpu }}
+              memory: {{ .Values.resources.memory }}
+          volumeMounts:
+          - name: resource-policydata
+            mountPath: /var/lib/nri-resource-policy
+          - name: hostsysfs
+            mountPath: /host/sys
+          - name: resource-policysockets
+            mountPath: /var/run/nri-resource-policy
+          - name: nrisockets
+            mountPath: /var/run/nri
+      {{- if .Values.podPriorityClassNodeCritical }}
+      priorityClassName: system-node-critical
+      {{- end }}
+      volumes:
+      - name: resource-policydata
+        hostPath:
+          path: /var/lib/nri-resource-policy
+          type: DirectoryOrCreate
+      - name: hostsysfs
+        hostPath:
+          path: /sys
+          type: Directory
+      - name: resource-policysockets
+        hostPath:
+          path: /var/run/nri-resource-policy
+      - name: nrisockets
+        hostPath:
+          path: /var/run/nri
+          type: DirectoryOrCreate
+      {{- if .Values.nri.runtime.patchConfig }}
+      - name: containerd-config
+        hostPath:
+          path: /etc/containerd/
+          type: DirectoryOrCreate
+      - name: crio-config
+        hostPath:
+          path: /etc/crio/crio.conf.d/
+          type: DirectoryOrCreate
+      - name: dbus-socket
+        hostPath:
+          path: /var/run/dbus/system_bus_socket
+          type: Socket
+      {{- end }}

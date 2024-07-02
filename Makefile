@@ -17,7 +17,6 @@
 
 REGISTRY                         	:= localhost:5001/
 EXTENSION_IMAGE_NAME             	:= gardener-extension-cri-resmgr
-INSTALLATION_IMAGE_NAME          	:= gardener-extension-cri-resmgr-installation-and-agent
 TAG                              := latest
 
 # Please keep it up to date with agent image in charts/images.yaml
@@ -34,9 +33,13 @@ EXTENSION_CONFIGMAP_NAMESPACE    := ""
 COMMIT:=`git rev-parse HEAD`
 DIRTY:=`git diff --quiet || echo '-dirty'`
 VERSION:=`git tag | sort -V | tail -1`
-build:
+
+_go_generate:
+	@echo 'Remember "git submodule update --init --recursive" to init "cri-plugins" submodule.'
 	rm -rf ./pkg/consts/charts
 	go generate ./...
+
+build: _go_generate
 	echo "Building ${VERSION}-${COMMIT}${DIRTY}"
 	CGO_ENABLED=0 go build -ldflags="-X github.com/intel/gardener-extension-cri-resmgr/pkg/consts.Commit=${COMMIT}${DIRTY} -X github.com/intel/gardener-extension-cri-resmgr/pkg/consts.Version=${VERSION}" -v ./cmd/gardener-extension-cri-resmgr
 
@@ -82,7 +85,6 @@ _install-binaries:
 
 clean-images: 
 	docker image rm $(REGISTRY)$(EXTENSION_IMAGE_NAME):$(TAG)
-	docker image rm $(REGISTRY)$(INSTALLATION_IMAGE_NAME):$(TAG)
 
 regenerate-charts:
 	rm -rf ./pkg/consts/charts
@@ -91,19 +93,14 @@ regenerate-charts:
 _build-extension-image:
 	@echo "Building extension image: commit=${COMMIT}${DIRTY} version=${VERSION} target=$(REGISTRY)$(EXTENSION_IMAGE_NAME):$(TAG)"
 	docker build --build-arg COMMIT=${COMMIT}${DIRTY} --build-arg VERSION=${VERSION} -t $(REGISTRY)$(EXTENSION_IMAGE_NAME):$(TAG) -f Dockerfile --target $(EXTENSION_IMAGE_NAME) .
-_build-installation-image:
-	@echo "Building installation image: commit=${COMMIT}${DIRTY} version=${VERSION} target=$(REGISTRY)$(INSTALLATION_IMAGE_NAME):$(TAG)"
-	docker build --build-arg COMMIT=${COMMIT}${DIRTY} --build-arg VERSION=${VERSION} -t $(REGISTRY)$(INSTALLATION_IMAGE_NAME):$(TAG) -f Dockerfile --target $(INSTALLATION_IMAGE_NAME) .
 
 dist: build build-images
 
-build-images: regenerate-charts _build-extension-image _build-installation-image
+build-images: regenerate-charts _build-extension-image
 	echo "Building ${VERSION}-${COMMIT}${DIRTY} done."
-
 
 push-images:
 	docker push $(REGISTRY)$(EXTENSION_IMAGE_NAME):$(TAG)
-	docker push $(REGISTRY)$(INSTALLATION_IMAGE_NAME):$(TAG)
 	echo "Images ${VERSION}-${COMMIT}${DIRTY} pushed."
 
 generate-mocks:

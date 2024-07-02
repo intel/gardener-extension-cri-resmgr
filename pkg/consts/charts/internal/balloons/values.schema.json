@@ -1,0 +1,124 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "required": [
+        "image",
+        "hostPort",
+        "resources"
+    ],
+    "properties": {
+        "image": {
+            "type": "object",
+            "required": [
+                "name",
+                "pullPolicy"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "tag": {
+                    "type": "string"
+                },
+                "pullPolicy": {
+                    "type": "string",
+                    "enum": ["Never", "Always", "IfNotPresent"]
+                }
+            }
+        },
+        "initContainerImage": {
+            "type": "object",
+            "required": [
+                "name",
+                "pullPolicy"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "tag": {
+                    "type": "string"
+                },
+                "pullPolicy": {
+                    "type": "string",
+                    "enum": ["Never", "Always", "IfNotPresent"]
+                }
+            }
+        },
+        "configGroupLabel": {
+            "type": "string"
+        },
+        "resources": {
+            "type": "object",
+            "required": [
+                "memory",
+                "cpu"
+            ],
+            "properties": {
+                "memory": {
+                    "type": "string"
+                },
+                "cpu": {
+                    "type": "string"
+                }
+            }
+        },
+        "nri": {
+            "type": "object",
+            "required": [
+                "plugin",
+                "runtime"
+            ],
+            "properties": {
+                "plugin": {
+                    "type": "object",
+                    "required": [
+                        "index"
+                    ],
+                    "properties": {
+                        "index": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 99
+                        }
+                    }
+                },
+                "runtime": {
+                    "type": "object",
+                    "required": [
+                        "patchConfig"
+                    ],
+                    "properties": {
+                        "patchConfig": {
+                            "type": "boolean"
+                        },
+                        "config": {
+                            "type": "object",
+                            "required": [
+                                "pluginRegistrationTimeout",
+                                "pluginRequestTimeout"
+                            ],
+                            "properties": {
+                                "pluginRegistrationTimeout": {
+                                    "type": "string",
+                                    "$comment": "allowed range is 5-30s",
+                                    "pattern": "^(([5-9])|([1-2][0-9])|(30))s$"
+                                },
+                                "pluginRequestTimeout": {
+                                    "type": "string",
+                                    "$comment": "allowed range is 2-30s",
+                                    "pattern": "^(([2-9])|([1-2][0-9])|(30))s$"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "hostPort": {
+            "type": "integer"
+        },
+        "podPriorityClassNodeCritical": {
+            "type": "boolean"
+        }
+    }
+ }

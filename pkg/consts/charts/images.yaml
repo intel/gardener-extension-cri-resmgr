@@ -15,11 +15,8 @@
 #
 # Default values for image location internal installation and agent. Use localhost:5001 (local provider registry) until images will be published.
 images:
-- name: gardener-extension-cri-resmgr-installation
-  sourceRepository: https://github.com/intel/gardener-extension-cri-resmgr
-  repository: localhost:5001/gardener-extension-cri-resmgr-installation-and-agent
-  tag: latest
-- name: gardener-extension-cri-resmgr-agent
-  sourceRepository: https://github.com/intel/cri-resource-manager
-  repository: localhost:5001/gardener-extension-cri-resmgr-installation-and-agent
-  tag: latest
+- name: balloons
+  sourceRepository: https://github.com/containers/nri-plugins/
+  repository: ghcr.io/containers/nri-plugins/nri-resource-policy-balloons
+  tag: latest     
+  # tag: unstable
