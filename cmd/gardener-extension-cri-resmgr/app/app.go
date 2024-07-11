@@ -18,14 +18,11 @@ import (
 	"context"
 	"fmt"
 
-	controllerconfig "sigs.k8s.io/controller-runtime/pkg/config"
-
 	// Local
 
 	"github.com/intel/gardener-extension-cri-resmgr/pkg/controller/healthcheck"
 	"github.com/intel/gardener-extension-cri-resmgr/pkg/controller/lifecycle"
 	"github.com/intel/gardener-extension-cri-resmgr/pkg/options"
-	"k8s.io/utils/ptr"
 
 	// Gardener
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
@@ -53,7 +50,7 @@ func NewExtensionControllerCommand(ctx context.Context) *cobra.Command {
 			}
 			mgroptions := options.MgrOpts.Completed().Options()
 			// For debugging purposes, do not recover from panics from Reconciller
-			mgroptions.Controller = controllerconfig.Controller{RecoverPanic: ptr.To(false)}
+			//mgroptions.Controller = controllerconfig.Controller{RecoverPanic: ptr.To(false)}
 			mgr, err := manager.New(options.RestOptions.Completed().Config, mgroptions)
 			if err != nil {
 				return fmt.Errorf("could not instantiate controller-manager: %s", err)
