@@ -13,7 +13,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
-	"k8s.io/klog/v2/textlogger"
+	"k8s.io/klog/v2/klogr"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	gardencorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
@@ -39,8 +39,7 @@ var _ = Describe("ConfigMapToAllExtensionMapper tests", func() {
 		buffer = bytes.NewBuffer(nil)
 		klog.SetOutput(buffer)
 		klog.LogToStderr(false)
-		//log = klogr.New()
-		log = textlogger.NewLogger(nil)
+		log = klogr.New()
 
 		mockCtrl = gomock.NewController(GinkgoT())
 		reader = mocks.NewMockReader(mockCtrl)
