@@ -44,7 +44,7 @@ func NewExtensionControllerCommand(ctx context.Context) *cobra.Command {
 		Use:   "cri-resmgr-controller-manager",
 		Short: "CRI Resource manager Controller manages components which install CRI-Resource-Manager as CRI proxy.",
 
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			if err := options.OptionAggregator.Complete(); err != nil {
 				return fmt.Errorf("error completing options: %s", err)
 			}

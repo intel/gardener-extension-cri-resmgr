@@ -23,7 +23,7 @@ import (
 	"github.com/gardener/gardener/test/framework"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 )
 
 var (
@@ -45,14 +45,14 @@ func enableOrDisableCriResmgr(shoot *gardencorev1beta1.Shoot, disabled bool) err
 	for i, extension := range shoot.Spec.Extensions {
 		if extension.Type == ExtensionType {
 			if extension.Disabled != nil {
-				shoot.Spec.Extensions[i].Disabled = pointer.Bool(disabled)
+				shoot.Spec.Extensions[i].Disabled = ptr.To(disabled)
 			}
 		}
 	}
 	if len(shoot.Spec.Extensions) == 0 {
 		shoot.Spec.Extensions = append(shoot.Spec.Extensions, gardencorev1beta1.Extension{
 			Type:     ExtensionType,
-			Disabled: pointer.Bool(disabled),
+			Disabled: ptr.To(disabled),
 		})
 	}
 	return nil
@@ -87,7 +87,7 @@ func getShoot() *gardencorev1beta1.Shoot {
 			Region:            "local",
 			SecretBindingName: &secretBindingName,
 			CloudProfileName:  "local",
-			SeedName:          pointer.String("local"),
+			SeedName:          ptr.To("local"),
 			Kubernetes: gardencorev1beta1.Kubernetes{
 				Version: kubernetesVersion,
 			},
