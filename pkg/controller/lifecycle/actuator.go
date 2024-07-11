@@ -39,8 +39,6 @@ import (
 	"github.com/intel/gardener-extension-cri-resmgr/pkg/imagevector"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/serializer"
-	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
@@ -81,16 +79,18 @@ func GetProviderConfig(logger logr.Logger, extensions []v1beta1.Extension) (bool
 // ---------------------------------------------------------------------------------------
 
 // NewActuator return new Actuator.
-func NewActuator(name string) extension.Actuator {
+func NewActuator(c client.Client, name string) extension.Actuator {
 	return &Actuator{
+		client:               c,
 		ChartRendererFactory: extensionscontroller.ChartRendererFactoryFunc(util.NewChartRendererForShoot),
 		logger:               log.Log.WithName(name),
 	}
 }
 
 // NewActuatorWithSuffix return new Actuator with suffix.
-func NewActuatorWithSuffix(nameSuffix string) extension.Actuator {
+func NewActuatorWithSuffix(c client.Client, nameSuffix string) extension.Actuator {
 	return &Actuator{
+		client:               c,
 		ChartRendererFactory: extensionscontroller.ChartRendererFactoryFunc(util.NewChartRendererForShoot),
 		logger:               log.Log.WithName(consts.ActuatorName + nameSuffix),
 	}
@@ -98,11 +98,11 @@ func NewActuatorWithSuffix(nameSuffix string) extension.Actuator {
 
 // Actuator type.
 type Actuator struct {
-	client               client.Client
-	config               *rest.Config
+	client client.Client
+	//config               *rest.Config
 	ChartRendererFactory extensionscontroller.ChartRendererFactory
-	decoder              runtime.Decoder
-	logger               logr.Logger
+	//decoder              runtime.Decoder
+	logger logr.Logger
 }
 
 // GenerateSecretData return byte map which is k8s secret with data.
@@ -168,6 +168,10 @@ func (a *Actuator) GenerateSecretDataToMonitoringManagedResource(namespace strin
 // Reconcile the Extension resource.
 func (a *Actuator) Reconcile(ctx context.Context, logger logr.Logger, ex *extensionsv1alpha1.Extension) error {
 	namespace := ex.GetNamespace()
+
+	if a.client == nil {
+		panic("a.client is nil!")
+	}
 
 	// Find what shoot cluster we dealing with.
 	// to find k8s version for chart renderer
@@ -263,22 +267,4 @@ func (a *Actuator) Restore(ctx context.Context, logger logr.Logger, ex *extensio
 // Migrate the Extension resource.
 func (a *Actuator) Migrate(ctx context.Context, logger logr.Logger, ex *extensionsv1alpha1.Extension) error {
 	return a.Delete(ctx, logger, ex)
-}
-
-// InjectConfig the Extension resource.
-func (a *Actuator) InjectConfig(config *rest.Config) error {
-	a.config = config
-	return nil
-}
-
-// InjectClient the Extension resource.
-func (a *Actuator) InjectClient(client client.Client) error {
-	a.client = client
-	return nil
-}
-
-// InjectScheme the Extension resource.
-func (a *Actuator) InjectScheme(scheme *runtime.Scheme) error {
-	a.decoder = serializer.NewCodecFactory(scheme, serializer.EnableStrict).UniversalDecoder()
-	return nil
 }

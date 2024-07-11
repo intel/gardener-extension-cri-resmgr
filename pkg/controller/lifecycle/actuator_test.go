@@ -111,7 +111,7 @@ var _ = Describe("cri-resource-manager extension actuator tests", func() {
 		// TODO: consider using mock instead of real rendered - not enough logic inside golang code yet!
 		// unused but useful for future
 		// "github.com/golang/mock/gomock"
-		a := actuator.NewActuator("mock").(*actuator.Actuator)
+		a := actuator.NewActuator(nil, "mock").(*actuator.Actuator)
 
 		It("generate properly with expected bodies inside", func() {
 			secret, err := a.GenerateSecretData(log, consts.Charts, consts.ChartPath, "foo_namespace", "v1.0.0", configTypes, nodeSelector)
@@ -129,7 +129,7 @@ var _ = Describe("cri-resource-manager extension actuator tests", func() {
 
 	Describe("rendering monitoring chart with GenerateSecretDataToMonitoringManagedResource", func() {
 		It("generate correct config with replaced namespace", func() {
-			a := actuator.NewActuator("mock").(*actuator.Actuator)
+			a := actuator.NewActuator(nil, "mock").(*actuator.Actuator)
 
 			output := a.GenerateSecretDataToMonitoringManagedResource("test")
 

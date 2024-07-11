@@ -90,7 +90,7 @@ func ConfigMapToAllExtensionMapper(ctx context.Context, log logr.Logger, reader 
 func AddToManager(ctx context.Context, mgr manager.Manager, options *options.Options, ignoreOperationAnnotation bool) error {
 
 	return extension.Add(ctx, mgr, extension.AddArgs{
-		Actuator:                  NewActuator(consts.ActuatorName),
+		Actuator:                  NewActuator(mgr.GetClient(), consts.ActuatorName),
 		ControllerOptions:         options.ControllerOptions.Completed().Options(),
 		Name:                      consts.ControllerName,
 		FinalizerSuffix:           consts.ExtensionType,
@@ -107,12 +107,12 @@ func AddConfigMapWatchingControllerToManager(ctx context.Context, mgr manager.Ma
 	// Create another instance of options - this time for "configMap2Extensions reconciler"
 	controllerOptions := options.ControllerOptions.Completed().Options()
 	configReconcilerArgs := extension.AddArgs{
-		Actuator:        NewActuator(consts.ActuatorName + consts.ConfigsSuffix),
+		Actuator:        NewActuator(mgr.GetClient(), consts.ActuatorName+consts.ConfigsSuffix),
 		Resync:          60 * time.Minute,
 		FinalizerSuffix: consts.ExtensionType, // We're using the same finalizer as the original controller on purpose to "delete" only once without a need to wait for another "configs" controller
 	}
 	controllerOptions.Reconciler = extension.NewReconciler(mgr, configReconcilerArgs)
-	recoverPanic := true
+	recoverPanic := true // TODO: make it configurable for debugging purposes !!?!?
 	controllerOptions.RecoverPanic = &recoverPanic
 
 	controllerName := consts.ControllerName + consts.ConfigsSuffix
