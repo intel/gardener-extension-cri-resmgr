@@ -38,20 +38,6 @@ RUN CGO_ENABLED=0 go install -ldflags="-X github.com/intel/gardener-extension-cr
 # sha256:262ae336f8e9291f8edc9a71a61d5d568466edc1ea4818752d4af3d230a7f9ef Created Jan 1, 1, 1:24:00 AM
 FROM gcr.io/distroless/static@sha256:262ae336f8e9291f8edc9a71a61d5d568466edc1ea4818752d4af3d230a7f9ef AS gardener-extension-cri-resmgr
 
-COPY charts/internal /charts/internal
+COPY charts/internal/balloons /charts/internal/balloons
 COPY --from=builder /go/bin/gardener-extension-cri-resmgr /
 ENTRYPOINT ["/gardener-extension-cri-resmgr"]
-
-
-### agnet and installation joined
-FROM debian:12.5 as gardener-extension-cri-resmgr-installation-and-agent
-
-WORKDIR /gardener-extension-cri-resmgr-installation-and-agent
-# Please keep this in sync with CRI_RM_VERSION from Makefile!
-COPY --from=intel/cri-resmgr-agent:v0.9.0 /bin/* /bin/
-COPY Makefile .
-RUN apt update -y && apt upgrade -y && apt --no-install-recommends -y install make=4.3-4.1 wget=1.21.3-1+b2  && apt-get clean && rm -rf /var/lib/apt/lists/* && make _install-binaries && apt remove -y make wget && apt -y autoremove
-
-ARG COMMIT=unset
-ARG VERSION=unset
-RUN bash -c "echo ${VERSION} >/VERSION" && bash -c "echo ${COMMIT} >/COMMIT"
