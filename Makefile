@@ -97,6 +97,23 @@ regenerate-charts:
 _build-extension-image:
 	@echo "Building extension image: commit=${COMMIT}${DIRTY} version=${VERSION} target=$(REGISTRY)$(EXTENSION_IMAGE_NAME):$(TAG)"
 	docker build --build-arg COMMIT=${COMMIT}${DIRTY} --build-arg VERSION=${VERSION} -t $(REGISTRY)$(EXTENSION_IMAGE_NAME):$(TAG) -f Dockerfile --target $(EXTENSION_IMAGE_NAME) .
+
+install-licenses:
+	# go install github.com/google/go-licenses@latest
+	# to be called from Docker image
+	install -D LICENSE $(DESTDIR)/licenses/$$cmd/LICENSE
+	go-licenses save ./cmd/ --ignore github.com/intel/gardener-extesion-cri-resmgr --save_path licenses
+
+gen-licenses-csv:
+	# go install github.com/google/go-licenses@latest
+	@echo "WARNING: go-licenses require installed golang runtime matching one from go.mod go directive version!"
+	go-licenses report ./cmd/gardener-extension-cri-resmgr >hacks/scans/licenses.csv
+
+download-licenses-csv:
+	# go install github.com/google/go-licenses@latest
+	@echo "WARNING: go-licenses require installed golang runtime matching one from go.mod go directive version!"
+	go-licenses save ./cmd/gardener-extension-cri-resmgr --ignore github.com/intel/gardener-extesion-cri-resmgr --save_path licenses
+
 _build-installation-image:
 	@echo "Building installation image: commit=${COMMIT}${DIRTY} version=${VERSION} target=$(REGISTRY)$(INSTALLATION_IMAGE_NAME):$(TAG)"
 	docker build --build-arg COMMIT=${COMMIT}${DIRTY} --build-arg VERSION=${VERSION} -t $(REGISTRY)$(INSTALLATION_IMAGE_NAME):$(TAG) -f Dockerfile --target $(INSTALLATION_IMAGE_NAME) .
