@@ -135,11 +135,16 @@ func (a *Actuator) GenerateSecretData(logger logr.Logger, charts embed.FS, chart
 		return emptyMap, err
 	}
 	chartValues := map[string]interface{}{
-		"images": map[string]string{
-			consts.BalloonsImageName: balloonsImage.String(),
-		},
+		// "images": map[string]string{
+		// 	consts.BalloonsImageName: balloonsImage.String(),
+		// },
+		"imageBroken": map[string]interface{}{
+			"nameWithTagBROKEN": balloonsImage.String()},
 		"configs":      configs,
 		"nodeSelector": nodeSelector,
+		"nri": map[string]interface{}{
+			"runtime": map[string]interface{}{
+				"patchConfig": true}},
 	}
 
 	release, err := chartRenderer.RenderEmbeddedFS(charts, chartPath, consts.InstallationReleaseName, metav1.NamespaceSystem, chartValues)
