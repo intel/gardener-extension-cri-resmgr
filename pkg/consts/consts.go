@@ -27,8 +27,9 @@ var Commit string
 // go embed requires files in package through security
 //
 //go:generate cp -vLr ../../charts .
+//go:generate cp -vLr charts/internal/balloons/crds ./charts/internal/balloons/templates/
 var (
-	//go:embed charts/*
+	//go:embed all:charts/*
 	Charts embed.FS
 
 	//go:embed monitoring.yaml
