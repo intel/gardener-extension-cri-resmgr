@@ -34,21 +34,22 @@ COMMIT:=`git rev-parse HEAD`
 DIRTY:=`git diff --quiet || echo '-dirty'`
 VERSION:=`git tag | sort -V | tail -1`
 
-_go_generate:
-	@echo 'Remember "git submodule update --init --recursive" to init "cri-plugins" submodule.'
-	rm -rf ./pkg/consts/charts
-	go generate ./...
+build: _go_generate _build _build_tests
 
 _build:
 	echo "Building ${VERSION}-${COMMIT}${DIRTY}"
 	CGO_ENABLED=0 go build -ldflags="-X github.com/intel/gardener-extension-cri-resmgr/pkg/consts.Commit=${COMMIT}${DIRTY} -X github.com/intel/gardener-extension-cri-resmgr/pkg/consts.Version=${VERSION}" -v ./cmd/gardener-extension-cri-resmgr
+
+_go_generate:
+	@echo 'Remember "git submodule update --init --recursive" to init "cri-plugins" submodule.'
+	rm -rf ./pkg/consts/charts
+	go generate ./...
 
 _build_tests:
 	go test -c -v  ./test/e2e/cri-resmgr-extension/. -o gardener-extension-cri-resmgr.e2e-tests
 	go test -c -v ./pkg/controller/lifecycle -o ./gardener-extension-cri-resmgr.actuator.test
 	go test -c -v ./pkg/configs -o ./gardener-extension-cri-resmgr.configs.test
 
-build: _go_generate _build _build_tests
 
 test:
 	go generate ./...
