@@ -20,13 +20,11 @@ import (
 
 	// Local
 
-	"github.com/intel/gardener-extension-cri-resmgr/pkg/controller/healthcheck"
 	"github.com/intel/gardener-extension-cri-resmgr/pkg/controller/lifecycle"
 	"github.com/intel/gardener-extension-cri-resmgr/pkg/options"
 
 	// Gardener
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
-	"github.com/gardener/gardener/extensions/pkg/controller/heartbeat"
 	resourcemanagerv1alpha1 "github.com/gardener/gardener/pkg/apis/resources/v1alpha1"
 
 	// Other
@@ -63,23 +61,6 @@ func NewExtensionControllerCommand(ctx context.Context) *cobra.Command {
 				return err
 			}
 			if err := options.OptionAggregator.Complete(); err != nil {
-				return err
-			}
-			if err := options.HeartbeatOpts.Validate(); err != nil {
-				return err
-			}
-			options.HeartbeatOpts.Completed().Apply(&heartbeat.DefaultAddOptions)
-			// mgrOpts.ClientDisableCacheFor = []client.Object{
-			// 	&corev1.ConfigMap{}, // applied for ManagedResources
-			// }
-			// Enable healthcheck.
-			// "Registration" adds additional controller that watches over Extension/Cluster.
-			// TODO: ENABLE before merging!!!
-			if err := healthcheck.RegisterHealthChecks(ctx, mgr); err != nil {
-				return err
-			}
-
-			if err := heartbeat.AddToManager(ctx, mgr); err != nil {
 				return err
 			}
 

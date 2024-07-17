@@ -25,7 +25,7 @@
             "hideSystemGoroutines": true,
             "env": {
                 // Comment/Uncomment if configMap cannot be read.
-                "EXTENSION_CONFIGMAP_NAMESPACE": "extension-cri-resmgr-extension-9htbx",
+                "EXTENSION_CONFIGMAP_NAMESPACE": "extension-cri-resmgr-extension-c6qp5",
                 "LEADER_ELECTION_NAMESPACE": "garden",
             },
             "console": "internalConsole",

@@ -112,7 +112,7 @@ func AddConfigMapWatchingControllerToManager(ctx context.Context, mgr manager.Ma
 		FinalizerSuffix: consts.ExtensionType, // We're using the same finalizer as the original controller on purpose to "delete" only once without a need to wait for another "configs" controller
 	}
 	controllerOptions.Reconciler = extension.NewReconciler(mgr, configReconcilerArgs)
-	recoverPanic := true // TODO: make it configurable for debugging purposes !!?!?
+	recoverPanic := false // TODO: make it configurable for debugging purposes !!?!?
 	controllerOptions.RecoverPanic = &recoverPanic
 
 	controllerName := consts.ControllerName + consts.ConfigsSuffix

@@ -1,0 +1,3 @@
+[submodule "nri-plugins"]
+	path = nri-plugins
+	url = https://github.com/containers/nri-plugins
