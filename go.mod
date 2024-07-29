@@ -3,17 +3,17 @@ module github.com/intel/gardener-extension-cri-resmgr
 go 1.22.4
 
 require (
-	github.com/gardener/gardener v1.99.0
+	github.com/gardener/gardener v1.100.0
 	github.com/go-logr/logr v1.4.2
 	github.com/onsi/ginkgo/v2 v2.19.0
 	github.com/onsi/gomega v1.33.1
 	github.com/spf13/cobra v1.8.1
 	go.uber.org/mock v0.4.0
-	k8s.io/api v0.29.6
-	k8s.io/apimachinery v0.29.6
-	k8s.io/client-go v0.29.6
+	k8s.io/api v0.29.7
+	k8s.io/apimachinery v0.29.7
+	k8s.io/client-go v0.29.7
 	k8s.io/klog/v2 v2.130.1
-	k8s.io/utils v0.0.0-20240502163921-fe8a2dddb1d0
+	k8s.io/utils v0.0.0-20240711033017-18e509b52bc8
 	sigs.k8s.io/controller-runtime v0.17.5
 )
 
@@ -34,9 +34,9 @@ require (
 	github.com/fluent/fluent-operator/v2 v2.9.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/gardener/cert-management v0.15.0 // indirect
-	github.com/gardener/etcd-druid v0.22.1 // indirect
+	github.com/gardener/etcd-druid v0.22.3 // indirect
 	github.com/gardener/hvpa-controller/api v0.15.0 // indirect
-	github.com/gardener/machine-controller-manager v0.53.0 // indirect
+	github.com/gardener/machine-controller-manager v0.53.1 // indirect
 	github.com/go-logr/zapr v1.3.0 // indirect
 	github.com/go-openapi/errors v0.20.4 // indirect
 	github.com/go-openapi/jsonpointer v0.20.0 // indirect
@@ -86,7 +86,7 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/crypto v0.25.0 // indirect
-	golang.org/x/exp v0.0.0-20240707233637-46b078467d37 // indirect
+	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56 // indirect
 	golang.org/x/net v0.27.0 // indirect
 	golang.org/x/oauth2 v0.20.0 // indirect
 	golang.org/x/sys v0.22.0 // indirect
@@ -101,18 +101,18 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	helm.sh/helm/v3 v3.14.4 // indirect
-	istio.io/api v1.22.2 // indirect
+	istio.io/api v1.22.3 // indirect
 	istio.io/client-go v1.22.0 // indirect
-	k8s.io/apiextensions-apiserver v0.29.6 // indirect
-	k8s.io/apiserver v0.29.6 // indirect
+	k8s.io/apiextensions-apiserver v0.29.7 // indirect
+	k8s.io/apiserver v0.29.7 // indirect
 	k8s.io/autoscaler/vertical-pod-autoscaler v1.1.2 // indirect
-	k8s.io/cluster-bootstrap v0.29.6 // indirect
-	k8s.io/component-base v0.29.6 // indirect
-	k8s.io/component-helpers v0.29.6 // indirect
-	k8s.io/kube-aggregator v0.29.6 // indirect
+	k8s.io/cluster-bootstrap v0.29.7 // indirect
+	k8s.io/component-base v0.29.7 // indirect
+	k8s.io/component-helpers v0.29.7 // indirect
+	k8s.io/kube-aggregator v0.29.7 // indirect
 	k8s.io/kube-openapi v0.0.0-20231010175941-2dd684a91f00 // indirect
-	k8s.io/kubelet v0.29.6 // indirect
-	k8s.io/metrics v0.29.6 // indirect
+	k8s.io/kubelet v0.29.7 // indirect
+	k8s.io/metrics v0.29.7 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect
