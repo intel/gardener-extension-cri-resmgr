@@ -2,7 +2,7 @@
 
 | **Warning** |
 | ---------------- |
-| **This project is no longer maintained!** Current versions (master and v1.1.0) of this extension was based on https://github.com/intel/cri-resource-manager/ which is superseded by https://github.com/containers/nri-plugins/ .  Support for nri-plugins is available in this WIP PR [here](https://github.com/intel/gardener-extension-cri-resmgr/pull/267) but is on hold. If you have an ongoing need to use this project, are interested in independently developing it, or would like to maintain patches for the open source software community, please contact pawel.palucki@intel.com |
+| **This project is no longer maintained!** Current versions (master and v1.1.0) of this extension was based on https://github.com/intel/cri-resource-manager/ which is superseded by https://github.com/containers/nri-plugins/. Support for `nri-plugins` project is available in this work-in-progress **on-hold** PR [here](https://github.com/intel/gardener-extension-cri-resmgr/pull/267). If you have an ongoing need to use this project, are interested in independently developing it, or would like to maintain patches for the open source software community, please contact pawel.palucki@intel.com |
 
 ## CRI-Resource-Manager extension for Gardener*
 
